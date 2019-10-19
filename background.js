@@ -43,9 +43,6 @@ function validateVideo (id) {
 		let url =  "https://open.lbry.com/" + title
 		console.log(url)
 		chrome.tabs.update({url: url});
-	 } else {
-		chrome.windows.create({'url': 'message.html', 'type': 'popup', height: 200, width:200});
-	 }
 		
    });
 
