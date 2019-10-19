@@ -1,7 +1,11 @@
+var loaded = false;
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-	if(tab.url.includes('watch?')) {
-		let videoId = getVideoId(tab.url)
-		validateVideo(videoId)
+	if (changeInfo.status == 'complete' && tab.status == 'complete' && tab.url != undefined) {
+		if(tab.url.includes('watch?') && !loaded) {
+			loaded = true
+			let videoId = getVideoId(tab.url)
+			validateVideo(videoId)
+		}
 	}
 });
 
@@ -14,11 +18,9 @@ function getVideoId(videoUrl) {
 	  return videoId
 }
 
-chrome.runtime.onMessage.addListener(function(request, sender) {
-    chrome.tabs.update(sender.tab.id, {url: request.redirect});
-});
 
 function validateVideo (id) {
+  loaded = false
   let url = 'https://cors-anywhere.herokuapp.com/https://api.lbry.com/yt/resolve?video_ids=' + id
   console.log('Calling url: ' + url)
 
@@ -35,13 +37,10 @@ function validateVideo (id) {
       return resp.json();
     })
     .then(function(data) {
-      console.log('Success!')
 	  let title = data.data.videos[id]
 	  
-	  
 	 if (title != null) {
-		let url =  "https://open.lbry.com/" + title
-		console.log(url)
+		let url =  "https://open.lbry.tv/" + title
 		chrome.tabs.update({url: url});
 		
    });
