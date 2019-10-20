@@ -42,7 +42,7 @@ function validateVideo (id) {
 	 if (title != null) {
 		let url =  "https://open.lbry.tv/" + title
 		chrome.tabs.update({url: url});
-		
+	 }
    });
 
 }
