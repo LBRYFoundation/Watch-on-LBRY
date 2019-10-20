@@ -40,7 +40,7 @@ function validateVideo (id) {
 	  let title = data.data.videos[id]
 	  
 	 if (title != null) {
-		let url =  "https://open.lbry.tv/" + title
+		let url =  "https://open.lbry.com/" + title
 		chrome.tabs.update({url: url});
 	 }
    });
