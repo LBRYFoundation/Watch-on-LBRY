@@ -4,6 +4,9 @@ Plugin for web browser that atomatic chceck if YouTube video is on LBRY
 
 ## Installation
 
+[![Get on Firefox](https://addons.cdn.mozilla.net/static/img/addons-buttons/AMO-button_1.png)](https://addons.mozilla.org/pl/firefox/addon/watch-on-lbry/?src=search)
+
+For Chrome:
 Visit ```chrome://extensions``` (via omnibox or menu -> Tools -> Extensions).
 Enable Developer mode by ticking the checkbox in the upper-right corner.
 Click on the "Load unpacked extension..." button.
