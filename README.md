@@ -1,7 +1,7 @@
 
 # Watch on LBRY
 
-Plugin for web browser that atomatic chceck if YouTube video is on LBRY
+A plugin for web browsers that automatically checks whether a YouTube video or channel is on LBRY. If it is, it redirects you to LBRY to watch it there.
 
 ## Installation
 
@@ -25,7 +25,7 @@ The extension will be installed, and will stay installed until you restart Firef
 
 ## Usage
 
-Open YouTube, when you load video it will detect if it's also uploaded to LBRY Network and the it will move you to open.lbry.com so you can watch video on LBRY!
+Go to YouTube in your browser. When you load a video or channel, it will detect if it's also uploaded to the LBRY Network and the it will move you to open.lbry.com so you can watch the video on LBRY (either on the web or in the app)!
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
