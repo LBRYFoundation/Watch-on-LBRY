@@ -37,7 +37,7 @@ Please make sure to update tests as appropriate.
 
 ## Support
 
-If you want you can donate to my with crypto :)  
+If you want you can donate me with crypto :)  
 
 LBC : bR2gmQRFJhE8E7cipdCd6oMarGMq7U1DCY  
 BTC: 3LDZRpJtbdhe9JGW6EdBMKX5Ee8iZDWEeN  
