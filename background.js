@@ -46,7 +46,7 @@ function getInformationFromApi(id) {
 	  .then(function(data) {
 		let channel = data.data.channels[id]
 		if (channel != null) {
-			let url =  "https://open.lbry.com/" + channel
+			let url =  "https://lbry.tv/" + channel
 			chrome.tabs.update({url: url});
 		 }
 	 });
