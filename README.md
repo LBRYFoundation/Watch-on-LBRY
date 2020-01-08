@@ -5,7 +5,7 @@ A plugin for web browsers that automatically checks whether a YouTube video or c
 
 ## Installation
 
-[![Get on Firefox](https://addons.cdn.mozilla.net/static/img/addons-buttons/AMO-button_1.png)](https://addons.mozilla.org/pl/firefox/addon/watch-on-lbry/?src=search) [![Get on Chrome](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/watch-on-lbry/jjmbbhopnjdjnpceiecihldbhibchgek?hl=pl&gl=PL)
+[![Get on Firefox](https://addons.cdn.mozilla.net/static/img/addons-buttons/AMO-button_1.png)](https://addons.mozilla.org/pl/firefox/addon/watch-on-lbry/?src=search) [![Get on Chrome](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/watch-on-lbry/jjmbbhopnjdjnpceiecihldbhibchgek)
 
 ## For Chrome:
 Visit ```chrome://extensions``` (via omnibox or menu -> Tools -> Extensions).
