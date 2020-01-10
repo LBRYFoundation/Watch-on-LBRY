@@ -1,6 +1,6 @@
 {
   "name": "Watch on LBRY",
-  "version": "1.3",
+  "version": "1.4",
   "permissions": [
     "https://www.youtube.com/watch?v=*",
     "https://www.youtube.com/channel/*",
