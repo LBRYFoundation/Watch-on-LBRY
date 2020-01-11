@@ -9,7 +9,6 @@
   ],
   "background": {
     "scripts": [
-      "scripts/browserActionOnClicked.js",
       "scripts/runtimeOnStartup.js",
       "scripts/storageOnChanged.js",
       "scripts/tabOnUpdated.js"
