@@ -1,6 +1,5 @@
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (!tab.url) return;
-
+  if (!changeInfo.url) return;
   const { id, type } = getId(tab.url);
   if (!id) return;
 
@@ -10,9 +9,18 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   console.log(json);
   const title = json.data[`${type}s`][id];
   if (!title) return;
+  console.log(title);
 
-  let newUrl = `https://lbry.tv/${title.replace(/^lbry:\/\//, "").replace(/#/g, ":")}`;
-  chrome.tabs.update(tab.tabId, { url: newUrl });
+  chrome.storage.local.get('redirect', ({ redirect }) => {
+    console.log(redirect);
+    let newUrl;
+    if (redirect === "lbry.tv") {
+      newUrl = `https://lbry.tv/${title.replace(/^lbry:\/\//, "").replace(/#/g, ":")}`;
+    } else if (redirect === "app") {
+      newUrl = `lbry://${title.replace(/^lbry:\/\//, "")}`;
+    }
+    chrome.tabs.update(tabId, { url: newUrl });
+  });
 });
 
 function getId(url) {
@@ -33,4 +41,7 @@ function getChannelId(url) {
   const regex = /channel\/([^\s?]*)/;
   const match = url.match(regex);
   return match ? match[1] : null; // match[1] is the channelId
+}
+
+function getNewUrl(title) {
 }
