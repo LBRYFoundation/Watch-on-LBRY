@@ -26,7 +26,7 @@ const attachClick = (selector, handler) =>{
   document.querySelector(selector).addEventListener('click', (event) => {
     const element = event.target;
     const name = event.target.getAttribute('name');
-    const value = !!+event.target.getAttribute('value');
+    const value = event.target.getAttribute('value');
     typeof handler==='function' ? handler(element, name, value): null; 
   });
 }
