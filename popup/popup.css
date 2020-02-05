@@ -1,9 +1,38 @@
 body {
-    width: 200px;
+    width: 400px;
     text-align: center;
+    background-color: #191a1c;
+    color: whitesmoke;
 }
 
 .container {
-    display: inline-block;
-    text-align: left;
+    display: block;
+    text-align: center;
+    margin: 0 auto;
+    width: 80%;
+    margin-bottom: 15px;
+}
+
+button {
+    border-radius: 5px;
+    background-color: #075656;
+    border: 4px solid #075656;
+    color: whitesmoke;
+    font-weight: 400;
+    padding: 4px 15px;
+    margin-right: 25px;
+}
+button.active {
+    border: 4px solid teal;
+}
+button:hover {
+    border: 4px solid teal;
+}
+button:focus {
+    outline: none;
+}
+label {
+    font-size: 1.1rem;
+    margin: 15px auto;
+    display: block;
 }
