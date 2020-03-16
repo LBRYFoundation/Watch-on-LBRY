@@ -17,7 +17,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       console.log(redirect);
       let newUrl;
       if (redirect === "lbry.tv") {
-        newUrl = `https://lbry.tv/${title.replace(/^lbry:\/\//, "").replace(/#/g, ":")}`;
+        newUrl = `https://lbry.tv/${title.replace(/^lbry:\/\//, "").replace(/#/g, ":")}?src=watch-on-lbry`;
       } else if (redirect === "app") {
         newUrl = `lbry://${title.replace(/^lbry:\/\//, "")}`;
       }
