@@ -39,11 +39,7 @@ Please make sure to update tests as appropriate.
 
 If you want you can donate me with crypto :)  
 
-LBC : bM6DNSFsGbyEQtSpmjKgVHcAK7PZ3KnpWp 
-BTC: 3LDZRpJtbdhe9JGW6EdBMKX5Ee8iZDWEeN  
-BCH: 1NdK8s51aHQv2MrjwG955WeDF6EwQtnwrf  
-ETH: 0x7585DC9aB793662c41b6E509Ce0f5D3e55c0cD90  
-KMD: RRjdBYWVmBaEf3DFGKiE19mquSzKptW6rY  
-DOGE: DH1FWCLqYgD2hkD7qghBFwMjnHpm1EyLXV  
+LBC : bXeBKSjPygVbvkBH79Bp6CxiyeRC2hpVQ3   
+
 
 This will help future plugin development :)
