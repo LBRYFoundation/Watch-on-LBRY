@@ -5,7 +5,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     const { id, type } = getId(tab.url);
     if (!id) return;
 
-    const url = `https://cors-anywhere.herokuapp.com/https://api.lbry.com/yt/resolve?${type}_ids=${id}`;
+    const url = `https://api.lbry.com/yt/resolve?${type}_ids=${id}`;
     const response = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
     const json = await response.json();
     console.log(json);
