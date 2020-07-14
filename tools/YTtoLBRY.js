@@ -82,7 +82,7 @@ function validateChannels(channels, redirect, validatedChannels) {
         }
         if (requestSize < channels.length) {
             channels.splice(0, requestSize);
-            validateChannels(channels, redirect);
+            validateChannels(channels, redirect, validatedChannels);
         } else if (validatedChannels.length === 0) {
             let li = document.createElement('li');
             li.innerText = "No channels found :(";
