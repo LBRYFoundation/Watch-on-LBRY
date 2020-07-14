@@ -48,19 +48,19 @@ function lbryAPIrequest() {
     while (lbryChannelList.lastElementChild) {
         lbryChannelList.removeChild(lbryChannelList.lastElementChild);
     }
-
+    
     chrome.storage.local.get('redirect', redirect => {
-        validateChannels(toCheck, redirect.redirect);
+        validateChannels(toCheck, redirect.redirect, []);
     });
 }
 
-function validateChannels(channels, redirect) {
+function validateChannels(channels, redirect, validatedChannels) {
     const requestSize = 325;
     var channelsString = "";
     for (let i = 0; i < channels.length && i < requestSize; i++) {
         channelsString += `${channelsString.length > 0 ? ',' : ''}${channels[i]}`
     }
-    request = new XMLHttpRequest();
+    request = new XMLHttpRequest(); 
     request.open("GET", `https://api.lbry.com/yt/resolve?channel_ids={${channelsString}}`);
     request.send();
     request.onload = () => {
@@ -70,6 +70,7 @@ function validateChannels(channels, redirect) {
                 let testChannel = testChannels[testChannelKey];
                 if (testChannel != null) {
                     let link = `${redirect === "lbry.tv" ? "https://lbry.tv/" : "lbry://"}${testChannel}`;
+                    validatedChannels.push(link);
                     let li = document.createElement('li');
                     let a = document.createElement('a');
                     a.href = link;
@@ -82,6 +83,10 @@ function validateChannels(channels, redirect) {
         if (requestSize < channels.length) {
             channels.splice(0, requestSize);
             validateChannels(channels, redirect);
+        } else if (validatedChannels.length === 0) {
+            let li = document.createElement('li');
+            li.innerText = "No channels found :(";
+            lbryChannelList.appendChild(li);
         }
     }
 }
