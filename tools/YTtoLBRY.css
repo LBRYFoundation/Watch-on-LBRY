@@ -1,0 +1,36 @@
+body {
+    width: 400px;
+    text-align: center;
+    background-color: #191a1c;
+    color: whitesmoke;
+
+  left: 50%;
+  top: 50%;
+}
+
+.container {
+    display: block;
+    text-align: center;
+    margin: 0 auto;
+    width: 80%;
+    margin-bottom: 15px;
+
+}
+
+.goButton {
+    border-radius: 5px;
+    background-color: #075656;
+    border: 4px solid #075656;
+    color: whitesmoke;
+    font-weight: 400;
+    padding: 4px 15px;
+    margin-right: 25px;
+    text-align: center;
+}
+
+
+label {
+    font-size: 1.1rem;
+    margin: 15px auto;
+    display: block;
+}
