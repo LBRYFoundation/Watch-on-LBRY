@@ -7,16 +7,18 @@
     <script src="YTtoLBRY.js" charset="utf-8"></script>
   </head>
 
-  <body>
-
-    <iframe width="560" height="315" src="https://lbry.tv/$/embed/howtouseconverter/c9827448d6ac7a74ecdb972c5cdf9ddaf648a28e" allowfullscreen></iframe>
-
-    <label for="file">Select Youtube Subscriptions</label>
-    <input type="file" id="subconv" class="PickFile">
-    <input type="button" id="go-button" value="GO" class="goButton">
-    <ul id="lbry-channel-list">
-    </ul>
-    <script type="text/javascript" src="content.js"></script>
+  <body style="background-color:#474747;">
+    <div class="container">
+      <iframe width="100%" height="400px" src="https://lbry.tv/$/embed/howtouseconverter/c9827448d6ac7a74ecdb972c5cdf9ddaf648a28e" allowfullscreen></iframe>
+      <div class="selectYtSubscriptions">Select Youtube Subscriptions</div>
+      <hr>
+      <input type="file" id="subconv" class="PickFile">
+      <hr>
+      <input type="button" id="go-button" value="All done!" class="goButton">
+      <ul id="lbry-channel-list">
+      </ul>
+      <script type="text/javascript" src="content.js"></script>
+    </div>
     
   </body>
 </html>

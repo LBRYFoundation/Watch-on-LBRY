@@ -1,33 +1,55 @@
-body {
-    width: 400px;
+.body {
+    display: block;
+    margin: auto;
+    padding: 10px;
+    width: 50%;
     text-align: center;
-    background-color: #191a1c;
-    color: whitesmoke;
-
-  left: 50%;
-  top: 50%;
+    margin-bottom: 15px;
+    border: 3px;
 }
 
 .container {
     display: block;
     text-align: center;
-    margin: 0 auto;
-    width: 80%;
+    margin: auto;
+    width: 50%;
     margin-bottom: 15px;
+    border: 3px;
+    padding: 10px;
 
 }
 
 .goButton {
+    background-color: transparent;
+    position: relative;
+    display: inline-block;
+    padding: 15px 30px;
+    color: teal;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    text-decoration: none;
+    font-size: 24px;
     border-radius: 5px;
-    background-color: #075656;
-    border: 4px solid #075656;
-    color: whitesmoke;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: transparent;
     font-weight: 400;
     padding: 4px 15px;
     margin-right: 25px;
     text-align: center;
+    width: 100%;
+    transition: 0.2s;
+    overflow: hidden;
+    margin-top: 90px;
 }
 
+.goButton:hover{
+    color: #075656;
+    background: teal;
+    box-shadow: 0 0px 10px teal, 0 0px 40px teal, 0 0 80px teal;
+    
+}
 
 .label {
     font-size: 1.1rem;
@@ -35,23 +57,15 @@ body {
     display: block;
 }
 
-.button {
-    padding: 15px 25px;
-    font-size: 24px;
+.selectYtSubscriptions{
+    color: teal;
+    font: 36px Tahoma, Helvetica, Arial, Sans-Serif;
+    text-shadow: 0px 2px 3px rgb(0, 0, 0);
     text-align: center;
-    cursor: pointer;
-    outline: none;
-    color: #fff;
-    background-color: #4CAF50;
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 9px #999;
-  }
-  
-  .button:hover {background-color: #3e8e41}
-  
-  .button:active {
-    background-color: #3e8e41;
-    box-shadow: 0 5px #666;
-    transform: translateY(4px);
-  }
+    margin: 90px;
+}
+
+.selectYtSubscriptions:hover{
+    text-shadow: 0px 2px 3px rgb(0, 255, 255);
+    transition: 0.2s;
+}
