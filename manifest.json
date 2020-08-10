@@ -7,6 +7,7 @@
     "https://invidio.us/channel/*",
     "https://invidio.us/watch?v=*",
     "https://api.lbry.com/*",
+    "https://lbry.tv/*",
     "tabs",
     "storage"
   ],
@@ -21,12 +22,11 @@
   "browser_action": {
     "default_title": "Watch on LBRY",
     "default_popup": "popup/popup.html"
-},
-      "web_accessible_resources": [
-        "popup.html",
-        "tools/YTtoLBRY.html"
-      ],
-
+  },
+  "web_accessible_resources": [
+    "popup.html",
+    "tools/YTtoLBRY.html"
+  ],
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
