@@ -5,25 +5,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (tab.url.match(/\b(https:\/\/lbry.tv|lbry:\/\/)/g)) {
       chrome.storage.local.get('redirect', ({redirect}) => {
         var redirectTo;
-
-        // If handler can be added for new lbry:// tabs, below code can be uncommented and merged
-
-        // if (redirect === "lbry.tv") {
-        //   console.error(tab.url);
-        //   let isChannel = tab.url.match(/^lbry:\/\/@[^^$#@;/"<>%{}|^~[\]`]+?#([a-z0-9]{40}|[a-z0-9])$/g);
-        //   let isClaim = tab.url.match(/^lbry:\/\/@[^^$#@;/"<>%{}|^~[\]`]+?#([a-z0-9]{40}|[a-z0-9])\/[^^$#@;/"<>%{}|^~[\]`]+?#([a-z0-9]{40}|[a-z0-9])$/g);
-
-        //   if (isChannel) {
-        //     let channelId = tab.url.match(/#[a-z0-9]+/g)[0].substr(1);
-        //     redirectTo = `https://lbry.tv/${tab.url.match(/@[^^$#@;/"<>%{}|^~[\]`]+?(?=#)/g)[0]}${channelId.length > 1 ? '#' : ':'}${channelId}`;
-        //   } else if (isClaim) {
-        //     let channelId = tab.url.match(/#[a-z0-9]+/g)[0].substr(1);
-        //     let claimId = tab.url.match(/[a-z0-9]+$/g)[0];
-        //     redirectTo = `https://lbry.tv/${tab.url.match(/@[^^$#@;/"<>%{}|^~[\]`]+?(?=#)/g)[0]}${channelId.length > 1 ? '#' : ':'}${channelId}/${tab.url.match(/[^^$#@;/"<>%{}|^~[\]`]+(?=#[a-z0-9]+$)/g)}${claimId.length > 1 ? '#' : ':'}${claimId}`;
-        //   }
-        //   console.error(redirectTo);
-        // }
-
         if (redirect === "app") {
           let isChannel = tab.url.match(/^(https|http):\/\/lbry.tv\/@([^$#@;/"<>%{}|^~[\]`])+?(#([a-z0-9]{40})|:[a-z0-9])$/g);
           let isClaim =  tab.url.match(/^(https|http):\/\/lbry.tv\/@([^$#@;/"<>%{}|^~[\]`])+?(#([a-z0-9]{40})|:[a-z0-9])\/([^$#@;/"<>%{}|^~[\]`])+?(#([a-z0-9]{40})|:[a-z0-9])$/g);
@@ -37,7 +18,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
         if (redirectTo) {
           chrome.tabs.update(tabId, { url: redirectTo + "?src=watch-on-lbry" });
-          if (redirect === "app") alert("Opened link in LBRY App!");
+          if (redirect === "app") {
+            alert("Opened link in LBRY App!"); // Better for UX since sometimes LBRY App doesn't take focus, if that is fixed, this can be removed
+
+            // Close tab if it lacks history and go back if it does
+            chrome.tabs.executeScript(tabId, {
+              code: `
+                if (window.history.length === 1) {
+                  window.close();
+                } else {
+                  window.history.back();
+                }`
+            });
+          }
         }
       });
       return;
