@@ -6,13 +6,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       chrome.storage.local.get('redirect', ({redirect}) => {
         var redirectTo;
         if (redirect === "app") {
-          let isChannel = tab.url.match(/^(https|http):\/\/lbry.tv\/@([^$#@;/"<>%{}|^~[\]`])+?(#([a-z0-9]{40})|:[a-z0-9])$/g);
-          let isClaim =  tab.url.match(/^(https|http):\/\/lbry.tv\/@([^$#@;/"<>%{}|^~[\]`])+?(#([a-z0-9]{40})|:[a-z0-9])\/([^$#@;/"<>%{}|^~[\]`])+?(#([a-z0-9]{40})|:[a-z0-9])$/g);
+          let isChannel = tab.url.match(/^(https|http):\/\/lbry.tv\/@([^?:$#@;/"<>%{}|^~[\]`])+?:[a-z0-9]{1,40}($|(?=\?))/g);
+          let isClaim = tab.url.match(/^(https|http):\/\/lbry.tv\/@([^?:$#@;/"<>%{}|^~[\]`])+?:[a-z0-9]{1,40}\/([^?:$#@;/"<>%{}|^~[\]`])+?:[a-z0-9]{1,40}($|(?=\?))/g);
 
           if (isChannel) {
-            redirectTo = `lbry://${tab.url.match(/@([^$#@;/"<>%{}|^~[\]`])+?(?=[#:])/g)[0]}#${tab.url.match(/#([a-z0-9]{40})|:[a-z0-9]$/g)[0].substr(1)}`;
+            redirectTo = `lbry://${tab.url.match(/@([^$#@;/"<>%{}|^~[\]`])+?(?=[#:])/g)[0]}#${tab.url.match(/#([a-z0-9]{40})|:[a-z0-9]($|(?=\?))/g)[0].substr(1)}`;
           } else if (isClaim) {
-            redirectTo = `lbry://${tab.url.match(/@([^$#@;/"<>%{}|^~[\]`])+?(?=[#:])/g)}#${tab.url.match(/(#([a-z0-9]{40})|:[a-z0-9])(?=\/([^$#@;/"<>%{}|^~[\]`])+?(#([a-z0-9]{40})|:[a-z0-9])$)/g)[0].substr(1)}${tab.url.match(/\/([^$#@;/"<>%{}|^~[\]`])+?(?=[#:])/g)[0]}#${tab.url.match(/(#([a-z0-9]{40})|:[a-z0-9])$/g)[0].substr(1)}`;
+            redirectTo = `lbry://${tab.url.match(/@([^$#@;/"<>%{}|^~[\]`])+?(?=[#:])/g)}#${tab.url.match(/(#([a-z0-9]{40})|:[a-z0-9])(?=\/([^$#@;/"<>%{}|^~[\]`])+?(#([a-z0-9]{40})|:[a-z0-9])($|(?=\?)))/g)[0].substr(1)}${tab.url.match(/\/([^$#@;/"<>%{}|^~[\]`])+?(?=[#:])/g)[0]}#${tab.url.match(/(#([a-z0-9]{40})|:[a-z0-9])($|(?=\?))/g)[0].substr(1)}`;
           }
         }
 
