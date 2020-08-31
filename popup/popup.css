@@ -33,8 +33,6 @@ body {
     border: 4px solid #075656;
     color: whitesmoke;
     font-weight: 400;
-    padding: 4px 15px;
-    margin-right: 25px;
     text-align: center;
 }
 
@@ -46,7 +44,7 @@ button {
     color: whitesmoke;
     font-weight: 400;
     padding: 4px 15px;
-    margin-right: 25px;
+    
 }
 .btn2 {
     border-radius: 5px;
@@ -54,8 +52,7 @@ button {
     border: 4px solid #e33505;
     color: whitesmoke;
     font-weight: 400;
-    padding: 4px 15px;
-    margin-right: 25px;
+    text-align: center;
 }
 button.active {
     border: 4px solid teal;
