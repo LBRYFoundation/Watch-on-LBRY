@@ -13,6 +13,12 @@ body {
     margin-bottom: 15px;
 }
 
+.center p {
+    line-height: 1.5;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
 .container2 {
     display: block;
     text-align: center;
@@ -37,6 +43,15 @@ button {
     border-radius: 5px;
     background-color: #075656;
     border: 4px solid #075656;
+    color: whitesmoke;
+    font-weight: 400;
+    padding: 4px 15px;
+    margin-right: 25px;
+}
+.btn2 {
+    border-radius: 5px;
+    background-color: #e33505;
+    border: 4px solid #e33505;
     color: whitesmoke;
     font-weight: 400;
     padding: 4px 15px;
