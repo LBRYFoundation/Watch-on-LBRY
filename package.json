@@ -1,0 +1,27 @@
+{
+  "name": "watch-on-lbry",
+  "version": "1.5.4",
+  "license": "GPL-3.0",
+  "scripts": {
+    "build:assets": "cpx 'src/**/*.{json,png}' dist/",
+    "watch:assets": "cpx --watch -v 'src/**/*.{json,png}' dist/",
+    "build:parcel": "cross-env NODE_ENV=production parcel build --no-source-maps 'src/scripts/*.{js,ts}' 'src/**/*.html'",
+    "watch:parcel": "parcel watch --no-hmr --no-source-maps 'src/scripts/*.{js,ts}' 'src/**/*.html'",
+    "build": "npm-run-all -l -p build:parcel build:assets",
+    "watch": "npm-run-all -l -p watch:parcel watch:assets",
+    "start:chrome": "web-ext run -t chromium --source-dir ./dist",
+    "start:firefox": "web-ext run --source-dir ./dist"
+  },
+  "browserslist": [
+    ">1%",
+    "not ie > 0"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "cpx": "^1.5.0",
+    "cross-env": "^7.0.2",
+    "npm-run-all": "^4.1.5",
+    "parcel-bundler": "^1.12.4",
+    "web-ext": "^5.2.0"
+  }
+}
