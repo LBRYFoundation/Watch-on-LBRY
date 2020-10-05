@@ -54,7 +54,9 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       } else if (redirect === "app") {
         newUrl = `lbry://${title.replace(/^lbry:\/\//, "")}`;
       }
-      chrome.tabs.update(tabId, { url: newUrl });
+      chrome.tabs.executeScript(tabId, {
+        code: `location.replace("${newUrl}")`
+      });
     });
   });
 });
