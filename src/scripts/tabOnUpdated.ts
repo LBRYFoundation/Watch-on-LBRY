@@ -1,4 +1,5 @@
 import { getSettingsAsync, redirectDomains } from "../common/settings";
+import { ytService } from "../common/yt";
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, { url: tabUrl }) => {
   const { enabled, redirect } = await getSettingsAsync('enabled', 'redirect');
@@ -37,19 +38,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, { url: tabUrl }) => 
     }
     return;
   }
-  const { id, type } = getId(tabUrl);
-  if (!id) return;
-
-  const url = `https://api.lbry.com/yt/resolve?${type}_ids=${id}`;
-  const response = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
-  const json = await response.json();
-  console.log(json);
-  const title = json.data[`${type}s`][id];
+  const descriptor = ytService.getId(tabUrl);
+  if (!descriptor) return;
+  const title = (await ytService.resolveById(descriptor))[0]
   if (!title) return;
   console.log(title);
 
-
-  console.log(redirect);
   let newUrl;
   if (redirect === "lbry.tv") {
     newUrl = `${urlPrefix}${title.replace(/^lbry:\/\//, "").replace(/#/g, ":")}?src=watch-on-lbry`;
@@ -58,26 +52,3 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, { url: tabUrl }) => 
   }
   chrome.tabs.update(tabId, { url: newUrl });
 });
-
-function getId(url) {
-  const videoId = getVideoId(url);
-  if (videoId) return { id: videoId, type: "video" };
-  const channelId = getChannelId(url);
-  if (channelId) return { id: channelId, type: "channel" };
-  return {}; // Equivalent of returning null
-}
-
-function getVideoId(url) {
-  const regex = /watch\/?\?.*v=([^\s&]*)/;
-  const match = url.match(regex);
-  return match ? match[1] : null; // match[1] is the videoId
-}
-
-function getChannelId(url) {
-  const regex = /channel\/([^\s?]*)/;
-  const match = url.match(regex);
-  return match ? match[1] : null; // match[1] is the channelId
-}
-
-function getNewUrl(title) {
-}
