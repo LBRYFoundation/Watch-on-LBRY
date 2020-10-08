@@ -7,12 +7,28 @@ A plugin for web browsers that automatically checks whether a YouTube video or c
 
 [![Get on Firefox](https://addons.cdn.mozilla.net/static/img/addons-buttons/AMO-button_1.png)](https://addons.mozilla.org/en/firefox/addon/watch-on-lbry/?src=search) [![Get on Chrome](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/watch-on-lbry/jjmbbhopnjdjnpceiecihldbhibchgek)
 
-## For Chrome:
+## Build
+
+From the root of the project
+
+```bash
+$ npm install
+$ npm run watch
+```
+
+Then, either manually install it for your browser or, from another terminal invoke:
+
+```bash
+$ npm run start:chrome
+$ npm run start:firefox # or, if you'd prefer firefox
+```
+
+### Manual Install for Chrome:
 Visit ```chrome://extensions``` (via omnibox or menu -> Tools -> Extensions).
 Enable Developer mode by ticking the checkbox in the upper-right corner.
 Click on the "Load unpacked extension..." button.
 Select the directory containing your unpacked extension.
-## For Firefox
+### Manual Install for Firefox
 To install an extension temporarily:
 
 -   open Firefox
@@ -37,9 +53,9 @@ Please make sure to update tests as appropriate.
 
 ## Support
 
-If you want you can donate me with crypto :)  
+If you want you can donate me with crypto :)
 
-LBC : bXeBKSjPygVbvkBH79Bp6CxiyeRC2hpVQ3   
+LBC : bXeBKSjPygVbvkBH79Bp6CxiyeRC2hpVQ3
 
 
 This will help future plugin development :)
