@@ -31,7 +31,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, { url: tabUrl }) => 
 
   if (!enabled || !changeInfo.url || !tabUrl) return;
 
-  const url = tabUrl.match(/\b(https:\/\/lbry.tv|lbry:\/\/)/g) ? appRedirectUrl(tabUrl, { encode: true })
+  const url = redirect === 'app' && tabUrl.match(/\b(https:\/\/lbry.tv|lbry:\/\/)/g) ? appRedirectUrl(tabUrl, { encode: true })
     : await resolveYT(tabUrl);
 
   if (!url) return;

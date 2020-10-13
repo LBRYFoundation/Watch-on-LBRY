@@ -1,7 +1,7 @@
 import { chunk, groupBy, pickBy } from 'lodash';
 
 const LBRY_API_HOST = 'https://api.lbry.com';
-const QUERY_CHUNK_SIZE = 325;
+const QUERY_CHUNK_SIZE = 300;
 
 interface YtResolverResponse {
   success: boolean
@@ -92,6 +92,7 @@ export const ytService = {
     }));
 
     return responses.filter((rsp): rsp is YtResolverResponse => !!rsp)
-      .flatMap(rsp => [...Object.values(rsp.data.videos || {}), ...Object.values(rsp.data.channels || {})]);  // flatten the results into a 1D array
+      .flatMap(rsp => [...Object.values(rsp.data.videos || {}), ...Object.values(rsp.data.channels || {})])  // flatten the results into a 1D array
+      .filter(s => s);
   },
 };
