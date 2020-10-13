@@ -11,7 +11,7 @@ A plugin for web browsers that automatically checks whether a YouTube video or c
 
 From the root of the project
 
-For Producstion
+For Production
 ```bash
 $ npm install
 $ npm run build
