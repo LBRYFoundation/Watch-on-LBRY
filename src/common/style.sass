@@ -1,0 +1,33 @@
+$background-color: #191a1c !default
+$text-color: whitesmoke !default
+
+$btn-color: #075656 !default
+$btn-select: teal !default
+
+body
+  width: 400px
+  text-align: center
+  background-color: $background-color
+  color: $text-color
+
+.container
+  display: block
+  text-align: center
+  margin: 0 32px
+  margin-bottom: 15px
+
+.button
+  border-radius: 5px
+  background-color: $btn-color
+  border: 4px solid $btn-color
+  color: $text-color
+  font-size: 0.8rem
+  font-weight: 400
+  padding: 4px 15px
+  text-align: center
+
+  &.active
+    border: 4px solid $btn-select
+
+  &:focus
+    outline: none

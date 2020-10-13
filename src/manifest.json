@@ -13,8 +13,7 @@
   ],
   "background": {
     "scripts": [
-      "scripts/runtimeOnStartup.js",
-      "scripts/storageOnChanged.js",
+      "scripts/storageSetup.js",
       "scripts/tabOnUpdated.js"
     ],
     "persistent": false
