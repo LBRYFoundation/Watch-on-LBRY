@@ -10,7 +10,8 @@
     "build": "npm-run-all -l -p build:parcel build:assets",
     "watch": "npm-run-all -l -p watch:parcel watch:assets",
     "start:chrome": "web-ext run -t chromium --source-dir ./dist",
-    "start:firefox": "web-ext run --source-dir ./dist"
+    "start:firefox": "web-ext run --source-dir ./dist",
+    "test": "jest"
   },
   "browserslist": [
     ">1%",
@@ -18,10 +19,13 @@
   ],
   "dependencies": {},
   "devDependencies": {
+    "@babel/preset-typescript": "^7.10.4",
     "@types/chrome": "0.0.124",
     "@types/lodash": "^4.14.162",
     "cpx": "^1.5.0",
     "cross-env": "^7.0.2",
+    "@types/jest": "^26.0.14",
+    "jest": "^26.5.3",
     "lodash": "^4.17.20",
     "npm-run-all": "^4.1.5",
     "parcel-bundler": "^1.12.4",
