@@ -11,6 +11,14 @@ A plugin for web browsers that automatically checks whether a YouTube video or c
 
 From the root of the project
 
+For Producstion
+```bash
+$ npm install
+$ npm run build
+$ npx web-ext build --source-dir ./dist  # optional, to create the zip file from the dist directory
+```
+
+For Development
 ```bash
 $ npm install
 $ npm run watch
