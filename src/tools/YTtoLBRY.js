@@ -1,3 +1,5 @@
+import { redirectDomains } from '../common/settings'
+
 console.log("YouTube To LBRY finder!");
 var ytChannelsString = "";
 var lbryChannelsString = "";
@@ -48,7 +50,7 @@ function lbryAPIrequest() {
     while (lbryChannelList.lastElementChild) {
         lbryChannelList.removeChild(lbryChannelList.lastElementChild);
     }
-    
+
     chrome.storage.local.get('redirect', redirect => {
         validateChannels(toCheck, redirect.redirect, []);
     });
@@ -60,7 +62,7 @@ function validateChannels(channels, redirect, validatedChannels) {
     for (let i = 0; i < channels.length && i < requestSize; i++) {
         channelsString += `${channelsString.length > 0 ? ',' : ''}${channels[i]}`
     }
-    request = new XMLHttpRequest(); 
+    request = new XMLHttpRequest();
     request.open("GET", `https://api.lbry.com/yt/resolve?channel_ids={${channelsString}}`);
     request.send();
     request.onload = () => {
@@ -69,7 +71,7 @@ function validateChannels(channels, redirect, validatedChannels) {
             Object.keys(testChannels).map((testChannelKey) => {
                 let testChannel = testChannels[testChannelKey];
                 if (testChannel != null) {
-                    let link = `${redirect === "lbry.tv" ? "https://lbry.tv/" : "lbry://"}${testChannel}`;
+                    let link = redirectDomains[redirect].prefix + testChannel;
                     validatedChannels.push(link);
                     let li = document.createElement('li');
                     let a = document.createElement('a');
