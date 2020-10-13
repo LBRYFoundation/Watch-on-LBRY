@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS: LbrySettings = { enabled: true, redirect: 'lbry.t
 
 export const redirectDomains = {
   'lbry.tv': { prefix: 'https://lbry.tv/', display: 'lbry.tv' },
+  odysee: { prefix: 'https://odysee.com/', display: 'odysee' },
   app: { prefix: 'lbry://', display: 'App' },
 };
 
