@@ -1,4 +1,6 @@
-import { chunk, groupBy, pickBy } from 'lodash';
+import chunk from 'lodash/chunk';
+import groupBy from 'lodash/groupBy';
+import pickBy from 'lodash/pickBy';
 
 const LBRY_API_HOST = 'https://api.lbry.com';
 const QUERY_CHUNK_SIZE = 300;

@@ -1,7 +1,8 @@
 import { h, render } from 'preact';
 
 import ButtonRadio, { SelectionOption } from '../common/components/ButtonRadio';
-import { redirectDomains, useLbrySettings } from '../common/settings';
+import { redirectDomains } from '../common/settings';
+import { useLbrySettings } from '../common/useSettings';
 
 import './popup.sass';
 
