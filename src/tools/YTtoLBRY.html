@@ -1,22 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
-    <link rel="stylesheet" href="YTtoLBRY.css" />
     <meta charset="utf-8">
-    <title>Subscribtion Converter</title>
-    <script src="YTtoLBRY.ts" charset="utf-8"></script>
+    <title>Subscription Converter</title>
+    <link rel="stylesheet" href="YTtoLBRY.css" />
+    <script src="YTtoLBRY.tsx" charset="utf-8" defer></script>
   </head>
 
   <body style="background-color:#474747;">
     <div class="container">
-      <iframe width="100%" height="400px" src="https://lbry.tv/$/embed/howtouseconverter/c9827448d6ac7a74ecdb972c5cdf9ddaf648a28e" allowfullscreen></iframe>
-      <div class="selectYtSubscriptions">Select Youtube Subscriptions</div>
-      <hr>
-      <input type="file" id="subconv" class="PickFile">
-      <hr>
-      <input type="button" id="go-button" value="Start Conversion!" class="goButton">
-      <ul id="lbry-channel-list">
-      </ul>
+      <div id='root' />
     </div>
   </body>
 </html>
