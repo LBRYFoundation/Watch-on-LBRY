@@ -106,3 +106,8 @@ chrome.runtime.onMessage.addListener(async (req: { url: string }) => {
   if (!req.url) return;
   handle(new URL(req.url));
 });
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'local' || !changes.redirect) return;
+  handle(new URL(location.href))
+});

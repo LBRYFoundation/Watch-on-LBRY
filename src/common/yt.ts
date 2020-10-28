@@ -89,7 +89,7 @@ export const ytService = {
         video_ids: groups['video']?.map(s => s.id).join(','),
         channel_ids: groups['channel']?.map(s => s.id).join(','),
       }));
-      return fetch(`${LBRY_API_HOST}/yt/resolve?${params}`)
+      return fetch(`${LBRY_API_HOST}/yt/resolve?${params}`, {cache: 'force-cache'})
         .then(rsp => rsp.ok ? rsp.json() : null);
     }));
 
