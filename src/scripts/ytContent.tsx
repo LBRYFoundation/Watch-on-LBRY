@@ -65,7 +65,12 @@ async function findMountPoint(): Promise<HTMLDivElement | void> {
 function WatchOnLbryButton({ url }: { url?: string }) {
   if (!url) return null;
   return <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-    <a href={url} onClick={pauseVideo} role='button' children='Watch on Lbry'
+    <a href={url} onClick={pauseVideo} role='button'
+      children={<div>
+        <img src={chrome.runtime.getURL('icons/lbry-logo.svg')} height={10} width={14}
+          style={{ marginRight: 12, transform: 'scale(1.75)' }} />
+        Watch on LBRY
+        </div>}
       style={{
         borderRadius: '2px',
         backgroundColor: '#075656',
