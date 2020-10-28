@@ -2,14 +2,23 @@
   "name": "Watch on LBRY",
   "version": "1.6.0",
   "permissions": [
-    "https://www.youtube.com/watch?v=*",
-    "https://www.youtube.com/channel/*",
+    "https://www.youtube.com/",
     "https://invidio.us/channel/*",
     "https://invidio.us/watch?v=*",
     "https://api.lbry.com/*",
     "https://lbry.tv/*",
     "tabs",
     "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "scripts/ytContent.js"
+      ]
+    }
   ],
   "background": {
     "scripts": [

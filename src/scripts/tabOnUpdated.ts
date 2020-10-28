@@ -1,43 +1,29 @@
-import { appRedirectUrl, parseProtocolUrl } from '../common/lbry-url';
-import { getSettingsAsync, redirectDomains } from '../common/settings';
-import { ytService } from '../common/yt';
+import { appRedirectUrl } from '../common/lbry-url';
+import { getSettingsAsync } from '../common/settings';
 
-function openApp(tabId: number, url: string) {
+// handles lbry.tv -> lbry app redirect
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, { url: tabUrl }) => {
+  const { enabled, redirect } = await getSettingsAsync('enabled', 'redirect');
+  if (!enabled || redirect !== 'app' || !changeInfo.url || !tabUrl?.startsWith('https://lbry.tv/')) return;
+
+  const url = appRedirectUrl(tabUrl, { encode: true });
+  if (!url) return;
   chrome.tabs.update(tabId, { url });
   alert('Opened link in LBRY App!'); // Better for UX since sometimes LBRY App doesn't take focus, if that is fixed, this can be removed
-  // Close tab if it lacks history and go back if it does
   chrome.tabs.executeScript(tabId, {
     code: `if (window.history.length === 1) {
             window.close();
           } else {
             window.history.back();
-          }`
+          }
+          document.querySelectorAll('video').forEach(v => v.pause());
+          `
   });
-}
+});
 
-async function resolveYT(ytUrl: string) {
-  const descriptor = ytService.getId(ytUrl);
-  if (!descriptor) return; // can't parse YT url; may not be one
-
-  const lbryProtocolUrl: string | null = await ytService.resolveById(descriptor).then(a => a[0]);
-  const segments = parseProtocolUrl(lbryProtocolUrl || '', { encode: true });
-  if (segments.length === 0) return;
-  return segments.join('/');
-}
-
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, { url: tabUrl }) => {
-  const { enabled, redirect } = await getSettingsAsync('enabled', 'redirect');
-  const urlPrefix = redirectDomains[redirect].prefix;
-
-  if (!enabled || !changeInfo.url || !tabUrl) return;
-
-  const url = redirect === 'app' && tabUrl.match(/\b(https:\/\/lbry.tv|lbry:\/\/)/g) ? appRedirectUrl(tabUrl, { encode: true })
-    : await resolveYT(tabUrl);
-
-  if (!url) return;
-  if (redirect === 'app') {
-    openApp(tabId, urlPrefix + url);
-    return;
-  }
-  chrome.tabs.executeScript(tabId, { code: `location.replace("${urlPrefix + url}")` });
+// relay youtube link changes to the content script
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, { url }) => {
+  if (!changeInfo.url || !url ||
+    !(url.startsWith('https://www.youtube.com/watch?v=') || url.startsWith('https://www.youtube.com/channel/'))) return;
+  chrome.tabs.sendMessage(tabId, { url });
 });
