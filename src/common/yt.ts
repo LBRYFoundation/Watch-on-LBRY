@@ -1,4 +1,6 @@
-import { chunk, groupBy, pickBy } from 'lodash';
+import chunk from 'lodash/chunk';
+import groupBy from 'lodash/groupBy';
+import pickBy from 'lodash/pickBy';
 
 const LBRY_API_HOST = 'https://api.lbry.com';
 const QUERY_CHUNK_SIZE = 300;
@@ -87,7 +89,7 @@ export const ytService = {
         video_ids: groups['video']?.map(s => s.id).join(','),
         channel_ids: groups['channel']?.map(s => s.id).join(','),
       }));
-      return fetch(`${LBRY_API_HOST}/yt/resolve?${params}`)
+      return fetch(`${LBRY_API_HOST}/yt/resolve?${params}`, {cache: 'force-cache'})
         .then(rsp => rsp.ok ? rsp.json() : null);
     }));
 
