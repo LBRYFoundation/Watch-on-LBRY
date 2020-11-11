@@ -5,16 +5,19 @@ import { getSettingsAsync, redirectDomains } from '../common/settings';
 import { YTDescriptor, getFileContent, ytService } from '../common/yt';
 
 /**
- * Parses OPML file and queries the API for lbry channels
+ * Parses the subscription file and queries the API for lbry channels
  *
  * @param file to read
  * @returns a promise with the list of channels that were found on lbry
  */
-async function lbryChannelsFromOpml(file: File): Promise<string[]> {
-  const lbryUrls = await ytService.resolveById(...ytService.readOpml(await getFileContent(file))
-    .map(url => ytService.getId(url))
-    .filter((id): id is YTDescriptor => !!id));
+async function lbryChannelsFromFile(file: File) {
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  const content = await getFileContent(file);
 
+  const ids: YTDescriptor[] = (ext === 'xml' || ext == 'opml' ? ytService.readOpml(content) : ytService.readJson(content))
+    .map(id => ({ id, type: 'channel' }));
+
+  const lbryUrls = await ytService.resolveById(...ids);
   const { redirect } = await getSettingsAsync('redirect');
   const urlPrefix = redirectDomains[redirect].prefix;
   return lbryUrls.map(channel => urlPrefix + channel);
@@ -24,6 +27,7 @@ function YTtoLBRY() {
   const [file, setFile] = useState(null as File | null);
   const [lbryChannels, setLbryChannels] = useState([] as string[]);
   const [isLoading, setLoading] = useState(false);
+
   return <>
     <iframe width="100%" height="400px" allowFullScreen
       src="https://lbry.tv/$/embed/howtouseconverter/c9827448d6ac7a74ecdb972c5cdf9ddaf648a28e" />
@@ -35,7 +39,7 @@ function YTtoLBRY() {
     <input type="button" value="Start Conversion!" class="goButton" disabled={!file || isLoading} onClick={async () => {
       if (!file) return;
       setLoading(true);
-      setLbryChannels(await lbryChannelsFromOpml(file));
+      setLbryChannels(await lbryChannelsFromFile(file));
       setLoading(false);
     }} />
     <ul>
