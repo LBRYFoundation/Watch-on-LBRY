@@ -2,7 +2,7 @@ import { Fragment, h, render } from 'preact';
 import { useState } from 'preact/hooks';
 
 import { getSettingsAsync, redirectDomains } from '../common/settings';
-import { YTDescriptor, getFileContent, ytService } from '../common/yt';
+import { getFileContent, ytService } from '../common/yt';
 
 /**
  * Parses the subscription file and queries the API for lbry channels
@@ -14,10 +14,8 @@ async function lbryChannelsFromFile(file: File) {
   const ext = file.name.split('.').pop()?.toLowerCase();
   const content = await getFileContent(file);
 
-  const ids: YTDescriptor[] = (ext === 'xml' || ext == 'opml' ? ytService.readOpml(content) : ytService.readJson(content))
-    .map(id => ({ id, type: 'channel' }));
-
-  const lbryUrls = await ytService.resolveById(...ids);
+  const ids = new Set((ext === 'xml' || ext == 'opml' ? ytService.readOpml(content) : ytService.readJson(content)))
+  const lbryUrls = await ytService.resolveById(...Array.from(ids).map(id => ({ id, type: 'channel' } as const)));
   const { redirect } = await getSettingsAsync('redirect');
   const urlPrefix = redirectDomains[redirect].prefix;
   return lbryUrls.map(channel => urlPrefix + channel);
