@@ -1,4 +1,4 @@
-import { Fragment, h, render } from 'preact';
+import { Fragment, h, JSX, render } from 'preact';
 import { useState } from 'preact/hooks';
 
 import { getSettingsAsync, redirectDomains } from '../common/settings';
@@ -21,29 +21,39 @@ async function lbryChannelsFromFile(file: File) {
   return lbryUrls.map(channel => urlPrefix + channel);
 }
 
-function YTtoLBRY() {
+function ConversionCard({ onSelect }: { onSelect(file: File): Promise<void> | void }) {
   const [file, setFile] = useState(null as File | null);
-  const [lbryChannels, setLbryChannels] = useState([] as string[]);
   const [isLoading, setLoading] = useState(false);
 
-  return <>
-    <iframe width="100%" height="400px" allowFullScreen
-      src="https://lbry.tv/$/embed/howtouseconverter/c9827448d6ac7a74ecdb972c5cdf9ddaf648a28e" />
-    <div class="selectYtSubscriptions">Select Youtube Subscriptions</div>
-    <hr />
-    <input type="file" className="PickFile" onChange={e =>
-      setFile(e.currentTarget.files?.length ? e.currentTarget.files[0] : null)} />
-    <hr />
-    <input type="button" value="Start Conversion!" class="goButton" disabled={!file || isLoading} onClick={async () => {
+  return <div className='ConversionCard'>
+    <h2>Select YouTube Subscriptions</h2>
+    <div style={{ marginBottom: 10 }}>
+      <input type='file' onChange={e => setFile(e.currentTarget.files?.length ? e.currentTarget.files[0] : null)} />
+    </div>
+    <button class='btn btn-primary' children='Start Conversion!' disabled={!file || isLoading} onClick={async () => {
       if (!file) return;
       setLoading(true);
-      setLbryChannels(await lbryChannelsFromFile(file));
+      await onSelect(file);
       setLoading(false);
     }} />
-    <ul>
-      {lbryChannels.map((x, i) => <li key={i} children={<a href={x} children={x} />} />)}
-    </ul>
-  </>;
+  </div>
+}
+
+function YTtoLBRY() {
+  const [lbryChannels, setLbryChannels] = useState([] as string[]);
+
+  return <div className='YTtoLBRY'>
+    <div className='Conversion'>
+      <ConversionCard onSelect={async file => setLbryChannels(await lbryChannelsFromFile(file))} />
+      <ul>
+        {lbryChannels.map((x, i) => <li key={i} children={<a href={x} children={x} />} />)}
+      </ul>
+    </div>
+    <div className='ConversionHelp'>
+      <iframe width='712px' height='400px' allowFullScreen
+        src='https://lbry.tv/$/embed/howtouseconverter/c9827448d6ac7a74ecdb972c5cdf9ddaf648a28e' />
+    </div>
+  </div>
 }
 
 render(<YTtoLBRY />, document.getElementById('root')!);
