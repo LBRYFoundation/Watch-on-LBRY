@@ -6,12 +6,24 @@ const LBRY_API_HOST = 'https://api.lbry.com';
 const QUERY_CHUNK_SIZE = 300;
 
 interface YtResolverResponse {
-  success: boolean
-  error: object | null
+  success: boolean;
+  error: object | null;
   data: {
-    videos?: Record<string, string>
-    channels?: Record<string, string>
-  }
+    videos?: Record<string, string>;
+    channels?: Record<string, string>;
+  };
+}
+
+interface YtSubscription {
+  id: string;
+  etag: string;
+  title: string;
+  snippet: {
+    description: string;
+    resourceId: {
+      channelId: string;
+    };
+  };
 }
 
 /**
@@ -41,13 +53,27 @@ export const ytService = {
    * Reads the array of YT channels from an OPML file
    *
    * @param opmlContents an opml file as as tring
-   * @returns the channel URLs
+   * @returns the channel IDs
    */
   readOpml(opmlContents: string): string[] {
     const opml = new DOMParser().parseFromString(opmlContents, 'application/xml');
+
     return Array.from(opml.querySelectorAll('outline > outline'))
       .map(outline => outline.getAttribute('xmlUrl'))
+      .filter((url): url is string => !!url)
+      .map(url => ytService.getChannelId(url))
       .filter((url): url is string => !!url); // we don't want it if it's empty
+  },
+
+  /**
+   * Reads an array of YT channel IDs from the YT subscriptions JSON file
+   *
+   * @param jsonContents a JSON file as a string
+   * @returns the channel IDs
+   */
+  readJson(jsonContents: string): string[] {
+    const subscriptions: YtSubscription[] = JSON.parse(jsonContents);
+    return subscriptions.map(sub => sub.snippet.resourceId.channelId);
   },
 
   /**
@@ -89,7 +115,7 @@ export const ytService = {
         video_ids: groups['video']?.map(s => s.id).join(','),
         channel_ids: groups['channel']?.map(s => s.id).join(','),
       }));
-      return fetch(`${LBRY_API_HOST}/yt/resolve?${params}`, {cache: 'force-cache'})
+      return fetch(`${LBRY_API_HOST}/yt/resolve?${params}`, { cache: 'force-cache' })
         .then(rsp => rsp.ok ? rsp.json() : null);
     }));
 

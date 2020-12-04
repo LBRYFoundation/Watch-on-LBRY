@@ -1,11 +1,20 @@
-.body {
-    display: block;
-    margin: auto;
-    padding: 10px;
-    width: 50%;
-    text-align: center;
-    margin-bottom: 15px;
-    border: 3px;
+body {
+    --color-text: whitesmoke;
+    --color-backround: rgb(28, 31, 34);
+    --color-card: #2a2e32;
+    --color-primary: rgb(43, 187, 144);
+
+    background-color: var(--color-backround);
+    color: var(--color-text);
+    font-size: 1rem;
+}
+
+a {
+    color: var(--color-primary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 10px;
 }
 
 .container {
@@ -19,53 +28,61 @@
 
 }
 
-.goButton {
-    background-color: transparent;
-    position: relative;
-    display: inline-block;
-    padding: 15px 30px;
-    color: teal;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    text-decoration: none;
-    font-size: 24px;
-    border-radius: 5px;
+.YTtoLBRY {
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
+    flex-direction: row;
+}
+
+.Conversion {
+    margin: 1rem;
+    width: 45em;
+}
+
+.ConversionHelp {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    border: transparent;
-    font-weight: 400;
-    padding: 4px 15px;
-    margin-right: 25px;
-    text-align: center;
-    width: 100%;
-    transition: 0.2s;
-    overflow: hidden;
-    margin-top: 90px;
 }
 
-.goButton:hover{
-    color: #075656;
-    background: teal;
-    box-shadow: 0 0px 10px teal, 0 0px 40px teal, 0 0 80px teal;
-    
+.ConversionCard {
+    box-shadow: 0 0 0 1px rgba(16,22,26,.1), 0 1px 1px rgba(16,22,26,.2), 0 2px 6px rgba(16,22,26,.2);
+    border-radius: 5px;
+    background-color: var(--color-card);
+    padding: 20px;
 }
 
-.label {
-    font-size: 1.1rem;
-    margin: 15px auto;
-    display: block;
+.btn {
+    color: var(--color-text);
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 14px;
+    min-width: 30px;
+    min-height: 30px;
 }
 
-.selectYtSubscriptions{
-    color: teal;
-    font: 36px Tahoma, Helvetica, Arial, Sans-Serif;
-    text-shadow: 0px 2px 3px rgb(0, 0, 0);
-    text-align: center;
-    margin: 90px;
+.btn.btn-primary {
+    background-color: var(--color-primary);
 }
 
-.selectYtSubscriptions:hover{
-    text-shadow: 0px 2px 3px rgb(0, 255, 255);
-    transition: 0.2s;
+.btn:disabled {
+    background-color: rgba(200, 200, 200, .5);
+    color: rgba(90, 90, 90, .6);
+    cursor: not-allowed;
+}
+
+@media (max-width: 1400px) {
+    .YTtoLBRY {
+        flex-direction: column;
+    }
+    .Conversion {
+        width: auto;
+    }
 }
