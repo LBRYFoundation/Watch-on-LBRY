@@ -1,7 +1,11 @@
 ![Logo](https://cdn.lbryplayer.xyz/api/v3/streams/free/Cover-Image/2abac7db775191738dcb7746e8a984403a779201/5d4c1d?download=true)
 # Watch on LBRY
 
-A plugin for web browsers that automatically checks whether a YouTube video or channel is on LBRY. If it is, it redirects you to LBRY to watch it there.
+A plugin for web browsers that brings more utility for LBRY Protocol by allowing you to find people you watch on YouTube that are availible on LBRY.tv/Odysee/Desktop App and other LBRY Protocol based apps/websites, allows you to easly check your subscribtion list and much more!
+
+# Privacy
+
+This plugin is using LBRY Inc YouTube Sync API to check if video fot synchronized with LBRY Platform. For more informations read LBRY Inc Privacy Policy at [here](https://lbry.com/privacypolicy)
 
 ## Installation
 
