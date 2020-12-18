@@ -1,4 +1,4 @@
-
+![Logo](https://cdn.lbryplayer.xyz/api/v3/streams/free/Cover-Image/2abac7db775191738dcb7746e8a984403a779201/5d4c1d?download=true)
 # Watch on LBRY
 
 A plugin for web browsers that automatically checks whether a YouTube video or channel is on LBRY. If it is, it redirects you to LBRY to watch it there.
