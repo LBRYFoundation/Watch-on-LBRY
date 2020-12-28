@@ -34,7 +34,8 @@
   "web_accessible_resources": [
     "popup.html",
     "tools/YTtoLBRY.html",
-    "icons/lbry-logo.svg"
+    "icons/lbry-logo.svg",
+    "icons/odysee-logo.svg"
   ],
   "icons": {
     "16": "icons/icon16.png",
