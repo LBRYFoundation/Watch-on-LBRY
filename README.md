@@ -9,7 +9,8 @@ This plugin is using LBRY Inc YouTube Sync API to check if video fot synchronize
 
 ## Installation
 
-[![Get on Firefox](https://addons.cdn.mozilla.net/static/img/addons-buttons/AMO-button_1.png)](https://addons.mozilla.org/en/firefox/addon/watch-on-lbry/?src=search) [![Get on Chrome](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)](https://chrome.google.com/webstore/detail/watch-on-lbry/jjmbbhopnjdjnpceiecihldbhibchgek)
+[![Get it on Firefox](doc/img/AMO-button_1.png)](https://addons.mozilla.org/en/firefox/addon/watch-on-lbry/?src=search)
+[![Get it on Chrome](doc/img/chrome-small-border.png)](https://chrome.google.com/webstore/detail/watch-on-lbry/jjmbbhopnjdjnpceiecihldbhibchgek)
 
 ## Build
 
@@ -61,7 +62,7 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 Please make sure to update tests as appropriate.
 
 ## License
-[GPL-3.0 License](https://choosealicense.com/licenses/gpl-3.0/)
+[GPL-3.0 License](LICENSE)
 
 ## Support
 
