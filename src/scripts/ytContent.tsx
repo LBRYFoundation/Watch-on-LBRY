@@ -26,10 +26,10 @@ interface ButtonSettings {
 }
 
 const buttonSettings: Record<LbrySettings['redirect'], ButtonSettings> = {
-  app: { text: 'Watch on LBRY', icon: chrome.runtime.getURL('icons/lbry-logo.svg') },
-  'lbry.tv': { text: 'Watch on LBRY', icon: chrome.runtime.getURL('icons/lbry-logo.svg') },
+  app: { text: 'Watch on LBRY', icon: chrome.runtime.getURL('icons/lbry/lbry-logo.svg') },
+  'lbry.tv': { text: 'Watch on LBRY', icon: chrome.runtime.getURL('icons/lbry/lbry-logo.svg') },
   odysee: {
-    text: 'Watch on Odysee', icon: chrome.runtime.getURL('icons/odysee-logo.svg'),
+    text: 'Watch on Odysee', icon: chrome.runtime.getURL('icons/lbry/odysee-logo.svg'),
     style: { backgroundColor: '#1e013b' },
   },
 };

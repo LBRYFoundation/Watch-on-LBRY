@@ -1,4 +1,4 @@
-![Logo](https://cdn.lbryplayer.xyz/api/v3/streams/free/Cover-Image/2abac7db775191738dcb7746e8a984403a779201/5d4c1d?download=true)
+![Logo](src/icons/wol/default-transparent.svg)
 # Watch on LBRY
 
 A plugin for web browsers that brings more utility for LBRY Protocol by allowing you to find people you watch on YouTube that are availible on LBRY.tv/Odysee/Desktop App and other LBRY Protocol based apps/websites, allows you to easly check your subscribtion list and much more!
