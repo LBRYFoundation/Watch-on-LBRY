@@ -1,4 +1,4 @@
-import { h, render } from 'preact';
+import { h, JSX, render } from 'preact';
 
 import { parseProtocolUrl } from '../common/lbry-url';
 import { getSettingsAsync, LbrySettings, redirectDomains } from '../common/settings';
@@ -13,10 +13,26 @@ interface UpdaterOptions {
 
 interface UpdateContext {
   descriptor: YTDescriptor
+  /** LBRY URL fragment */
   url: string
   enabled: boolean
   redirect: LbrySettings['redirect']
 }
+
+interface ButtonSettings {
+  text: string
+  icon: string
+  style?: JSX.CSSProperties
+}
+
+const buttonSettings: Record<LbrySettings['redirect'], ButtonSettings> = {
+  app: { text: 'Watch on LBRY', icon: chrome.runtime.getURL('icons/lbry/lbry-logo.svg') },
+  'lbry.tv': { text: 'Watch on LBRY', icon: chrome.runtime.getURL('icons/lbry/lbry-logo.svg') },
+  odysee: {
+    text: 'Watch on Odysee', icon: chrome.runtime.getURL('icons/lbry/odysee-logo.svg'),
+    style: { backgroundColor: '#1e013b' },
+  },
+};
 
 function pauseVideo() { document.querySelectorAll<HTMLVideoElement>('video').forEach(v => v.pause()); }
 
@@ -35,13 +51,12 @@ async function resolveYT(descriptor: YTDescriptor) {
 /** Compute the URL and determine whether or not a redirect should be performed. Delegates the redirect to callbacks. */
 async function handleURLChange(url: URL | Location, { onRedirect, onURL }: UpdaterOptions): Promise<void> {
   const { enabled, redirect } = await getSettingsAsync('enabled', 'redirect');
-  const urlPrefix = redirectDomains[redirect].prefix;
   const descriptor = ytService.getId(url.href);
   if (!descriptor) return; // couldn't get the ID, so we're done
   const res = await resolveYT(descriptor);
   if (!res) return; // couldn't find it on lbry, so we're done
 
-  const ctx = { descriptor, url: urlPrefix + res, enabled, redirect };
+  const ctx = { descriptor, url: res, enabled, redirect };
   if (onURL) onURL(ctx);
   if (enabled && onRedirect) onRedirect(ctx);
 }
@@ -62,15 +77,17 @@ async function findMountPoint(): Promise<HTMLDivElement | void> {
   return div;
 }
 
-function WatchOnLbryButton({ url }: { url?: string }) {
+function WatchOnLbryButton({ redirect = 'app', url }: { redirect?: LbrySettings['redirect'], url?: string }) {
   if (!url) return null;
+  const domain = redirectDomains[redirect];
+  const buttonSetting = buttonSettings[redirect];
   return <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-    <a href={url} onClick={pauseVideo} role='button'
+    <a href={domain.prefix + url} onClick={pauseVideo} role='button'
       children={<div>
-        <img src={chrome.runtime.getURL('icons/lbry-logo.svg')} height={10} width={14}
+        <img src={buttonSetting.icon} height={10} width={14}
           style={{ marginRight: 12, transform: 'scale(1.75)' }} />
-        Watch on LBRY
-        </div>}
+        {buttonSetting.text}
+      </div>}
       style={{
         borderRadius: '2px',
         backgroundColor: '#075656',
@@ -80,18 +97,19 @@ function WatchOnLbryButton({ url }: { url?: string }) {
         marginRight: '5px',
         fontSize: '14px',
         textDecoration: 'none',
+        ...buttonSetting.style,
       }} />
-  </div>
+  </div>;
 }
 
 
 const mountPointPromise = findMountPoint();
 
 const handle = (url: URL | Location) => handleURLChange(url, {
-  async onURL({ descriptor: { type }, url }) {
+  async onURL({ descriptor: { type }, url, redirect }) {
     const mountPoint = await mountPointPromise;
     if (type !== 'video' || !mountPoint) return;
-    render(<WatchOnLbryButton url={url} />, mountPoint)
+    render(<WatchOnLbryButton url={url} redirect={redirect} />, mountPoint);
   },
   onRedirect({ redirect, url }) {
     if (redirect === 'app') return openApp(url);
@@ -114,5 +132,5 @@ chrome.runtime.onMessage.addListener(async (req: { url: string }) => {
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== 'local' || !changes.redirect) return;
-  handle(new URL(location.href))
+  handle(new URL(location.href));
 });

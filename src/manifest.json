@@ -34,12 +34,13 @@
   "web_accessible_resources": [
     "popup.html",
     "tools/YTtoLBRY.html",
-    "icons/lbry-logo.svg"
+    "icons/lbry/lbry-logo.svg",
+    "icons/lbry/odysee-logo.svg"
   ],
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "icons/wol/icon16.png",
+    "48": "icons/wol/icon48.png",
+    "128": "icons/wol/icon128.png"
   },
   "manifest_version": 2
 }
