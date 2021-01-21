@@ -20,7 +20,7 @@ For Production
 ```bash
 $ npm install
 $ npm run build
-$ npx web-ext build --source-dir ./dist  # optional, to create the zip file from the dist directory
+$ npm run build:webext  # optional, to create the zip file from the dist directory
 ```
 
 For Development
