@@ -112,8 +112,9 @@ const handle = (url: URL | Location) => handleURLChange(url, {
     render(<WatchOnLbryButton url={url} redirect={redirect} />, mountPoint);
   },
   onRedirect({ redirect, url }) {
-    if (redirect === 'app') return openApp(url);
-    location.replace(url);
+    const domain = redirectDomains[redirect];
+    if (redirect === 'app') return openApp(domain.prefix + url);
+    location.replace(domain.prefix + url);
   },
 });
 
