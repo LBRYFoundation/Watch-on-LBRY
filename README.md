@@ -1,3 +1,4 @@
+## No Longer mantained: Looking for contributors
 ![Logo](src/icons/wol/default-transparent.svg)
 # Watch on LBRY
 
