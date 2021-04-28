@@ -1,22 +1,15 @@
 import { h, JSX, render } from 'preact';
 
 import { parseProtocolUrl } from '../common/lbry-url';
-import { getSettingsAsync, LbrySettings, redirectDomains } from '../common/settings';
+import { LbrySettings, redirectDomains } from '../common/settings';
 import { YTDescriptor, ytService } from '../common/yt';
+import { UpdateContext } from './tabOnUpdated';
 
 interface UpdaterOptions {
   /** invoked if a redirect should be performed */
   onRedirect?(ctx: UpdateContext): void
   /** invoked if a URL is found */
   onURL?(ctx: UpdateContext): void
-}
-
-interface UpdateContext {
-  descriptor: YTDescriptor
-  /** LBRY URL fragment */
-  url: string
-  enabled: boolean
-  redirect: LbrySettings['redirect']
 }
 
 interface ButtonSettings {
@@ -49,16 +42,9 @@ async function resolveYT(descriptor: YTDescriptor) {
 }
 
 /** Compute the URL and determine whether or not a redirect should be performed. Delegates the redirect to callbacks. */
-async function handleURLChange(url: URL | Location, { onRedirect, onURL }: UpdaterOptions): Promise<void> {
-  const { enabled, redirect } = await getSettingsAsync('enabled', 'redirect');
-  const descriptor = ytService.getId(url.href);
-  if (!descriptor) return; // couldn't get the ID, so we're done
-  const res = await resolveYT(descriptor);
-  if (!res) return; // couldn't find it on lbry, so we're done
-
-  const ctx = { descriptor, url: res, enabled, redirect };
+async function handleURLChange(ctx: UpdateContext, { onRedirect, onURL }: UpdaterOptions): Promise<void> {
   if (onURL) onURL(ctx);
-  if (enabled && onRedirect) onRedirect(ctx);
+  if (ctx.enabled && onRedirect) onRedirect(ctx);
 }
 
 /** Returns a mount point for the button */
@@ -105,7 +91,7 @@ function WatchOnLbryButton({ redirect = 'app', url }: { redirect?: LbrySettings[
 
 const mountPointPromise = findMountPoint();
 
-const handle = (url: URL | Location) => handleURLChange(url, {
+const handle = (ctx: UpdateContext) => handleURLChange(ctx, {
   async onURL({ descriptor: { type }, url, redirect }) {
     const mountPoint = await mountPointPromise;
     if (type !== 'video' || !mountPoint) return;
@@ -119,19 +105,19 @@ const handle = (url: URL | Location) => handleURLChange(url, {
 });
 
 // handle the location on load of the page
-handle(location);
+chrome.runtime.sendMessage({ url: location.href }, async (ctx: UpdateContext) => handle(ctx));
 
 /*
  * Gets messages from background script which relays tab update events. This is because there's no sensible way to detect
  * history.pushState changes from a content script
  */
-chrome.runtime.onMessage.addListener(async (req: { url: string }) => {
+chrome.runtime.onMessage.addListener(async (ctx: UpdateContext) => {
   mountPointPromise.then(mountPoint => mountPoint && render(<WatchOnLbryButton />, mountPoint))
-  if (!req.url) return;
-  handle(new URL(req.url));
+  if (!ctx.url) return;
+  handle(ctx);
 });
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== 'local' || !changes.redirect) return;
-  handle(new URL(location.href));
+  chrome.runtime.sendMessage({ url: location.href }, async (ctx: UpdateContext) => handle(ctx));
 });
