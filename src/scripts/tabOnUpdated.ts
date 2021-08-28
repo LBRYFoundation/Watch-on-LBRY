@@ -35,7 +35,7 @@ async function ctxFromURL(url: string): Promise<UpdateContext | void> {
 // handles lbry.tv -> lbry app redirect
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, { url: tabUrl }) => {
   const { enabled, redirect } = await getSettingsAsync('enabled', 'redirect');
-  if (!enabled || redirect !== 'app' || !changeInfo.url || !tabUrl?.startsWith('https://lbry.tv/')) return;
+  if (!enabled || redirect !== 'app' || !changeInfo.url || !tabUrl?.startsWith('https://odysee.com/')) return;
 
   const url = appRedirectUrl(tabUrl, { encode: true });
   if (!url) return;
