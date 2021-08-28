@@ -1,12 +1,14 @@
 {
   "name": "Watch on LBRY",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "permissions": [
     "https://www.youtube.com/",
     "https://invidio.us/channel/*",
     "https://invidio.us/watch?v=*",
-    "https://api.lbry.com/*",
+    "https://api.odysee.com/*",
     "https://lbry.tv/*",
+    "https://odysee.tv/*",
+    "https://madiator.com/*",
     "tabs",
     "storage"
   ],
