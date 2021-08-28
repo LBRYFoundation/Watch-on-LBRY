@@ -6,7 +6,7 @@ export interface LbrySettings {
 export const DEFAULT_SETTINGS: LbrySettings = { enabled: true, redirect: 'lbry.tv' };
 
 export const redirectDomains = {
-  'lbry.tv': { prefix: 'https://lbry.tv/', display: 'lbry.tv' },
+  'madiator.com': { prefix: 'https://madiator.com/', display: 'madiator.com' },
   odysee: { prefix: 'https://odysee.com/', display: 'odysee' },
   app: { prefix: 'lbry://', display: 'App' },
 };
