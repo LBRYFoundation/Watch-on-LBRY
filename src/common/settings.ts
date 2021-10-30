@@ -7,7 +7,7 @@ export const DEFAULT_SETTINGS: LbrySettings = { enabled: true, redirect: 'odysee
 
 export const redirectDomains = {
   'madiator.com': { prefix: 'https://madiator.com/', display: 'madiator.com' },
-   librarian: { prefix: 'https://librarian.bcow.xyz', display: 'librarian' },
+   'librarian': { prefix: 'https://librarian.bcow.xyz', display: 'librarian' },
   odysee: { prefix: 'https://odysee.com/', display: 'odysee' },
   app: { prefix: 'lbry://', display: 'App' },
 };
