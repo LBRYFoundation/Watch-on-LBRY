@@ -1,6 +1,6 @@
 {
   "name": "Watch on LBRY",
-  "version": "1.7.3",
+  "version": "1.7.5",
   "permissions": [
     "https://www.youtube.com/",
     "https://invidio.us/channel/*",
