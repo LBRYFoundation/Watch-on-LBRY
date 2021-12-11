@@ -7,7 +7,11 @@ const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t));
 interface ButtonSettings {
   text: string
   icon: string
-  style?: JSX.CSSProperties
+  style?: 
+  {
+    icon?: JSX.CSSProperties
+    button?: JSX.CSSProperties
+  }
 }
 
 const buttonSettings: Record<PlatformName, ButtonSettings> = {
@@ -16,12 +20,16 @@ const buttonSettings: Record<PlatformName, ButtonSettings> = {
     icon: chrome.runtime.getURL('icons/lbry/lbry-logo.svg') 
   },
   'madiator.com': { 
-    text: 'Watch on LBRY', 
-    icon: chrome.runtime.getURL('icons/lbry/lbry-logo.svg') 
+    text: 'Watch on', 
+    icon: chrome.runtime.getURL('icons/lbry/madiator-logo.svg'),
+    style: {
+      button: { flexDirection: 'row-reverse' },
+      icon: { transform: 'scale(1.2)' }
+    }
   },
   odysee: {
-    text: 'Watch on Odysee', icon: chrome.runtime.getURL('icons/lbry/odysee-logo.svg'),
-    style: { backgroundColor: '#1e013b' },
+    text: 'Watch on Odysee', 
+    icon: chrome.runtime.getURL('icons/lbry/odysee-logo.svg')
   },
 };
 
@@ -42,22 +50,25 @@ export function WatchOnLbryButton({ platform = 'app', pathname, time }: ButtonPa
 
   return <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
     <a href={`${url.toString()}`} onClick={pauseVideo} role='button'
-      children={<div>
-        <img src={buttonSetting.icon} height={10} width={14}
-          style={{ marginRight: 12, transform: 'scale(1.75)' }} />
-        {buttonSetting.text}
-      </div>}
       style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '12px',
         borderRadius: '2px',
-        backgroundColor: '#075656',
+        backgroundColor: platformSetting.theme,
         border: '0',
         color: 'whitesmoke',
         padding: '10px 16px',
         marginRight: '5px',
         fontSize: '14px',
         textDecoration: 'none',
-        ...buttonSetting.style,
-      }} />
+        ...buttonSetting.style?.button,
+      }}>
+        <img src={buttonSetting.icon} height={16}
+          style={{ transform: 'scale(1.5)', ...buttonSetting.style?.icon }} />
+        <span>{buttonSetting.text}</span>
+      </a>
   </div>;
 }
 
