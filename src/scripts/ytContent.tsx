@@ -111,30 +111,31 @@ function updateButton(ctx: UpdateContext | null) {
 }
 
 function redirectTo({ platform, pathname }: UpdateContext) {
-
-    const parseYouTubeTime = (timeString: string) => {
-      const signs = timeString.replace(/[0-9]/g, '')
-      if (signs.length === 0) return timeString
-      const numbers = timeString.replace(/^[0-9]/g, '-').split('-')
-      let total = 0
-      for (let i = 0; i < signs.length; i++) {
-        let t = parseInt(numbers[i])
-        switch (signs[i]) {
-          case 's': case 'm': t *= 60; case 'h': t *= 60; case 'd': t *= 24; break
-          default: return '0'
-        }
-        total += t
+  
+  const parseYouTubeTime = (timeString: string) => {
+    const signs = timeString.replace(/[0-9]/g, '')
+    if (signs.length === 0) return timeString
+    const numbers = timeString.replace(/[^0-9]/g, '-').split('-')
+    let total = 0
+    for (let i = 0; i < signs.length; i++) {
+      let t = parseInt(numbers[i])
+      switch (signs[i]) {
+        case 'd': t *= 24; case 'h': t *= 60; case 'm': t *= 60; case 's': break
+        default: return '0'
       }
+      total += t
+    }
     return total.toString()
   }
 
-    const platformSetting = platformSettings[platform];
-    const url = new URL(`${platformSetting.domainPrefix}${pathname}`)
-    const time = new URL(location.href).searchParams.get('t')
-    if (time) url.searchParams.append('t', parseYouTubeTime(time))
+  const platformSetting = platformSettings[platform];
+  const url = new URL(`${platformSetting.domainPrefix}${pathname}`)
+  const time = new URL(location.href).searchParams.get('t')
+  
+  if (time) url.searchParams.append('t', parseYouTubeTime(time))
 
-    if (platform === 'app') return openApp(url.toString());
-    location.replace(url.toString());
+  if (platform === 'app') return openApp(url.toString());
+  location.replace(url.toString());
 }
 
 
