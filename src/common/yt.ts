@@ -57,7 +57,7 @@ export const ytService = {
    */
   readOpml(opmlContents: string): string[] {
     const opml = new DOMParser().parseFromString(opmlContents, 'application/xml');
-
+    opmlContents = ''
     return Array.from(opml.querySelectorAll('outline > outline'))
       .map(outline => outline.getAttribute('xmlUrl'))
       .filter((url): url is string => !!url)
@@ -73,7 +73,20 @@ export const ytService = {
    */
   readJson(jsonContents: string): string[] {
     const subscriptions: YtSubscription[] = JSON.parse(jsonContents);
+    jsonContents = ''
     return subscriptions.map(sub => sub.snippet.resourceId.channelId);
+  },
+
+  /**
+   * Reads an array of YT channel IDs from the YT subscriptions CSV file
+   *
+   * @param csvContent a CSV file as a string
+   * @returns the channel IDs
+   */
+  readCsv(csvContent: string): string[] {
+    const rows = csvContent.split('\n')
+    csvContent = ''
+    return rows.map((row) => row.substr(0, row.indexOf(',')))
   },
 
   /**

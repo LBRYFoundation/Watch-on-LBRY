@@ -1,10 +1,10 @@
-import { Fragment, h, JSX, render } from 'preact';
-import { useState } from 'preact/hooks';
+import { h, render } from 'preact'
+import { useState } from 'preact/hooks'
+import { getSettingsAsync, platformSettings } from '../common/settings'
+import { getFileContent, ytService } from '../common/yt'
+import readme from './README.md'
 
-import { getSettingsAsync, redirectDomains } from '../common/settings';
-import { getFileContent, ytService } from '../common/yt';
 
-import readme from './README.md';
 
 /**
  * Parses the subscription file and queries the API for lbry channels
@@ -14,12 +14,14 @@ import readme from './README.md';
  */
 async function lbryChannelsFromFile(file: File) {
   const ext = file.name.split('.').pop()?.toLowerCase();
-  const content = await getFileContent(file);
-
-  const ids = new Set((ext === 'xml' || ext == 'opml' ? ytService.readOpml(content) : ytService.readJson(content)))
+  
+  const ids = new Set((
+    ext === 'xml' || ext == 'opml' ? ytService.readOpml : 
+    ext === 'csv' ? ytService.readCsv : 
+    ytService.readJson)(await getFileContent(file)))
   const lbryUrls = await ytService.resolveById(...Array.from(ids).map(id => ({ id, type: 'channel' } as const)));
-  const { redirect } = await getSettingsAsync('redirect');
-  const urlPrefix = redirectDomains[redirect].prefix;
+  const { platform } = await getSettingsAsync('platform');
+  const urlPrefix = platformSettings[platform].domainPrefix;
   return lbryUrls.map(channel => urlPrefix + channel);
 }
 
