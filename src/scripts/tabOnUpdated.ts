@@ -1,12 +1,12 @@
-import { appRedirectUrl, parseProtocolUrl } from '../common/lbry-url';
-import { getSettingsAsync, LbrySettings } from '../common/settings';
-import { YTDescriptor, ytService } from '../common/yt';
+import { appRedirectUrl, parseProtocolUrl } from '../common/lbry-url'
+import { getSettingsAsync, PlatformName } from '../common/settings'
+import { YTDescriptor, ytService } from '../common/yt'
 export interface UpdateContext {
   descriptor: YTDescriptor
   /** LBRY URL fragment */
-  url: string
+  pathname: string
   enabled: boolean
-  redirect: LbrySettings['redirect']
+  platform: PlatformName
 }
 
 async function resolveYT(descriptor: YTDescriptor) {
@@ -16,26 +16,26 @@ async function resolveYT(descriptor: YTDescriptor) {
   return segments.join('/');
 }
 
-const urlCache: Record<string, string | undefined> = {};
+const pathnameCache: Record<string, string | undefined> = {};
 
 async function ctxFromURL(url: string): Promise<UpdateContext | void> {
   if (!url || !(url.startsWith('https://www.youtube.com/watch?v=') || url.startsWith('https://www.youtube.com/channel/'))) return;
   url = new URL(url).href;
-  const { enabled, redirect } = await getSettingsAsync('enabled', 'redirect');
+  const { enabled, platform } = await getSettingsAsync('enabled', 'platform');
   const descriptor = ytService.getId(url);
   if (!descriptor) return; // couldn't get the ID, so we're done
 
-  const res = url in urlCache ? urlCache[url] : await resolveYT(descriptor);
-  urlCache[url] = res;
+  const res = url in pathnameCache ? pathnameCache[url] : await resolveYT(descriptor);
+  pathnameCache[url] = res;
   if (!res) return; // couldn't find it on lbry, so we're done
 
-  return { descriptor, url: res, enabled, redirect };
+  return { descriptor, pathname: res, enabled, platform };
 }
 
 // handles lbry.tv -> lbry app redirect
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, { url: tabUrl }) => {
-  const { enabled, redirect } = await getSettingsAsync('enabled', 'redirect');
-  if (!enabled || redirect !== 'app' || !changeInfo.url || !tabUrl?.startsWith('https://odysee.com/')) return;
+  const { enabled, platform } = await getSettingsAsync('enabled', 'platform');
+  if (!enabled || platform !== 'app' || !changeInfo.url || !tabUrl?.startsWith('https://odysee.com/')) return;
 
   const url = appRedirectUrl(tabUrl, { encode: true });
   if (!url) return;
