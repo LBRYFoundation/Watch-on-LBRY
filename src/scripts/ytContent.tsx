@@ -41,6 +41,8 @@ async function resolveYT(descriptor: YTDescriptor) {
   return segments.join('/');
 }
 
+
+
 /** Compute the URL and determine whether or not a redirect should be performed. Delegates the redirect to callbacks. */
 async function handleURLChange(ctx: UpdateContext, { onRedirect, onURL }: UpdaterOptions): Promise<void> {
   if (onURL) onURL(ctx);
@@ -61,6 +63,7 @@ async function findMountPoint(): Promise<HTMLDivElement | void> {
   const div = document.createElement('div');
   div.style.display = 'flex';
   ownerBar.insertAdjacentElement('afterend', div);
+
   return div;
 }
 
@@ -96,39 +99,7 @@ function WatchOnLbryButton({ redirect = 'app', url: pathname, time }: { redirect
 
 const mountPointPromise = findMountPoint();
 
-
 let ctxCache: UpdateContext | undefined
-
-{(async () => {
-  let videoElement: HTMLVideoElement | null = null;
-  let renderingButton = false
-    
-  const handleTimeChange = () => {
-    if (renderingButton) return
-    if (!videoElement) return
-    if (!ctxCache?.url) return
-    const time = (videoElement.currentTime ?? 0).toFixed(0)
-    const { url, redirect } = ctxCache
-    
-    renderingButton = true
-    mountPointPromise.then(mountPoint => mountPoint && render(<WatchOnLbryButton time={time} url={url} redirect={redirect} />, mountPoint))
-    .then(() => renderingButton = false)
-  }
-
-  while (true) {
-    await sleep(200)
-    if (!videoElement) {
-      videoElement = document.querySelector('video')
-      if (videoElement) videoElement.addEventListener('timeupdate', handleTimeChange)
-    }
-    else if (!videoElement.parentElement) {
-      videoElement.removeEventListener('timeupdate', handleTimeChange)
-      videoElement = null
-    }
-  }
-})()}
-
-
 const handle = (ctx: UpdateContext) => (ctxCache = ctx) && ctx.url && handleURLChange(ctx, {
   async onURL({ descriptor: { type }, url, redirect }) {
     const mountPoint = await mountPointPromise;
@@ -141,6 +112,27 @@ const handle = (ctx: UpdateContext) => (ctxCache = ctx) && ctx.url && handleURLC
     location.replace(domain.prefix + url);
   },
 });
+
+{(async () => {  
+  let videoElement: HTMLVideoElement | null = null;
+  let renderingButton = false
+
+  while(!(videoElement = document.querySelector('video'))) await sleep(200)
+
+  const handleTimeChange = () => {
+    if (renderingButton) return
+    if (!videoElement) return
+    if (!ctxCache?.url) return
+    const time = (videoElement.currentTime ?? 0).toFixed(0)
+    const { url, redirect } = ctxCache
+    
+    renderingButton = true
+    mountPointPromise.then(mountPoint => mountPoint && render(<WatchOnLbryButton time={time} url={url} redirect={redirect} />, mountPoint))
+    .then(() => renderingButton = false)
+  }
+
+  videoElement.addEventListener('timeupdate', handleTimeChange)
+})()}
 
 // handle the location on load of the page
 chrome.runtime.sendMessage({ url: location.href }, async (ctx: UpdateContext) => handle(ctx));
