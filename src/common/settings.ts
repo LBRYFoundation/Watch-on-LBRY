@@ -4,12 +4,13 @@ export interface PlatformSettings
 {
   domainPrefix: string
   display: string
+  theme: string
 }
 
 export const platformSettings: Record<PlatformName, PlatformSettings> = {
-  'madiator.com': { domainPrefix: 'https://madiator.com/', display: 'madiator.com' },
-  odysee: { domainPrefix: 'https://odysee.com/', display: 'odysee' },
-  app: { domainPrefix: 'lbry://', display: 'App' },
+  'madiator.com': { domainPrefix: 'https://madiator.com/', display: 'Madiator.com', theme: '#075656' },
+  odysee: { domainPrefix: 'https://odysee.com/', display: 'Odysee', theme: '#1e013b' },
+  app: { domainPrefix: 'lbry://', display: 'App', theme: '#075656' },
 };
 
 export const getPlatfromSettingsEntiries = () => {
