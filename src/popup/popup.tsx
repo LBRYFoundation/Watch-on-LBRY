@@ -4,8 +4,6 @@ import { getTargetPlatfromSettingsEntiries, ExtensionSettings, TargetPlatformNam
 import { useLbrySettings } from '../common/useSettings'
 import './popup.sass'
 
-
-
 /** Utilty to set a setting in the browser */
 const setSetting = <K extends keyof ExtensionSettings>(setting: K, value: ExtensionSettings[K]) => chrome.storage.local.set({ [setting]: value });
 
@@ -17,16 +15,22 @@ function WatchOnLbryPopup() {
   const { redirect, targetPlatform } = useLbrySettings();
 
   return <div className='container'>
-    <label className='radio-label'>Enable Redirection:</label>
-    <ButtonRadio value={redirect ? 'YES' : 'NO'} options={['YES', 'NO']}
-      onChange={redirect => setSetting('redirect', redirect.toLowerCase() === 'yes')} />
-    <label className='radio-label'>Where would you like to redirect?</label>
-    <ButtonRadio value={targetPlatform} options={platformOptions}
-      onChange={(platform: TargetPlatformName) => setSetting('targetPlatform', platform)} />
-    <label className='radio-label'>Other useful tools:</label>
-    <a href='/tools/YTtoLBRY.html' target='_blank'>
-      <button type='button' className='btn1 button is-primary'>Subscriptions Converter</button>
-    </a>
+    <section>
+      <label className='radio-label'>Enable Redirection:</label>
+      <ButtonRadio value={redirect ? 'YES' : 'NO'} options={['YES', 'NO']}
+        onChange={redirect => setSetting('redirect', redirect.toLowerCase() === 'yes')} />
+    </section>
+    <section>
+      <label className='radio-label'>Where would you like to redirect?</label>
+      <ButtonRadio value={targetPlatform} options={platformOptions}
+        onChange={(platform: TargetPlatformName) => setSetting('targetPlatform', platform)} />
+    </section>
+    <section>
+      <label className='radio-label'>Other useful tools:</label>
+      <a href='/tools/YTtoLBRY.html' target='_blank'>
+        <button type='button' className='btn1 button is-primary'>Subscriptions Converter</button>
+      </a>
+    </section>
   </div>;
 }
 
