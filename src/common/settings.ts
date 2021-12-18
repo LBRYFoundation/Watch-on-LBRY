@@ -31,7 +31,7 @@ export const TargetPlatformSettings: Record<TargetPlatformName, TargetPlatformSe
   },
   app: { 
     domainPrefix: 'lbry://', 
-    displayName: 'App', 
+    displayName: 'LBRY App', 
     theme: '#075656' 
   },
 };
