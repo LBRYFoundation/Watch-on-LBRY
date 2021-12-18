@@ -51,7 +51,7 @@ export interface SourcePlatfromSettings {
   }
 }
 
-export const SourcePlatfromettings: Record<SourcePlatfromName, SourcePlatfromSettings> = {
+export const SourcePlatfromSettings: Record<SourcePlatfromName, SourcePlatfromSettings> = {
   "yewtu.be": {
     hostnames: ['yewtu.be'],
     htmlQueries: {
@@ -69,7 +69,7 @@ export const SourcePlatfromettings: Record<SourcePlatfromName, SourcePlatfromSet
 }
 
 export function getSourcePlatfromSettingsFromHostname(hostname: string) {
-  const values = Object.values(SourcePlatfromettings)
+  const values = Object.values(SourcePlatfromSettings)
   for (const settings of values)
     if (settings.hostnames.includes(hostname)) return settings
   return null
