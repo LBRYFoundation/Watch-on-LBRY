@@ -62,6 +62,85 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 Please make sure to update tests as appropriate.
 
+## Contributors
+
+<table>
+<tr>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/kodxana>
+            <img src=https://avatars.githubusercontent.com/u/16674412?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=kodxana/>
+            <br />
+            <sub style="font-size:14px"><b>kodxana</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/Aenigma>
+            <img src=https://avatars.githubusercontent.com/u/409173?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Kevin Raoofi/>
+            <br />
+            <sub style="font-size:14px"><b>Kevin Raoofi</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/Yamboy1>
+            <img src=https://avatars.githubusercontent.com/u/37413895?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Yamboy1/>
+            <br />
+            <sub style="font-size:14px"><b>Yamboy1</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/DeepDoge>
+            <img src=https://avatars.githubusercontent.com/u/44804845?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Shiba/>
+            <br />
+            <sub style="font-size:14px"><b>Shiba</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/clay53>
+            <img src=https://avatars.githubusercontent.com/u/16981283?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Clayton Hickey/>
+            <br />
+            <sub style="font-size:14px"><b>Clayton Hickey</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/adam-dorin>
+            <img src=https://avatars.githubusercontent.com/u/1072815?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Adam/>
+            <br />
+            <sub style="font-size:14px"><b>Adam</b></sub>
+        </a>
+    </td>
+</tr>
+<tr>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/53jk1>
+            <img src=https://avatars.githubusercontent.com/u/56700396?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Kacper Bąk/>
+            <br />
+            <sub style="font-size:14px"><b>Kacper Bąk</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/eggplantbren>
+            <img src=https://avatars.githubusercontent.com/u/1578298?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Brendon J. Brewer/>
+            <br />
+            <sub style="font-size:14px"><b>Brendon J. Brewer</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/FireMasterK>
+            <img src=https://avatars.githubusercontent.com/u/20838718?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Kavin/>
+            <br />
+            <sub style="font-size:14px"><b>Kavin</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/kauffj>
+            <img src=https://avatars.githubusercontent.com/u/530774?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Jeremy Kauffman/>
+            <br />
+            <sub style="font-size:14px"><b>Jeremy Kauffman</b></sub>
+        </a>
+    </td>
+</tr>
+</table>
+
 ## License
 [GPL-3.0 License](LICENSE)
 
