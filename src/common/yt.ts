@@ -14,7 +14,7 @@ interface YtResolverResponse {
   };
 }
 
-interface YtSubscription {
+interface YtExportedJsonSubscription {
   id: string;
   etag: string;
   title: string;
@@ -72,7 +72,7 @@ export const ytService = {
    * @returns the channel IDs
    */
   readJson(jsonContents: string): string[] {
-    const subscriptions: YtSubscription[] = JSON.parse(jsonContents);
+    const subscriptions: YtExportedJsonSubscription[] = JSON.parse(jsonContents);
     jsonContents = ''
     return subscriptions.map(sub => sub.snippet.resourceId.channelId);
   },
@@ -86,7 +86,7 @@ export const ytService = {
   readCsv(csvContent: string): string[] {
     const rows = csvContent.split('\n')
     csvContent = ''
-    return rows.map((row) => row.substr(0, row.indexOf(',')))
+    return rows.map((row) => row.substring(0, row.indexOf(',')))
   },
 
   /**

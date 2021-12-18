@@ -1,6 +1,6 @@
 import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
-import { getSettingsAsync, platformSettings } from '../common/settings'
+import { getExtensionSettingsAsync, TargetPlatformSettings } from '../common/settings'
 import { getFileContent, ytService } from '../common/yt'
 import readme from './README.md'
 
@@ -20,8 +20,8 @@ async function lbryChannelsFromFile(file: File) {
     ext === 'csv' ? ytService.readCsv : 
     ytService.readJson)(await getFileContent(file)))
   const lbryUrls = await ytService.resolveById(...Array.from(ids).map(id => ({ id, type: 'channel' } as const)));
-  const { platform } = await getSettingsAsync('platform');
-  const urlPrefix = platformSettings[platform].domainPrefix;
+  const { targetPlatform: platform } = await getExtensionSettingsAsync('targetPlatform');
+  const urlPrefix = TargetPlatformSettings[platform].domainPrefix;
   return lbryUrls.map(channel => urlPrefix + channel);
 }
 

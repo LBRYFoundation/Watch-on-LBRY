@@ -1,11 +1,11 @@
-import { DEFAULT_SETTINGS, LbrySettings, getSettingsAsync } from '../common/settings';
+import { DEFAULT_SETTINGS, ExtensionSettings, getExtensionSettingsAsync } from '../common/settings';
 
 /** Reset settings to default value and update the browser badge text */
 async function initSettings() {
-  const settings = await getSettingsAsync(...Object.keys(DEFAULT_SETTINGS) as Array<keyof LbrySettings>);
+  const settings = await getExtensionSettingsAsync(...Object.keys(DEFAULT_SETTINGS) as Array<keyof ExtensionSettings>);
 
   // get all the values that aren't set and use them as a change set
-  const invalidEntries = (Object.entries(DEFAULT_SETTINGS) as Array<[keyof LbrySettings, LbrySettings[keyof LbrySettings]]>)
+  const invalidEntries = (Object.entries(DEFAULT_SETTINGS) as Array<[keyof ExtensionSettings, ExtensionSettings[keyof ExtensionSettings]]>)
     .filter(([k]) => settings[k] === null || settings[k] === undefined);
 
   // fix our local var and set it in storage for later
@@ -15,12 +15,12 @@ async function initSettings() {
     chrome.storage.local.set(changeSet);
   }
 
-  chrome.browserAction.setBadgeText({ text: settings.enabled ? 'ON' : 'OFF' });
+  chrome.browserAction.setBadgeText({ text: settings.redirect ? 'ON' : 'OFF' });
 }
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName !== 'local' || !changes.enabled) return;
-  chrome.browserAction.setBadgeText({ text: changes.enabled.newValue ? 'ON' : 'OFF' });
+  if (areaName !== 'local' || !changes.redirect) return;
+  chrome.browserAction.setBadgeText({ text: changes.redirect.newValue ? 'ON' : 'OFF' });
 });
 
 

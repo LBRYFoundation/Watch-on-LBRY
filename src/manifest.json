@@ -3,8 +3,7 @@
   "version": "1.7.5",
   "permissions": [
     "https://www.youtube.com/",
-    "https://invidio.us/channel/*",
-    "https://invidio.us/watch?v=*",
+    "https://yewtu.be/",
     "https://api.odysee.com/*",
     "https://lbry.tv/*",
     "https://odysee.com/*",
@@ -15,7 +14,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.youtube.com/*"
+        "https://www.youtube.com/*",
+        "https://yewtu.be/*"
       ],
       "js": [
         "scripts/ytContent.js"
