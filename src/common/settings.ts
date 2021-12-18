@@ -55,7 +55,7 @@ export const SourcePlatfromSettings: Record<SourcePlatfromName, SourcePlatfromSe
   "yewtu.be": {
     hostnames: ['yewtu.be'],
     htmlQueries: {
-      mountButtonBefore: '#embed-link',
+      mountButtonBefore: '#watch-on-youtube',
       videoPlayer: '#player-container video'
     }
   },
