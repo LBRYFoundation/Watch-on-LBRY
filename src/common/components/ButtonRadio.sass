@@ -3,10 +3,11 @@
 .ButtonRadio
   display: flex
   justify-content: center
+  flex-wrap: wrap
+  gap: .25em
 
   .radio-button
     @extend .button
-    margin: 6px
 
   .radio-button.checked
     @extend .button.active
