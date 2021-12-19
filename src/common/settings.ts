@@ -62,7 +62,7 @@ export const SourcePlatfromSettings: Record<SourcePlatfromName, SourcePlatfromSe
   "youtube.com": {
     hostnames: ['www.youtube.com'],
     htmlQueries: {
-      mountButtonBefore: 'ytd-video-owner-renderer+#subscribe-button',
+      mountButtonBefore: 'ytd-video-owner-renderer~#subscribe-button',
       videoPlayer: '#ytd-player video'
     }
   }
