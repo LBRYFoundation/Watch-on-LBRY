@@ -85,7 +85,8 @@ async function findButtonMountPoint(): Promise<HTMLDivElement | void> {
 
   const div = document.createElement('div');
   div.style.display = 'flex';
-  div.style.paddingBottom = '.5em'
+  div.style.alignItems = 'center'
+  div.style.justifyContent = 'center'
   mountBefore.parentElement?.insertBefore(div, mountBefore)
   mountPoint = div
 }
