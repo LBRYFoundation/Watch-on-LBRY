@@ -62,7 +62,7 @@ export function WatchOnLbryButton({ targetPlatform = 'app', lbryPathname, time }
         border: '0',
         color: 'whitesmoke',
         padding: '10px 16px',
-        marginRight: '5px',
+        marginRight: '4px',
         fontSize: '14px',
         textDecoration: 'none',
         ...buttonSetting.style?.button,
@@ -86,7 +86,6 @@ async function findButtonMountPoint(): Promise<HTMLDivElement | void> {
   const div = document.createElement('div');
   div.style.display = 'flex';
   div.style.alignItems = 'center'
-  div.style.justifyContent = 'center'
   mountBefore.parentElement?.insertBefore(div, mountBefore)
   mountPoint = div
 }
