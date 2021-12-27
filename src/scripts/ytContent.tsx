@@ -1,4 +1,4 @@
-import { getSourcePlatfromSettingsFromHostname, TargetPlatformName, TargetPlatformSettings } from '../common/settings'
+import { getSourcePlatfromSettingsFromHostname, TargetPlatformName, targetPlatformSettings } from '../common/settings'
 import type { UpdateContext } from '../scripts/tabOnUpdated'
 import { h, JSX, render } from 'preact'
 
@@ -44,7 +44,7 @@ interface ButtonParameters
 
 export function WatchOnLbryButton({ targetPlatform = 'app', lbryPathname, time }: ButtonParameters = {}) {
   if (!lbryPathname || !targetPlatform) return null;
-  const targetPlatformSetting = TargetPlatformSettings[targetPlatform];
+  const targetPlatformSetting = targetPlatformSettings[targetPlatform];
   const buttonSetting = buttonSettings[targetPlatform];
 
   const url = new URL(`${targetPlatformSetting.domainPrefix}${lbryPathname}`)
@@ -137,7 +137,7 @@ function redirectTo({ targetPlatform, lbryPathname }: UpdateContext): void {
     return total.toString()
   }
 
-  const targetPlatformSetting = TargetPlatformSettings[targetPlatform];
+  const targetPlatformSetting = targetPlatformSettings[targetPlatform];
   const url = new URL(`${targetPlatformSetting.domainPrefix}${lbryPathname}`)
   const time = new URL(location.href).searchParams.get('t')
   
