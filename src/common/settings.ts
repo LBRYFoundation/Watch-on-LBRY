@@ -18,7 +18,7 @@ export interface TargetPlatformSettings {
   theme: string
 }
 
-export const TargetPlatformSettings: Record<TargetPlatformName, TargetPlatformSettings> = {
+export const targetPlatformSettings: Record<TargetPlatformName, TargetPlatformSettings> = {
   'madiator.com': { 
     domainPrefix: 'https://madiator.com/', 
     displayName: 'Madiator.com', 
@@ -37,7 +37,7 @@ export const TargetPlatformSettings: Record<TargetPlatformName, TargetPlatformSe
 };
 
 export const getTargetPlatfromSettingsEntiries = () => {
-  return Object.entries(TargetPlatformSettings) as any as [Extract<keyof typeof TargetPlatformSettings, string>, TargetPlatformSettings][]
+  return Object.entries(targetPlatformSettings) as any as [Extract<keyof typeof targetPlatformSettings, string>, TargetPlatformSettings][]
 }
 
 
@@ -51,7 +51,7 @@ export interface SourcePlatfromSettings {
   }
 }
 
-export const SourcePlatfromSettings: Record<SourcePlatfromName, SourcePlatfromSettings> = {
+export const sourcePlatfromSettings: Record<SourcePlatfromName, SourcePlatfromSettings> = {
   "yewtu.be": {
     hostnames: ['yewtu.be'],
     htmlQueries: {
@@ -69,7 +69,7 @@ export const SourcePlatfromSettings: Record<SourcePlatfromName, SourcePlatfromSe
 }
 
 export function getSourcePlatfromSettingsFromHostname(hostname: string) {
-  const values = Object.values(SourcePlatfromSettings)
+  const values = Object.values(sourcePlatfromSettings)
   for (const settings of values)
     if (settings.hostnames.includes(hostname)) return settings
   return null
