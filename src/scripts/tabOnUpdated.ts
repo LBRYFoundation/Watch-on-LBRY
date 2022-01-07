@@ -23,8 +23,7 @@ async function ctxFromURL(href: string): Promise<UpdateContext | void> {
 
   const url = new URL(href);
   if (!getSourcePlatfromSettingsFromHostname(url.hostname)) return
-  if (url.pathname.startsWith('/watch?')) return
-  if (url.pathname.startsWith('/channel?')) return
+  if (!(url.pathname.startsWith('/watch') || url.pathname.startsWith('/channel'))) return
 
   const { redirect, targetPlatform } = await getExtensionSettingsAsync('redirect', 'targetPlatform');
   const descriptor = ytService.getId(href);
