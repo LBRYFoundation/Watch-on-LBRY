@@ -16,8 +16,6 @@ async function resolveYT(descriptor: YtIdResolverDescriptor) {
   return segments.join('/');
 }
 
-const lbryPathnameCache: Record<string, string | undefined> = {};
-
 async function ctxFromURL(href: string): Promise<UpdateContext | void> {
   if (!href) return;
 
@@ -29,8 +27,7 @@ async function ctxFromURL(href: string): Promise<UpdateContext | void> {
   const descriptor = ytService.getId(href);
   if (!descriptor) return; // couldn't get the ID, so we're done
 
-  const res = href in lbryPathnameCache ? lbryPathnameCache[href] : await resolveYT(descriptor);
-  lbryPathnameCache[href] = res;
+  const res = await resolveYT(descriptor); // NOTE: API call cached by the browser
   if (!res) return; // couldn't find it on lbry, so we're done
 
   return { descriptor, lbryPathname: res, redirect, targetPlatform };
