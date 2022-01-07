@@ -156,37 +156,44 @@ export const ytService = {
         url.pathname = urlResolverFunction.pathname
         if (urlResolverFunction.paramArraySeperator === SingleValueAtATime)
         {
-          for (const descriptor of descriptorsGroup)
-          {
+          await Promise.all(descriptorsGroup.map(async (descriptor) => {
+            switch (null)
+            {
+              default:
+              if (!descriptor.id) break
+              url.searchParams.set(urlResolverFunction.paramName, descriptor.id)
+  
+              const apiResponse = await fetch(url.toString(), { cache: 'force-cache' });
+              if (!apiResponse.ok) break
+              const value = followResponsePath<string>(await apiResponse.json(), urlResolverFunction.responsePath)
+              if (value) results[descriptor.index] = value
+            }
             progressCount++
-            if (!descriptor.id) continue
-            url.searchParams.set(urlResolverFunction.paramName, descriptor.id)
-
-            const apiResponse = await fetch(url.toString(), { cache: 'force-cache' });
-            if (!apiResponse.ok) continue
-            const value = followResponsePath<string>(await apiResponse.json(), urlResolverFunction.responsePath)
-            if (value) results[descriptor.index] = value
             if (progressCallback) progressCallback(progressCount / descriptorsWithIndex.length)
-          }
+          }))
         }
         else
         {
-          progressCount += descriptorsGroup.length
-          url.searchParams
-            .set(urlResolverFunction.paramName, descriptorsGroup
-              .map((descriptor) => descriptor.id)
-              .filter((descriptorId) => descriptorId)
-              .join(urlResolverFunction.paramArraySeperator)
-            )
 
-          const apiResponse = await fetch(url.toString(), { cache: 'force-cache' });
-          if (!apiResponse.ok) return
-          const values = followResponsePath<string[]>(await apiResponse.json(), urlResolverFunction.responsePath)
-          values.forEach((value, index) => {
-            const descriptorIndex = descriptorsGroup[index].index
-            if (value) (results[descriptorIndex] = value)
-            if (progressCallback) progressCallback(progressCount / descriptorsWithIndex.length)
-          })
+          switch (null)
+          {
+            default:
+              url.searchParams
+              .set(urlResolverFunction.paramName, descriptorsGroup
+                .map((descriptor) => descriptor.id)
+                .filter((descriptorId) => descriptorId)
+                .join(urlResolverFunction.paramArraySeperator)
+              )
+              const apiResponse = await fetch(url.toString(), { cache: 'force-cache' });
+              if (!apiResponse.ok) break
+              const values = followResponsePath<string[]>(await apiResponse.json(), urlResolverFunction.responsePath)
+              values.forEach((value, index) => {
+                const descriptorIndex = descriptorsGroup[index].index
+                if (value) (results[descriptorIndex] = value)
+              })
+          }
+          progressCount += descriptorsGroup.length
+          if (progressCallback) progressCallback(progressCount / descriptorsWithIndex.length)
         }
       }
 
