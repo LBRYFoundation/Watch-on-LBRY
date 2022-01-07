@@ -1,16 +1,16 @@
 import { appRedirectUrl, parseProtocolUrl } from '../common/lbry-url'
 import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, TargetPlatformName } from '../common/settings'
-import { YTDescriptor, ytService } from '../common/yt'
+import { YtIdResolverDescriptor, ytService } from '../common/yt'
 export interface UpdateContext {
-  descriptor: YTDescriptor
+  descriptor: YtIdResolverDescriptor
   /** LBRY URL fragment */
   lbryPathname: string
   redirect: boolean
   targetPlatform: TargetPlatformName
 }
 
-async function resolveYT(descriptor: YTDescriptor) {
-  const lbryProtocolUrl: string | null = await ytService.resolveById(descriptor).then(a => a[0]);
+async function resolveYT(descriptor: YtIdResolverDescriptor) {
+  const lbryProtocolUrl: string | null = await ytService.resolveById([descriptor]).then(a => a[0]);
   const segments = parseProtocolUrl(lbryProtocolUrl || '', { encode: true });
   if (segments.length === 0) return;
   return segments.join('/');

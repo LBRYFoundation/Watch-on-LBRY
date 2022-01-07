@@ -1,9 +1,10 @@
 export interface ExtensionSettings {
   redirect: boolean
   targetPlatform: TargetPlatformName
+  urlResolver: YTUrlResolverName
 }
 
-export const DEFAULT_SETTINGS: ExtensionSettings = { redirect: true, targetPlatform: 'odysee' };
+export const DEFAULT_SETTINGS: ExtensionSettings = { redirect: true, targetPlatform: 'odysee', urlResolver: 'lbryInc' };
 
 export function getExtensionSettingsAsync<K extends Array<keyof ExtensionSettings>>(...keys: K): Promise<Pick<ExtensionSettings, K[number]>> {
   return new Promise(resolve => chrome.storage.local.get(keys, o => resolve(o as any)));
@@ -73,4 +74,71 @@ export function getSourcePlatfromSettingsFromHostname(hostname: string) {
   for (const settings of values)
     if (settings.hostnames.includes(hostname)) return settings
   return null
+}
+
+
+export type YTUrlResolverName = 'lbryInc' | 'madiatorScrap' 
+
+export const Keys = Symbol('keys')
+export const Values = Symbol('values')
+export const SingleValueAtATime = Symbol()
+export type YtUrlResolveResponsePath = (string | number | typeof Keys | typeof Values)[]
+export interface YtUrlResolveFunction
+{
+  pathname: string
+  paramName: string
+  paramArraySeperator: string | typeof SingleValueAtATime
+  responsePath: YtUrlResolveResponsePath
+}
+export interface YTUrlResolver
+{
+  name: string
+  hostname: string
+  functions: {
+    getChannelId: YtUrlResolveFunction
+    getVideoId: YtUrlResolveFunction
+  }
+}
+
+export const ytUrlResolversSettings: Record<YTUrlResolverName, YTUrlResolver> = {
+  lbryInc: {
+    name: "LBRY Inc.",
+    hostname: "api.odysee.com",
+    functions: {
+      getChannelId : {
+        pathname: "/yt/resolve",
+        paramName: "channel_ids",
+        paramArraySeperator: ',',
+        responsePath: ["data", "channels", Values]
+      },
+      getVideoId: {
+        pathname: "/yt/resolve",
+        paramName: "video_ids",
+        paramArraySeperator: ",",
+        responsePath: ["data", "videos", Values]
+      }
+    }
+  },
+  madiatorScrap: {
+    name: "Madiator.com",
+    hostname: "scrap.madiator.com",
+    functions: {
+      getChannelId: {
+        pathname: "/api/get-lbry-channel",
+        paramName: "url",
+        paramArraySeperator: SingleValueAtATime,
+        responsePath: ["lbrych"]
+      },
+      getVideoId: {
+        pathname: "/api/get-lbry-video",
+        paramName: "url",
+        paramArraySeperator: SingleValueAtATime,
+        responsePath: ["lbryurl"]
+      }
+    }
+  }
+}
+
+export const getYtUrlResolversSettingsEntiries = () => {
+  return Object.entries(ytUrlResolversSettings) as any as [Extract<keyof typeof ytUrlResolversSettings, string>, YTUrlResolver][]
 }
