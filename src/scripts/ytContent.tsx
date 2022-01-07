@@ -112,11 +112,13 @@ function updateButton(ctx: UpdateContext | null): void {
   if (!mountPoint) return
   if (!ctx) return render(<WatchOnLbryButton />, mountPoint)
   if (ctx.descriptor.type !== 'video') return;
-  const time = videoElement?.currentTime ?? 0
   const lbryPathname = ctx.lbryPathname
   const targetPlatform = ctx.targetPlatform
+  let time: number = videoElement?.currentTime ?? 0
+  if (time < 3) time = 0
+  if (time >= (videoElement?.duration ?? 0) - 1) time = 0
 
-  render(<WatchOnLbryButton targetPlatform={targetPlatform} lbryPathname={lbryPathname} time={time} />, mountPoint)
+  render(<WatchOnLbryButton targetPlatform={targetPlatform} lbryPathname={lbryPathname} time={time || undefined} />, mountPoint)
 }
 
 function redirectTo({ targetPlatform, lbryPathname }: UpdateContext): void {
