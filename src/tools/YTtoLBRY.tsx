@@ -1,6 +1,6 @@
 import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
-import { getSettingsAsync, platformSettings } from '../common/settings'
+import { getExtensionSettingsAsync, targetPlatformSettings } from '../common/settings'
 import { getFileContent, ytService } from '../common/yt'
 import readme from './README.md'
 
@@ -19,13 +19,15 @@ async function lbryChannelsFromFile(file: File) {
     ext === 'xml' || ext == 'opml' ? ytService.readOpml : 
     ext === 'csv' ? ytService.readCsv : 
     ytService.readJson)(await getFileContent(file)))
-  const lbryUrls = await ytService.resolveById(...Array.from(ids).map(id => ({ id, type: 'channel' } as const)));
-  const { platform } = await getSettingsAsync('platform');
-  const urlPrefix = platformSettings[platform].domainPrefix;
+  const lbryUrls = await ytService.resolveById(
+    Array.from(ids).map(id => ({ id, type: 'channel' } as const)), 
+    (progress) => render(<YTtoLBRY progress={progress} />, document.getElementById('root')!));
+  const { targetPlatform: platform } = await getExtensionSettingsAsync('targetPlatform');
+  const urlPrefix = targetPlatformSettings[platform].domainPrefix;
   return lbryUrls.map(channel => urlPrefix + channel);
 }
 
-function ConversionCard({ onSelect }: { onSelect(file: File): Promise<void> | void }) {
+function ConversionCard({ onSelect, progress }: { onSelect(file: File): Promise<void> | void, progress: number }) {
   const [file, setFile] = useState(null as File | null);
   const [isLoading, setLoading] = useState(false);
 
@@ -40,15 +42,18 @@ function ConversionCard({ onSelect }: { onSelect(file: File): Promise<void> | vo
       await onSelect(file);
       setLoading(false);
     }} />
+    <div class="progress-text">
+      {progress > 0 ? `${(progress * 100).toFixed(1)}%` : ''}
+    </div>
   </div>
 }
 
-function YTtoLBRY() {
+function YTtoLBRY({ progress }: { progress: number }) {
   const [lbryChannels, setLbryChannels] = useState([] as string[]);
 
   return <div className='YTtoLBRY'>
     <div className='Conversion'>
-      <ConversionCard onSelect={async file => setLbryChannels(await lbryChannelsFromFile(file))} />
+      <ConversionCard progress={progress} onSelect={async file => setLbryChannels(await lbryChannelsFromFile(file))} />
       <ul>
         {lbryChannels.map((x, i) => <li key={i} children={<a href={x} children={x} />} />)}
       </ul>
@@ -61,4 +66,4 @@ function YTtoLBRY() {
   </div>
 }
 
-render(<YTtoLBRY />, document.getElementById('root')!);
+render(<YTtoLBRY progress={0} />, document.getElementById('root')!);

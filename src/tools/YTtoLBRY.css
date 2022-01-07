@@ -68,6 +68,11 @@ h1, h2, h3, h4, h5, h6 {
     min-height: 30px;
 }
 
+.progress-text {
+    font-weight: bold;
+    padding: .25em 0;
+}
+
 .btn.btn-primary {
     background-color: var(--color-primary);
 }

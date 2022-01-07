@@ -1,41 +1,46 @@
 import { appRedirectUrl, parseProtocolUrl } from '../common/lbry-url'
-import { getSettingsAsync, PlatformName } from '../common/settings'
-import { YTDescriptor, ytService } from '../common/yt'
+import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, TargetPlatformName } from '../common/settings'
+import { YtIdResolverDescriptor, ytService } from '../common/yt'
 export interface UpdateContext {
-  descriptor: YTDescriptor
+  descriptor: YtIdResolverDescriptor
   /** LBRY URL fragment */
-  pathname: string
-  enabled: boolean
-  platform: PlatformName
+  lbryPathname: string
+  redirect: boolean
+  targetPlatform: TargetPlatformName
 }
 
-async function resolveYT(descriptor: YTDescriptor) {
-  const lbryProtocolUrl: string | null = await ytService.resolveById(descriptor).then(a => a[0]);
+async function resolveYT(descriptor: YtIdResolverDescriptor) {
+  const lbryProtocolUrl: string | null = await ytService.resolveById([descriptor]).then(a => a[0]);
   const segments = parseProtocolUrl(lbryProtocolUrl || '', { encode: true });
   if (segments.length === 0) return;
   return segments.join('/');
 }
 
-const pathnameCache: Record<string, string | undefined> = {};
+const lbryPathnameCache: Record<string, string | undefined> = {};
 
-async function ctxFromURL(url: string): Promise<UpdateContext | void> {
-  if (!url || !(url.startsWith('https://www.youtube.com/watch?v=') || url.startsWith('https://www.youtube.com/channel/'))) return;
-  url = new URL(url).href;
-  const { enabled, platform } = await getSettingsAsync('enabled', 'platform');
-  const descriptor = ytService.getId(url);
+async function ctxFromURL(href: string): Promise<UpdateContext | void> {
+  if (!href) return;
+
+  const url = new URL(href);
+  if (!getSourcePlatfromSettingsFromHostname(url.hostname)) return
+  if (url.pathname.startsWith('/watch?')) return
+  if (url.pathname.startsWith('/channel?')) return
+
+  const { redirect, targetPlatform } = await getExtensionSettingsAsync('redirect', 'targetPlatform');
+  const descriptor = ytService.getId(href);
   if (!descriptor) return; // couldn't get the ID, so we're done
 
-  const res = url in pathnameCache ? pathnameCache[url] : await resolveYT(descriptor);
-  pathnameCache[url] = res;
+  const res = href in lbryPathnameCache ? lbryPathnameCache[href] : await resolveYT(descriptor);
+  lbryPathnameCache[href] = res;
   if (!res) return; // couldn't find it on lbry, so we're done
 
-  return { descriptor, pathname: res, enabled, platform };
+  return { descriptor, lbryPathname: res, redirect, targetPlatform };
 }
 
 // handles lbry.tv -> lbry app redirect
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, { url: tabUrl }) => {
-  const { enabled, platform } = await getSettingsAsync('enabled', 'platform');
-  if (!enabled || platform !== 'app' || !changeInfo.url || !tabUrl?.startsWith('https://odysee.com/')) return;
+  const { redirect, targetPlatform } = await getExtensionSettingsAsync('redirect', 'targetPlatform');
+  if (!redirect || targetPlatform !== 'app' || !changeInfo.url || !tabUrl?.startsWith('https://odysee.com/')) return;
 
   const url = appRedirectUrl(tabUrl, { encode: true });
   if (!url) return;
@@ -61,7 +66,5 @@ chrome.runtime.onMessage.addListener(({ url }: { url: string }, sender, sendResp
 
 // relay youtube link changes to the content script
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, { url }) => {
-  if (!changeInfo.url || !url || !(url.startsWith('https://www.youtube.com/watch?v=') || url.startsWith('https://www.youtube.com/channel/'))) return;
-
-  ctxFromURL(url).then(ctx => chrome.tabs.sendMessage(tabId, ctx));
+  if (url) ctxFromURL(url).then(ctx => chrome.tabs.sendMessage(tabId, ctx));
 });
