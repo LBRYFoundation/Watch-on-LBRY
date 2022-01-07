@@ -1,18 +1,9 @@
 import chunk from 'lodash/chunk';
 import groupBy from 'lodash/groupBy';
-import pickBy from 'lodash/pickBy';
+import { getExtensionSettingsAsync, Keys, SingleValueAtATime, Values, YtUrlResolveFunction, YTUrlResolver, YtUrlResolveResponsePath, ytUrlResolversSettings } from './settings'
 
-const LBRY_API_HOST = 'https://api.odysee.com';
+// const LBRY_API_HOST = 'https://api.odysee.com'; MOVED TO SETTINGS
 const QUERY_CHUNK_SIZE = 300;
-
-interface YtResolverResponse {
-  success: boolean;
-  error: object | null;
-  data: {
-    videos?: Record<string, string>;
-    channels?: Record<string, string>;
-  };
-}
 
 interface YtExportedJsonSubscription {
   id: string;
@@ -42,7 +33,7 @@ export function getFileContent(file: File): Promise<string> {
   });
 }
 
-export interface YTDescriptor {
+export interface YtIdResolverDescriptor {
   id: string
   type: 'channel' | 'video'
 }
@@ -86,7 +77,7 @@ export const ytService = {
   readCsv(csvContent: string): string[] {
     const rows = csvContent.split('\n')
     csvContent = ''
-    return rows.map((row) => row.substring(0, row.indexOf(',')))
+    return rows.slice(1).map((row) => row.substring(0, row.indexOf(',')))
   },
 
   /**
@@ -108,7 +99,7 @@ export const ytService = {
     return match ? match[1] : null; // match[1] is the videoId
   },
 
-  getId(url: string): YTDescriptor | null {
+  getId(url: string): YtIdResolverDescriptor | null {
     const videoId = ytService.getVideoId(url);
     if (videoId) return { id: videoId, type: 'video' };
     const channelId = ytService.getChannelId(url);
@@ -117,23 +108,93 @@ export const ytService = {
   },
 
   /**
-  * @param descriptors YT resource IDs to check
+  * @param descriptorsWithIndex YT resource IDs to check
   * @returns a promise with the list of channels that were found on lbry
   */
-  async resolveById(...descriptors: YTDescriptor[]): Promise<string[]> {
-    const descChunks = chunk(descriptors, QUERY_CHUNK_SIZE);
-    const responses: (YtResolverResponse | null)[] = await Promise.all(descChunks.map(descChunk => {
-      const groups = groupBy(descChunk, d => d.type);
-      const params = new URLSearchParams(pickBy({
-        video_ids: groups['video']?.map(s => s.id).join(','),
-        channel_ids: groups['channel']?.map(s => s.id).join(','),
-      }));
-      return fetch(`${LBRY_API_HOST}/yt/resolve?${params}`, { cache: 'force-cache' })
-        .then(rsp => rsp.ok ? rsp.json() : null);
-    }));
+  async resolveById(descriptors: YtIdResolverDescriptor[], progressCallback?: (progress: number) => void): Promise<string[]> {
+    const descriptorsWithIndex: (YtIdResolverDescriptor & { index: number })[] = descriptors.map((descriptor, index) => ({...descriptor, index}))
+    
+    const descriptorsChunks = chunk(descriptorsWithIndex, QUERY_CHUNK_SIZE);
+    const results: string[] = []
+    let progressCount = 0;
+    await Promise.all(descriptorsChunks.map(async (descriptorChunk) => 
+    {
+      const descriptorsGroupedByType: Record<YtIdResolverDescriptor['type'], typeof descriptorsWithIndex | null> = groupBy(descriptorChunk, (descriptor) => descriptor.type) as any;
 
-    return responses.filter((rsp): rsp is YtResolverResponse => !!rsp)
-      .flatMap(rsp => [...Object.values(rsp.data.videos || {}), ...Object.values(rsp.data.channels || {})])  // flatten the results into a 1D array
-      .filter(s => s);
-  },
-};
+      const { urlResolver: urlResolverSettingName } = await getExtensionSettingsAsync('urlResolver')
+      const urlResolverSetting = ytUrlResolversSettings[urlResolverSettingName]
+
+      const url = new URL(`https://${urlResolverSetting.hostname}`);
+
+      function followResponsePath<T>(response: any, responsePath: YtUrlResolveResponsePath) 
+      {
+        for (const path of responsePath) 
+        {
+          switch (typeof path) 
+          {
+            case 'string': 
+            case 'number':
+              response = response[path]
+              break
+            default:
+              switch (path) 
+              {
+                case Keys:
+                  response = Object.keys(response)
+                  break
+                case Values:
+                  response = Object.values(response)
+                  break
+              }
+          }
+        }
+        return response as T
+      }
+
+      async function requestGroup(urlResolverFunction: YtUrlResolveFunction, descriptorsGroup: typeof descriptorsWithIndex)
+      {
+        url.pathname = urlResolverFunction.pathname
+        if (urlResolverFunction.paramArraySeperator === SingleValueAtATime)
+        {
+          for (const descriptor of descriptorsGroup)
+          {
+            progressCount++
+            if (!descriptor.id) continue
+            url.searchParams.set(urlResolverFunction.paramName, descriptor.id)
+
+            const apiResponse = await fetch(url.toString(), { cache: 'force-cache' });
+            if (!apiResponse.ok) continue
+            const value = followResponsePath<string>(await apiResponse.json(), urlResolverFunction.responsePath)
+            if (value) results[descriptor.index] = value
+            if (progressCallback) progressCallback(progressCount / descriptorsWithIndex.length)
+          }
+        }
+        else
+        {
+          progressCount += descriptorsGroup.length
+          url.searchParams
+            .set(urlResolverFunction.paramName, descriptorsGroup
+              .map((descriptor) => descriptor.id)
+              .filter((descriptorId) => descriptorId)
+              .join(urlResolverFunction.paramArraySeperator)
+            )
+
+          const apiResponse = await fetch(url.toString(), { cache: 'force-cache' });
+          if (!apiResponse.ok) return
+          const values = followResponsePath<string[]>(await apiResponse.json(), urlResolverFunction.responsePath)
+          values.forEach((value, index) => {
+            const descriptorIndex = descriptorsGroup[index].index
+            if (value) (results[descriptorIndex] = value)
+            if (progressCallback) progressCallback(progressCount / descriptorsWithIndex.length)
+          })
+        }
+      }
+
+      if (descriptorsGroupedByType['channel']) await requestGroup(urlResolverSetting.functions.getChannelId, descriptorsGroupedByType['channel'])
+      if (descriptorsGroupedByType['video']) await requestGroup(urlResolverSetting.functions.getVideoId, descriptorsGroupedByType['video'])
+
+    }));
+    
+    return results
+  } 
+}

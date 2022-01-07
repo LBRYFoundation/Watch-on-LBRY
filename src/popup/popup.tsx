@@ -1,6 +1,6 @@
 import { h, render } from 'preact'
 import ButtonRadio, { SelectionOption } from '../common/components/ButtonRadio'
-import { getTargetPlatfromSettingsEntiries, ExtensionSettings, TargetPlatformName } from '../common/settings'
+import { getTargetPlatfromSettingsEntiries, ExtensionSettings, TargetPlatformName, getYtUrlResolversSettingsEntiries, YTUrlResolverName } from '../common/settings'
 import { useLbrySettings } from '../common/useSettings'
 import './popup.sass'
 
@@ -11,8 +11,11 @@ const setSetting = <K extends keyof ExtensionSettings>(setting: K, value: Extens
 const platformOptions: SelectionOption[] = getTargetPlatfromSettingsEntiries()
   .map(([value, { displayName: display }]) => ({ value, display }));
 
+  const ytUrlResolverOptions: SelectionOption[] = getYtUrlResolversSettingsEntiries()
+  .map(([value, { name: display }]) => ({ value, display }));
+
 function WatchOnLbryPopup() {
-  const { redirect, targetPlatform } = useLbrySettings();
+  const { redirect, targetPlatform, urlResolver } = useLbrySettings();
 
   return <div className='container'>
     <section>
@@ -24,6 +27,11 @@ function WatchOnLbryPopup() {
       <label className='radio-label'>Where would you like to redirect?</label>
       <ButtonRadio value={targetPlatform} options={platformOptions}
         onChange={(platform: TargetPlatformName) => setSetting('targetPlatform', platform)} />
+    </section>
+    <section>
+      <label className='radio-label'>Resolve URL with:</label>
+      <ButtonRadio value={urlResolver} options={ytUrlResolverOptions}
+        onChange={(urlResolver: YTUrlResolverName) => setSetting('urlResolver', urlResolver)} />
     </section>
     <section>
       <label className='radio-label'>Other useful tools:</label>
