@@ -1,6 +1,6 @@
 {
   "name": "Watch on LBRY",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "permissions": [
     "https://www.youtube.com/",
     "https://yewtu.be/",
