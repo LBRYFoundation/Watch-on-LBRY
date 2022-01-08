@@ -16,20 +16,25 @@ async function resolveYT(descriptor: YtIdResolverDescriptor) {
   return segments.join('/');
 }
 
+const ctxFromURLIdCache: Record<string, Promise<string | undefined>> = {}
 async function ctxFromURL(href: string): Promise<UpdateContext | void> {
   if (!href) return;
-
+  
   const url = new URL(href);
   if (!getSourcePlatfromSettingsFromHostname(url.hostname)) return
   if (!(url.pathname.startsWith('/watch') || url.pathname.startsWith('/channel'))) return
 
-  const { redirect, targetPlatform } = await getExtensionSettingsAsync('redirect', 'targetPlatform');
   const descriptor = ytService.getId(href);
   if (!descriptor) return; // couldn't get the ID, so we're done
 
-  const res = await resolveYT(descriptor); // NOTE: API call cached by the browser
+  // NOTE: API call cached by the browser for the future version
+  // But cache busting is active for now
+  // Manual memory cache will be removed later
+  const promise = ctxFromURLIdCache[descriptor.id] ?? (ctxFromURLIdCache[descriptor.id] = resolveYT(descriptor))
+  const res = await promise;
   if (!res) return; // couldn't find it on lbry, so we're done
 
+  const { redirect, targetPlatform } = await getExtensionSettingsAsync('redirect', 'targetPlatform');
   return { descriptor, lbryPathname: res, redirect, targetPlatform };
 }
 

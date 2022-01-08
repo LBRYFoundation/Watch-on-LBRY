@@ -106,7 +106,7 @@ export const ytService = {
     if (channelId) return { id: channelId, type: 'channel' };
     return null;
   },
-
+ 
   /**
   * @param descriptorsWithIndex YT resource IDs to check
   * @returns a promise with the list of channels that were found on lbry
@@ -163,7 +163,7 @@ export const ytService = {
               if (!descriptor.id) break
               url.searchParams.set(urlResolverFunction.paramName, descriptor.id)
   
-              const apiResponse = await fetch(url.toString(), { cache: 'force-cache' });
+              const apiResponse = await fetch(url.toString(), { cache: 'reload' });
               if (!apiResponse.ok) break
               const value = followResponsePath<string>(await apiResponse.json(), urlResolverFunction.responsePath)
               if (value) results[descriptor.index] = value
@@ -184,7 +184,7 @@ export const ytService = {
                 .filter((descriptorId) => descriptorId)
                 .join(urlResolverFunction.paramArraySeperator)
               )
-              const apiResponse = await fetch(url.toString(), { cache: 'force-cache' });
+              const apiResponse = await fetch(url.toString(), { cache: 'reload' });
               if (!apiResponse.ok) break
               const values = followResponsePath<string[]>(await apiResponse.json(), urlResolverFunction.responsePath)
               values.forEach((value, index) => {
