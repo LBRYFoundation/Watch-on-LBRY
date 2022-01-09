@@ -16,6 +16,7 @@ async function resolveYT(descriptor: YtIdResolverDescriptor) {
   return segments.join('/');
 }
 
+const ctxFromURLOnGoingPromise: Record<string, Promise<UpdateContext | void>> = {}
 async function ctxFromURL(href: string): Promise<UpdateContext | void> {
   if (!href) return;
   
@@ -26,12 +27,18 @@ async function ctxFromURL(href: string): Promise<UpdateContext | void> {
   const descriptor = ytService.getId(href);
   if (!descriptor) return; // couldn't get the ID, so we're done
 
-  // NOTE: API call cached by resolveYT method automatically
-  const res = await resolveYT(descriptor);
-  if (!res) return; // couldn't find it on lbry, so we're done
+  // Don't create a new Promise for same ID until on going one is over.
+  const promise = ctxFromURLOnGoingPromise[descriptor.id] ?? (ctxFromURLOnGoingPromise[descriptor.id] = (async () => {
+    // NOTE: API call cached by resolveYT method automatically
+    const res = await resolveYT(descriptor)
+    if (!res) return // couldn't find it on lbry, so we're done
 
-  const { redirect, targetPlatform } = await getExtensionSettingsAsync('redirect', 'targetPlatform');
-  return { descriptor, lbryPathname: res, redirect, targetPlatform };
+    const { redirect, targetPlatform } = await getExtensionSettingsAsync('redirect', 'targetPlatform')
+    return { descriptor, lbryPathname: res, redirect, targetPlatform }
+  })())
+  await promise
+  delete ctxFromURLOnGoingPromise[descriptor.id]
+  return await promise
 }
 
 // handles lbry.tv -> lbry app redirect
