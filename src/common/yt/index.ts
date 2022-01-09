@@ -1,6 +1,6 @@
-import chunk from 'lodash/chunk';
-import groupBy from 'lodash/groupBy';
-import { getExtensionSettingsAsync, Keys, SingleValueAtATime, Values, YtUrlResolveFunction, YTUrlResolver, YtUrlResolveResponsePath, ytUrlResolversSettings } from './settings'
+import chunk from 'lodash/chunk'
+import groupBy from 'lodash/groupBy'
+import { getExtensionSettingsAsync, Keys, SingleValueAtATime, Values, YtUrlResolveFunction, YtUrlResolveResponsePath, ytUrlResolversSettings } from '../settings'
 
 // const LBRY_API_HOST = 'https://api.odysee.com'; MOVED TO SETTINGS
 const QUERY_CHUNK_SIZE = 300;
