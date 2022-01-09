@@ -128,7 +128,7 @@ window.addEventListener('load', async () =>
 
   function getVideoTime(url: URL)
   {
-    return settings.redirect ? 
+    return settings.redirect ?
       (url.searchParams.has('t') ? parseYouTubeURLTimeString(url.searchParams.get('t')!) : null) :
       (videoElement.currentTime > 3 && videoElement.currentTime < videoElement.duration - 1 ? videoElement.currentTime : null)
   }
@@ -139,17 +139,15 @@ window.addEventListener('load', async () =>
     if (url.pathname !== '/watch') return
 
     const videoId = url.searchParams.get('v')
-    if (!videoId) return
-    const lbryPathname = await requestLbryPathname(videoId)
-    if (!lbryPathname) return
-    const time = getVideoTime(url)
-    target = { lbryPathname, platfrom: targetPlatformSettings[settings.targetPlatform], time }
+    const lbryPathname = videoId && await requestLbryPathname(videoId)
+    if (lbryPathname) target = { lbryPathname, platfrom: targetPlatformSettings[settings.targetPlatform], time: getVideoTime(url) }
+    else target = null
 
-    if (settings.redirect) redirectTo(target)
+    if (settings.redirect) target && redirectTo(target)
     else updateButton(buttonMountPoint, target)
   }
 
-  videoElement.addEventListener('timeupdate', 
+  videoElement.addEventListener('timeupdate',
     () => target && updateButton(buttonMountPoint, Object.assign(target, { time: getVideoTime(new URL(location.href)) })))
 
   async function onUrlChange()
