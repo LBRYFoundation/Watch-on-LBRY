@@ -38,6 +38,66 @@ export interface YtIdResolverDescriptor {
   type: 'channel' | 'video'
 }
 
+const URLResolverCache = (() =>
+{
+  const openRequest = indexedDB.open("yt-url-resolver-cache")
+
+  if (typeof self.indexedDB !== 'undefined')
+  {
+    openRequest.addEventListener('upgradeneeded', () =>
+    {
+      const db = openRequest.result
+      const store = db.createObjectStore("store")
+      store.createIndex("expireAt", "expireAt")
+    })
+
+    // Delete Expired
+    openRequest.addEventListener('success', () =>
+    {
+      const db = openRequest.result
+      const transaction = db.transaction("store", "readwrite")
+      const range = IDBKeyRange.upperBound(new Date())
+
+      const expireAtCursorRequest = transaction.objectStore("store").index("expireAt").openCursor(range)
+      expireAtCursorRequest.addEventListener('success', () =>
+      {
+        const expireCursor = expireAtCursorRequest.result
+        if (!expireCursor) return
+        expireCursor.delete()
+        expireCursor.continue()
+      })
+    })
+  }
+  else console.warn(`IndexedDB not supported`)
+
+  async function put(url: string | null, id: string) : Promise<void>
+  {
+    return await new Promise((resolve, reject) =>
+    {
+      const db = openRequest.result
+      if (!db) return resolve()
+      const store = db.transaction("store", "readwrite").objectStore("store")
+      const putRequest = store.put({ value: url, expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }, id)
+      putRequest.addEventListener('success', () => resolve())
+      putRequest.addEventListener('error', () => reject(putRequest.error))
+    })
+  }
+  async function get(id: string): Promise<string | null>
+  {
+    return (await new Promise((resolve, reject) =>
+    {
+      const db = openRequest.result
+      if (!db) return resolve(null)
+      const store = db.transaction("store", "readonly").objectStore("store")
+      const getRequest = store.get(id)
+      getRequest.addEventListener('success', () => resolve(getRequest.result))
+      getRequest.addEventListener('error', () => reject(getRequest.error))
+    }) as any)?.value
+  }
+
+  return { put, get }
+})() 
+
 export const ytService = {
 
   /**
@@ -106,16 +166,31 @@ export const ytService = {
     if (channelId) return { id: channelId, type: 'channel' };
     return null;
   },
-
+ 
   /**
   * @param descriptorsWithIndex YT resource IDs to check
   * @returns a promise with the list of channels that were found on lbry
   */
-  async resolveById(descriptors: YtIdResolverDescriptor[], progressCallback?: (progress: number) => void): Promise<string[]> {
+  async resolveById(descriptors: YtIdResolverDescriptor[], progressCallback?: (progress: number) => void): Promise<(string | null)[]> {
     const descriptorsWithIndex: (YtIdResolverDescriptor & { index: number })[] = descriptors.map((descriptor, index) => ({...descriptor, index}))
-    
+    descriptors = null as any
+    const results: (string | null)[] = []
+
+    await Promise.all(descriptorsWithIndex.map(async (descriptor, index) => {
+      if (!descriptor) return
+      const cache = await URLResolverCache.get(descriptor.id)
+
+      // Cache can be null, if there is no lbry url yet
+      if (cache !== undefined) {
+        // Directly setting it to results
+        results[index] = cache
+
+        // We remove it so we dont ask it to API
+        descriptorsWithIndex.splice(index, 1)
+      }
+    }))
+
     const descriptorsChunks = chunk(descriptorsWithIndex, QUERY_CHUNK_SIZE);
-    const results: string[] = []
     let progressCount = 0;
     await Promise.all(descriptorsChunks.map(async (descriptorChunk) => 
     {
@@ -154,6 +229,7 @@ export const ytService = {
       async function requestGroup(urlResolverFunction: YtUrlResolveFunction, descriptorsGroup: typeof descriptorsWithIndex)
       {
         url.pathname = urlResolverFunction.pathname
+
         if (urlResolverFunction.paramArraySeperator === SingleValueAtATime)
         {
           await Promise.all(descriptorsGroup.map(async (descriptor) => {
@@ -162,11 +238,17 @@ export const ytService = {
               default:
               if (!descriptor.id) break
               url.searchParams.set(urlResolverFunction.paramName, descriptor.id)
-  
-              const apiResponse = await fetch(url.toString(), { cache: 'force-cache' });
-              if (!apiResponse.ok) break
+              
+              const apiResponse = await fetch(url.toString(), { cache: 'no-store' });
+              if (!apiResponse.ok) {
+                // Some API might not respond with 200 if it can't find the url
+                if (apiResponse.status === 404) await URLResolverCache.put(null, descriptor.id)
+                break
+              }
+
               const value = followResponsePath<string>(await apiResponse.json(), urlResolverFunction.responsePath)
               if (value) results[descriptor.index] = value
+              await URLResolverCache.put(value, descriptor.id)
             }
             progressCount++
             if (progressCallback) progressCallback(progressCount / descriptorsWithIndex.length)
@@ -184,13 +266,16 @@ export const ytService = {
                 .filter((descriptorId) => descriptorId)
                 .join(urlResolverFunction.paramArraySeperator)
               )
-              const apiResponse = await fetch(url.toString(), { cache: 'force-cache' });
+
+              const apiResponse = await fetch(url.toString(), { cache: 'no-store' });
               if (!apiResponse.ok) break
               const values = followResponsePath<string[]>(await apiResponse.json(), urlResolverFunction.responsePath)
-              values.forEach((value, index) => {
-                const descriptorIndex = descriptorsGroup[index].index
-                if (value) (results[descriptorIndex] = value)
-              })
+
+              await Promise.all(values.map(async (value, index) => {
+                const descriptor = descriptorsGroup[index]
+                if (value) results[descriptor.index] = value
+                await URLResolverCache.put(value, descriptor.id)
+              }))
           }
           progressCount += descriptorsGroup.length
           if (progressCallback) progressCallback(progressCount / descriptorsWithIndex.length)
