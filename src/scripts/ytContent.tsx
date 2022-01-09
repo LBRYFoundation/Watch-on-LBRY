@@ -155,12 +155,7 @@ function redirectTo({ targetPlatform, lbryPathname }: UpdateContext): void {
   location.replace(url.toString());
 }
 
-
-
-findButtonMountPoint().then(() => updateButton(ctxCache))
-findVideoElement().then(() => updateButton(ctxCache))
-
-async function onPageLoad()
+window.addEventListener('load', async () =>
 {
   // Listen History.pushState
   {
@@ -193,4 +188,7 @@ async function onPageLoad()
   }
 
   await updateByURL(new URL(location.href))
-}
+
+  findButtonMountPoint().then(() => updateButton(ctxCache))
+  findVideoElement().then(() => updateButton(ctxCache))
+})

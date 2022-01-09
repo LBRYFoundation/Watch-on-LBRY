@@ -17,6 +17,11 @@ interface YtExportedJsonSubscription {
   };
 }
 
+export interface YtIdResolverDescriptor {
+  id: string
+  type: 'channel' | 'video'
+}
+
 /**
  * @param file to load
  * @returns a promise with the file as a string
@@ -33,10 +38,58 @@ export function getFileContent(file: File): Promise<string> {
   });
 }
 
-export interface YtIdResolverDescriptor {
-  id: string
-  type: 'channel' | 'video'
-}
+export const ytService = (() => {
+  /**
+   * Extracts the channelID from a YT URL.
+   *
+   * Handles these two types of YT URLs:
+   *  * /feeds/videos.xml?channel_id=*
+   *  * /channel/*
+   */
+   function getChannelId(channelURL: string) {
+    const match = channelURL.match(/channel\/([^\s?]*)/);
+    return match ? match[1] : new URL(channelURL).searchParams.get('channel_id');
+  }
+
+  /**
+   * Reads the array of YT channels from an OPML file
+   *
+   * @param opmlContents an opml file as as tring
+   * @returns the channel IDs
+   */
+  function readOpml(opmlContents: string): string[] {
+    const opml = new DOMParser().parseFromString(opmlContents, 'application/xml');
+    opmlContents = ''
+    return Array.from(opml.querySelectorAll('outline > outline'))
+      .map(outline => outline.getAttribute('xmlUrl'))
+      .filter((url): url is string => !!url)
+      .map(url => getChannelId(url))
+      .filter((url): url is string => !!url); // we don't want it if it's empty
+  }
+
+  /**
+   * Reads an array of YT channel IDs from the YT subscriptions JSON file
+   *
+   * @param jsonContents a JSON file as a string
+   * @returns the channel IDs
+   */
+  function readJson(jsonContents: string): string[] {
+    const subscriptions: YtExportedJsonSubscription[] = JSON.parse(jsonContents);
+    jsonContents = ''
+    return subscriptions.map(sub => sub.snippet.resourceId.channelId);
+  }
+
+  /**
+   * Reads an array of YT channel IDs from the YT subscriptions CSV file
+   *
+   * @param csvContent a CSV file as a string
+   * @returns the channel IDs
+   */
+  function readCsv(csvContent: string): string[] {
+    const rows = csvContent.split('\n')
+    csvContent = ''
+    return rows.slice(1).map((row) => row.substring(0, row.indexOf(',')))
+  }
 
 const URLResolverCache = (() =>
 {
@@ -98,80 +151,12 @@ const URLResolverCache = (() =>
   return { put, get }
 })() 
 
-export const ytService = {
 
-  /**
-   * Reads the array of YT channels from an OPML file
-   *
-   * @param opmlContents an opml file as as tring
-   * @returns the channel IDs
-   */
-  readOpml(opmlContents: string): string[] {
-    const opml = new DOMParser().parseFromString(opmlContents, 'application/xml');
-    opmlContents = ''
-    return Array.from(opml.querySelectorAll('outline > outline'))
-      .map(outline => outline.getAttribute('xmlUrl'))
-      .filter((url): url is string => !!url)
-      .map(url => ytService.getChannelId(url))
-      .filter((url): url is string => !!url); // we don't want it if it's empty
-  },
-
-  /**
-   * Reads an array of YT channel IDs from the YT subscriptions JSON file
-   *
-   * @param jsonContents a JSON file as a string
-   * @returns the channel IDs
-   */
-  readJson(jsonContents: string): string[] {
-    const subscriptions: YtExportedJsonSubscription[] = JSON.parse(jsonContents);
-    jsonContents = ''
-    return subscriptions.map(sub => sub.snippet.resourceId.channelId);
-  },
-
-  /**
-   * Reads an array of YT channel IDs from the YT subscriptions CSV file
-   *
-   * @param csvContent a CSV file as a string
-   * @returns the channel IDs
-   */
-  readCsv(csvContent: string): string[] {
-    const rows = csvContent.split('\n')
-    csvContent = ''
-    return rows.slice(1).map((row) => row.substring(0, row.indexOf(',')))
-  },
-
-  /**
-   * Extracts the channelID from a YT URL.
-   *
-   * Handles these two types of YT URLs:
-   *  * /feeds/videos.xml?channel_id=*
-   *  * /channel/*
-   */
-  getChannelId(channelURL: string) {
-    const match = channelURL.match(/channel\/([^\s?]*)/);
-    return match ? match[1] : new URL(channelURL).searchParams.get('channel_id');
-  },
-
-  /** Extracts the video ID from a YT URL */
-  getVideoId(url: string) {
-    const regex = /watch\/?\?.*v=([^\s&]*)/;
-    const match = url.match(regex);
-    return match ? match[1] : null; // match[1] is the videoId
-  },
-
-  getId(url: string): YtIdResolverDescriptor | null {
-    const videoId = ytService.getVideoId(url);
-    if (videoId) return { id: videoId, type: 'video' };
-    const channelId = ytService.getChannelId(url);
-    if (channelId) return { id: channelId, type: 'channel' };
-    return null;
-  },
- 
   /**
   * @param descriptorsWithIndex YT resource IDs to check
   * @returns a promise with the list of channels that were found on lbry
   */
-  async resolveById(descriptors: YtIdResolverDescriptor[], progressCallback?: (progress: number) => void): Promise<(string | null)[]> {
+  async function resolveById(descriptors: YtIdResolverDescriptor[], progressCallback?: (progress: number) => void): Promise<(string | null)[]> {
     const descriptorsWithIndex: (YtIdResolverDescriptor & { index: number })[] = descriptors.map((descriptor, index) => ({...descriptor, index}))
     descriptors = null as any
     const results: (string | null)[] = []
@@ -196,7 +181,7 @@ export const ytService = {
     {
       const descriptorsGroupedByType: Record<YtIdResolverDescriptor['type'], typeof descriptorsWithIndex | null> = groupBy(descriptorChunk, (descriptor) => descriptor.type) as any;
 
-      const { urlResolver: urlResolverSettingName } = await getExtensionSettingsAsync('urlResolver')
+      const { urlResolver: urlResolverSettingName } = await getExtensionSettingsAsync()
       const urlResolverSetting = ytUrlResolversSettings[urlResolverSettingName]
 
       const url = new URL(`https://${urlResolverSetting.hostname}`);
@@ -288,5 +273,7 @@ export const ytService = {
     }));
     
     return results
-  } 
-}
+  }
+
+  return { readCsv, readJson, readOpml, resolveById }
+})()
