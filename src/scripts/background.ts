@@ -1,5 +1,5 @@
 import { parseProtocolUrl } from '../common/lbry-url'
-import { resolveById, YtIdResolverDescriptor } from '../common/yt'
+import { resolveById, YtIdResolverDescriptor } from '../common/yt/urlResolve'
 async function resolveYT(descriptor: YtIdResolverDescriptor) {
   const lbryProtocolUrl: string | null = await resolveById([descriptor]).then(a => a[0]);
   const segments = parseProtocolUrl(lbryProtocolUrl || '', { encode: true });

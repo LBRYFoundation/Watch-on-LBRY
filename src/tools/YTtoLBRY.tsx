@@ -1,7 +1,8 @@
 import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
 import { getExtensionSettingsAsync, targetPlatformSettings } from '../common/settings'
-import { getFileContent, getSubsFromCsv, getSubsFromJson, getSubsFromOpml, resolveById } from '../common/yt'
+import { getFileContent, getSubsFromCsv, getSubsFromJson, getSubsFromOpml } from '../common/yt'
+import { resolveById } from '../common/yt/urlResolve'
 import readme from './README.md'
 
 
