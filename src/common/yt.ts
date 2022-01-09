@@ -91,65 +91,57 @@ export const ytService = (() => {
     return rows.slice(1).map((row) => row.substring(0, row.indexOf(',')))
   }
 
-const URLResolverCache = (() =>
-{
-  const openRequest = indexedDB.open("yt-url-resolver-cache")
-
-  if (typeof self.indexedDB !== 'undefined')
+  const URLResolverCache = (() =>
   {
-    openRequest.addEventListener('upgradeneeded', () =>
-    {
-      const db = openRequest.result
-      const store = db.createObjectStore("store")
-      store.createIndex("expireAt", "expireAt")
-    })
+    const openRequest = self.indexedDB?.open("yt-url-resolver-cache")
 
-    // Delete Expired
-    openRequest.addEventListener('success', () =>
+    if (openRequest)
     {
-      const db = openRequest.result
-      const transaction = db.transaction("store", "readwrite")
-      const range = IDBKeyRange.upperBound(new Date())
+      openRequest.addEventListener('upgradeneeded', () => openRequest.result.createObjectStore("store").createIndex("expireAt", "expireAt"))
 
-      const expireAtCursorRequest = transaction.objectStore("store").index("expireAt").openCursor(range)
-      expireAtCursorRequest.addEventListener('success', () =>
+      // Delete Expired
+      openRequest.addEventListener('success', () =>
       {
-        const expireCursor = expireAtCursorRequest.result
-        if (!expireCursor) return
-        expireCursor.delete()
-        expireCursor.continue()
+        const transaction = openRequest.result.transaction("store", "readwrite")
+        const range = IDBKeyRange.upperBound(new Date())
+
+        const expireAtCursorRequest = transaction.objectStore("store").index("expireAt").openCursor(range)
+        expireAtCursorRequest.addEventListener('success', () =>
+        {
+          const expireCursor = expireAtCursorRequest.result
+          if (!expireCursor) return
+          expireCursor.delete()
+          expireCursor.continue()
+        })
       })
-    })
-  }
-  else console.warn(`IndexedDB not supported`)
+    }
+    else console.warn(`IndexedDB not supported`)
 
-  async function put(url: string | null, id: string) : Promise<void>
-  {
-    return await new Promise((resolve, reject) =>
+    async function put(url: string | null, id: string): Promise<void>
     {
-      const db = openRequest.result
-      if (!db) return resolve()
-      const store = db.transaction("store", "readwrite").objectStore("store")
-      const putRequest = store.put({ value: url, expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }, id)
-      putRequest.addEventListener('success', () => resolve())
-      putRequest.addEventListener('error', () => reject(putRequest.error))
-    })
-  }
-  async function get(id: string): Promise<string | null>
-  {
-    return (await new Promise((resolve, reject) =>
+      return await new Promise((resolve, reject) =>
+      {
+        const store = openRequest.result.transaction("store", "readwrite").objectStore("store")
+        if (!store) return resolve()
+        const request = store.put({ value: url, expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }, id)
+        request.addEventListener('success', () => resolve())
+        request.addEventListener('error', () => reject(request.error))
+      })
+    }
+    async function get(id: string): Promise<string | null>
     {
-      const db = openRequest.result
-      if (!db) return resolve(null)
-      const store = db.transaction("store", "readonly").objectStore("store")
-      const getRequest = store.get(id)
-      getRequest.addEventListener('success', () => resolve(getRequest.result))
-      getRequest.addEventListener('error', () => reject(getRequest.error))
-    }) as any)?.value
-  }
+      return (await new Promise((resolve, reject) =>
+      {
+        const store = openRequest.result.transaction("store", "readonly").objectStore("store")
+        if (!store) return resolve(null)
+        const request = store.get(id)
+        request.addEventListener('success', () => resolve(request.result))
+        request.addEventListener('error', () => reject(request.error))
+      }) as any)?.value
+    }
 
-  return { put, get }
-})() 
+    return { put, get }
+  })() 
 
 
   /**
