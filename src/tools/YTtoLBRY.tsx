@@ -22,7 +22,7 @@ async function lbryChannelsFromFile(file: File) {
   const lbryUrls = await ytService.resolveById(
     Array.from(ids).map(id => ({ id, type: 'channel' } as const)), 
     (progress) => render(<YTtoLBRY progress={progress} />, document.getElementById('root')!));
-  const { targetPlatform: platform } = await getExtensionSettingsAsync('targetPlatform');
+  const { targetPlatform: platform } = await getExtensionSettingsAsync();
   const urlPrefix = targetPlatformSettings[platform].domainPrefix;
   return lbryUrls.map(channel => urlPrefix + channel);
 }
