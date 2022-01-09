@@ -19,12 +19,12 @@ async function lbryChannelsFromFile(file: File) {
     ext === 'xml' || ext == 'opml' ? getSubsFromOpml : 
     ext === 'csv' ? getSubsFromCsv : 
     getSubsFromJson)(await getFileContent(file)))
-  const lbryUrls = await resolveById(
+  const lbryPathnames = await resolveById(
     Array.from(ids).map(id => ({ id, type: 'channel' } as const)), 
     (progress) => render(<YTtoLBRY progress={progress} />, document.getElementById('root')!));
   const { targetPlatform: platform } = await getExtensionSettingsAsync();
   const urlPrefix = targetPlatformSettings[platform].domainPrefix;
-  return lbryUrls.map(channel => urlPrefix + channel);
+  return lbryPathnames.map(channel => urlPrefix + channel);
 }
 
 function ConversionCard({ onSelect, progress }: { onSelect(file: File): Promise<void> | void, progress: number }) {

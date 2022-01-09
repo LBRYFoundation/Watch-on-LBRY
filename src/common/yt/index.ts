@@ -1,7 +1,7 @@
 import chunk from 'lodash/chunk'
 import groupBy from 'lodash/groupBy'
 import { getExtensionSettingsAsync, Keys, SingleValueAtATime, Values, YtUrlResolveFunction, YtUrlResolveResponsePath, ytUrlResolversSettings } from '../settings'
-import { LbryURLCache } from './urlCache'
+import { LbryPathnameCache } from './urlCache'
 
 // const LBRY_API_HOST = 'https://api.odysee.com'; MOVED TO SETTINGS
 const QUERY_CHUNK_SIZE = 300
@@ -56,6 +56,29 @@ export function getChannelId(channelURL: string)
     const match = channelURL.match(/channel\/([^\s?]*)/)
     return match ? match[1] : new URL(channelURL).searchParams.get('channel_id')
 }
+
+export function parseYouTubeURLTimeString(timeString: string)
+{
+    const signs = timeString.replace(/[0-9]/g, '')
+    if (signs.length === 0) return timeString
+    const numbers = timeString.replace(/[^0-9]/g, '-').split('-')
+    let total = 0
+    for (let i = 0; i < signs.length; i++)
+    {
+        let t = parseInt(numbers[i])
+        switch (signs[i])
+        {
+            case 'd': t *= 24
+            case 'h': t *= 60
+            case 'm': t *= 60
+            case 's': break
+            default: return '0'
+        }
+        total += t
+    }
+    return total.toString()
+}
+
 
 /**
  * Reads the array of YT channels from an OPML file
@@ -113,7 +136,7 @@ export async function resolveById(descriptors: YtIdResolverDescriptor[], progres
     await Promise.all(descriptorsWithIndex.map(async (descriptor, index) =>
     {
         if (!descriptor) return
-        const cache = await LbryURLCache.get(descriptor.id)
+        const cache = await LbryPathnameCache.get(descriptor.id)
 
         // Cache can be null, if there is no lbry url yet
         if (cache !== undefined)
@@ -180,13 +203,13 @@ export async function resolveById(descriptors: YtIdResolverDescriptor[], progres
                             if (!apiResponse.ok)
                             {
                                 // Some API might not respond with 200 if it can't find the url
-                                if (apiResponse.status === 404) await LbryURLCache.put(null, descriptor.id)
+                                if (apiResponse.status === 404) await LbryPathnameCache.put(null, descriptor.id)
                                 break
                             }
 
                             const value = followResponsePath<string>(await apiResponse.json(), urlResolverFunction.responsePath)
                             if (value) results[descriptor.index] = value
-                            await LbryURLCache.put(value, descriptor.id)
+                            await LbryPathnameCache.put(value, descriptor.id)
                     }
                     progressCount++
                     if (progressCallback) progressCallback(progressCount / descriptorsWithIndex.length)
@@ -213,7 +236,7 @@ export async function resolveById(descriptors: YtIdResolverDescriptor[], progres
                         {
                             const descriptor = descriptorsGroup[index]
                             if (value) results[descriptor.index] = value
-                            await LbryURLCache.put(value, descriptor.id)
+                            await LbryPathnameCache.put(value, descriptor.id)
                         }))
                 }
                 progressCount += descriptorsGroup.length

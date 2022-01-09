@@ -25,7 +25,7 @@
   "background": {
     "scripts": [
       "scripts/storageSetup.js",
-      "scripts/tabOnUpdated.js"
+      "scripts/background.js"
     ],
     "persistent": false
   },
