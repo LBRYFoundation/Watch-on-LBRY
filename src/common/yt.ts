@@ -61,11 +61,10 @@ const URLResolverCache = (() =>
       const expireAtCursorRequest = transaction.objectStore("store").index("expireAt").openCursor(range)
       expireAtCursorRequest.addEventListener('success', () =>
       {
-        const timestampCursor = expireAtCursorRequest.result
-        if (!timestampCursor) return
-        console.log("deleting: " + timestampCursor)
-        timestampCursor.delete()
-        timestampCursor.continue()
+        const expireCursor = expireAtCursorRequest.result
+        if (!expireCursor) return
+        expireCursor.delete()
+        expireCursor.continue()
       })
     })
   }
@@ -76,9 +75,7 @@ const URLResolverCache = (() =>
     return await new Promise((resolve, reject) =>
     {
       const db = openRequest.result
-      console.log('new put!')
       if (!db) return resolve()
-      console.log('new put')
       const store = db.transaction("store", "readwrite").objectStore("store")
       const putRequest = store.put({ value: url, expireAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }, id)
       putRequest.addEventListener('success', () => resolve())
@@ -265,10 +262,11 @@ export const ytService = {
                 .filter((descriptorId) => descriptorId)
                 .join(urlResolverFunction.paramArraySeperator)
               )
+
               const apiResponse = await fetch(url.toString(), { cache: 'no-store' });
               if (!apiResponse.ok) break
               const values = followResponsePath<string[]>(await apiResponse.json(), urlResolverFunction.responsePath)
-              console.log('hellooo')
+
               await Promise.all(values.map(async (value, index) => {
                 const descriptor = descriptorsGroup[index]
                 if (value) results[descriptor.index] = value
