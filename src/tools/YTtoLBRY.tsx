@@ -1,7 +1,7 @@
 import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
 import { getExtensionSettingsAsync, targetPlatformSettings } from '../common/settings'
-import { getFileContent, ytService } from '../common/yt'
+import { getFileContent, getSubsFromCsv, getSubsFromJson, getSubsFromOpml, resolveById } from '../common/yt'
 import readme from './README.md'
 
 
@@ -16,10 +16,10 @@ async function lbryChannelsFromFile(file: File) {
   const ext = file.name.split('.').pop()?.toLowerCase();
   
   const ids = new Set((
-    ext === 'xml' || ext == 'opml' ? ytService.readOpml : 
-    ext === 'csv' ? ytService.readCsv : 
-    ytService.readJson)(await getFileContent(file)))
-  const lbryUrls = await ytService.resolveById(
+    ext === 'xml' || ext == 'opml' ? getSubsFromOpml : 
+    ext === 'csv' ? getSubsFromCsv : 
+    getSubsFromJson)(await getFileContent(file)))
+  const lbryUrls = await resolveById(
     Array.from(ids).map(id => ({ id, type: 'channel' } as const)), 
     (progress) => render(<YTtoLBRY progress={progress} />, document.getElementById('root')!));
   const { targetPlatform: platform } = await getExtensionSettingsAsync();

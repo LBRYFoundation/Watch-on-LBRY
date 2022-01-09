@@ -1,7 +1,7 @@
-import { ExtensionSettings, getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, TargetPlatformName, targetPlatformSettings } from '../common/settings'
-import type { UpdateContext } from '../scripts/tabOnUpdated'
 import { h, JSX, render } from 'preact'
-import { YtIdResolverDescriptor, ytService } from '../common/yt'
+import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, TargetPlatformName, targetPlatformSettings } from '../common/settings'
+import { resolveById, YtIdResolverDescriptor } from '../common/yt'
+import type { UpdateContext } from '../scripts/tabOnUpdated'
 
 const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t));
 
@@ -177,7 +177,7 @@ window.addEventListener('load', async () =>
     const videoId = url.searchParams.get('v')
     if (!videoId) return
     const descriptor: YtIdResolverDescriptor = { id: videoId, type: 'video' }
-    const lbryPathname = (await ytService.resolveById([descriptor]))[0]
+    const lbryPathname = (await resolveById([descriptor]))[0]
     if (!lbryPathname) return
     updateButton({ descriptor, lbryPathname, redirect: settings.redirect, targetPlatform: settings.targetPlatform })
   }
