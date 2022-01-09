@@ -70,7 +70,7 @@ const URLResolverCache = (() =>
   }
   else console.warn(`IndexedDB not supported`)
 
-  async function put(url: string, id: string) : Promise<void>
+  async function put(url: string | null, id: string) : Promise<void>
   {
     return await new Promise((resolve, reject) =>
     {
@@ -82,7 +82,7 @@ const URLResolverCache = (() =>
       putRequest.addEventListener('error', () => reject(putRequest.error))
     })
   }
-  async function get(id: string): Promise<string>
+  async function get(id: string): Promise<string | null>
   {
     return (await new Promise((resolve, reject) =>
     {
@@ -171,10 +171,10 @@ export const ytService = {
   * @param descriptorsWithIndex YT resource IDs to check
   * @returns a promise with the list of channels that were found on lbry
   */
-  async resolveById(descriptors: YtIdResolverDescriptor[], progressCallback?: (progress: number) => void): Promise<string[]> {
+  async resolveById(descriptors: YtIdResolverDescriptor[], progressCallback?: (progress: number) => void): Promise<(string | null)[]> {
     const descriptorsWithIndex: (YtIdResolverDescriptor & { index: number })[] = descriptors.map((descriptor, index) => ({...descriptor, index}))
     descriptors = null as any
-    const results: string[] = []
+    const results: (string | null)[] = []
 
     await Promise.all(descriptorsWithIndex.map(async (descriptor, index) => {
       if (!descriptor) return
@@ -240,7 +240,11 @@ export const ytService = {
               url.searchParams.set(urlResolverFunction.paramName, descriptor.id)
               
               const apiResponse = await fetch(url.toString(), { cache: 'no-store' });
-              if (!apiResponse.ok) break
+              if (!apiResponse.ok) {
+                // Some API might not respond with 200 if it can't find the url
+                if (apiResponse.status === 404) await URLResolverCache.put(null, descriptor.id)
+                break
+              }
 
               const value = followResponsePath<string>(await apiResponse.json(), urlResolverFunction.responsePath)
               if (value) results[descriptor.index] = value
