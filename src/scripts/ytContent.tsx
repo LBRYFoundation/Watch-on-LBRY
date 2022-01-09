@@ -2,9 +2,9 @@ import { h, render } from 'preact'
 import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, TargetPlatform, targetPlatformSettings } from '../common/settings'
 import { parseYouTubeURLTimeString } from '../common/yt'
 
-const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t));
+const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t))
 
-function pauseAllVideos() { document.querySelectorAll<HTMLVideoElement>('video').forEach(v => v.pause()); }
+function pauseAllVideos() { document.querySelectorAll<HTMLVideoElement>('video').forEach(v => v.pause()) }
 
 interface WatchOnLbryButtonParameters
 {
@@ -20,8 +20,9 @@ interface Target
   time: number | null
 }
 
-export function WatchOnLbryButton({ targetPlatform, lbryPathname, time }: WatchOnLbryButtonParameters) {
-  if (!lbryPathname || !targetPlatform) return null;
+export function WatchOnLbryButton({ targetPlatform, lbryPathname, time }: WatchOnLbryButtonParameters)
+{
+  if (!lbryPathname || !targetPlatform) return null
 
   const url = new URL(`${targetPlatform.domainPrefix}${lbryPathname}`)
   if (time) url.searchParams.set('t', time.toFixed(0))
@@ -43,56 +44,59 @@ export function WatchOnLbryButton({ targetPlatform, lbryPathname, time }: WatchO
         textDecoration: 'none',
         ...targetPlatform.button.style?.button,
       }}>
-        <img src={targetPlatform.button.icon} height={16}
-          style={{ transform: 'scale(1.5)', ...targetPlatform.button.style?.icon }} />
-        <span>{targetPlatform.button.text}</span>
-      </a>
-  </div>;
+      <img src={targetPlatform.button.icon} height={16}
+        style={{ transform: 'scale(1.5)', ...targetPlatform.button.style?.icon }} />
+      <span>{targetPlatform.button.text}</span>
+    </a>
+  </div>
 }
 
-function updateButton(mountPoint: HTMLDivElement, target: Target | null): void {
+function updateButton(mountPoint: HTMLDivElement, target: Target | null): void
+{
   if (!target) return render(<WatchOnLbryButton />, mountPoint)
-  render(<WatchOnLbryButton targetPlatform={target.platfrom} lbryPathname={target.lbryPathname} time={target.time ?? undefined} />, mountPoint)
+  const time = target.time && target.time > 3 ? target.time : null
+  render(<WatchOnLbryButton targetPlatform={target.platfrom} lbryPathname={target.lbryPathname} time={time ?? undefined} />, mountPoint)
 }
 
-function redirectTo({ lbryPathname, platfrom }: Target)
+function redirectTo({ lbryPathname, platfrom, time }: Target)
 {
   const url = new URL(`${platfrom.domainPrefix}${lbryPathname}`)
-  const time = new URL(location.href).searchParams.get('t')
-  
-  if (time) url.searchParams.set('t', parseYouTubeURLTimeString(time))
+
+  if (time) url.searchParams.set('t', time.toFixed(0))
 
   if (platfrom === targetPlatformSettings.app)
   {
-    pauseAllVideos();
-    location.assign(url);
+    pauseAllVideos()
+    location.assign(url)
     return
   }
-  location.replace(url.toString());
+  location.replace(url.toString())
 }
 
 /** Returns a mount point for the button */
-async function findButtonMountPoint(): Promise<HTMLDivElement> {
+async function findButtonMountPoint(): Promise<HTMLDivElement>
+{
   let mountBefore: HTMLDivElement | null = null
   const sourcePlatform = getSourcePlatfromSettingsFromHostname(new URL(location.href).hostname)
   if (!sourcePlatform) throw new Error(`Unknown source of: ${location.href}`)
 
-  while (!(mountBefore = document.querySelector(sourcePlatform.htmlQueries.mountButtonBefore))) await sleep(200);
+  while (!(mountBefore = document.querySelector(sourcePlatform.htmlQueries.mountButtonBefore))) await sleep(200)
 
-  const div = document.createElement('div');
-  div.style.display = 'flex';
+  const div = document.createElement('div')
+  div.style.display = 'flex'
   div.style.alignItems = 'center'
   mountBefore.parentElement?.insertBefore(div, mountBefore)
-  
+
   return div
 }
 
-async function findVideoElement() {
+async function findVideoElement()
+{
   const sourcePlatform = getSourcePlatfromSettingsFromHostname(new URL(location.href).hostname)
   if (!sourcePlatform) throw new Error(`Unknown source of: ${location.href}`)
-  let videoElement: HTMLVideoElement | null = null;
+  let videoElement: HTMLVideoElement | null = null
 
-  while(!(videoElement = document.querySelector(sourcePlatform.htmlQueries.videoPlayer))) await sleep(200)
+  while (!(videoElement = document.querySelector(sourcePlatform.htmlQueries.videoPlayer))) await sleep(200)
 
   return videoElement
 }
@@ -100,19 +104,24 @@ async function findVideoElement() {
 window.addEventListener('load', async () =>
 {
   const settings = await getExtensionSettingsAsync()
-  const [buttonMountPoint, videoElement] = await Promise.all([findButtonMountPoint(), findVideoElement()])
-  
-  // Listen Settings Change
-  chrome.storage.onChanged.addListener(async (changes, areaName) => {
-    if (areaName !== 'local') return;
-    Object.assign(settings, changes)
-  });
+  if (settings.redirect) return await updateByURL(new URL(location.href))
 
-  // Listen History.pushState
+  const [buttonMountPoint, videoElement] = await Promise.all([findButtonMountPoint(), findVideoElement()])
+
+  // Listen Settings Change
+  chrome.storage.onChanged.addListener(async (changes, areaName) =>
   {
-    const originalPushState = history.pushState
-    history.pushState = function(...params) { originalPushState(...params); afterPushState(); }
-  }
+    if (areaName !== 'local') return
+    Object.assign(settings, changes)
+    updateByURL(new URL(location.href))
+  })
+
+  /*
+  * Gets messages from background script which relays tab update events. This is because there's no sensible way to detect
+  * history.pushState changes from a content script
+  */
+  chrome.runtime.onMessage.addListener(onUrlChange)
+
 
   // Request Lbry pathname from background
   // We should get this from background, so the caching works and we don't get erros in the future if yt decides to impliment CORS
@@ -127,16 +136,17 @@ window.addEventListener('load', async () =>
     if (!videoId) return
     const lbryPathname = await requestLbryPathname(videoId)
     if (!lbryPathname) return
-    const time = videoElement.currentTime > 3 && videoElement.currentTime < videoElement.duration - 1 ? videoElement.currentTime : null
+    const time = settings.redirect ? parseYouTubeURLTimeString(url.searchParams.get('t') ?? '0') : videoElement.currentTime
     target = { lbryPathname, platfrom: targetPlatformSettings[settings.targetPlatform], time }
 
-    if (settings.redirect) redirectTo(target)  
+    if (settings.redirect) redirectTo(target)
     else updateButton(buttonMountPoint, target)
   }
 
-  videoElement.addEventListener('timeupdate', () => updateButton(buttonMountPoint, target))
+  videoElement.addEventListener('timeupdate', () => target && updateButton(buttonMountPoint, Object.assign(target, { time: videoElement.currentTime })))
+  videoElement.addEventListener('ended', () => target && updateButton(buttonMountPoint, Object.assign(target, { time: null })))
 
-  async function afterPushState()
+  async function onUrlChange()
   {
     await updateByURL(new URL(location.href))
   }

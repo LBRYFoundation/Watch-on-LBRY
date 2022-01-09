@@ -20,3 +20,5 @@ chrome.runtime.onMessage.addListener(({ videoId }: { videoId: string }, sender, 
   lbryPathnameFromVideoId(videoId).then((lbryPathname) => sendResponse(lbryPathname))
   return true;
 })
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => changeInfo.url && chrome.tabs.sendMessage(tabId, {  }));
