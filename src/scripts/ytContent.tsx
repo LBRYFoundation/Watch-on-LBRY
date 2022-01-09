@@ -54,8 +54,7 @@ export function WatchOnLbryButton({ targetPlatform, lbryPathname, time }: WatchO
 function updateButton(mountPoint: HTMLDivElement, target: Target | null): void
 {
   if (!target) return render(<WatchOnLbryButton />, mountPoint)
-  const time = target.time && target.time > 3 ? target.time : null
-  render(<WatchOnLbryButton targetPlatform={target.platfrom} lbryPathname={target.lbryPathname} time={time ?? undefined} />, mountPoint)
+  render(<WatchOnLbryButton targetPlatform={target.platfrom} lbryPathname={target.lbryPathname} time={target.time ?? undefined} />, mountPoint)
 }
 
 function redirectTo({ lbryPathname, platfrom, time }: Target)
@@ -112,8 +111,8 @@ window.addEventListener('load', async () =>
   chrome.storage.onChanged.addListener(async (changes, areaName) =>
   {
     if (areaName !== 'local') return
-    Object.assign(settings, changes)
-    updateByURL(new URL(location.href))
+    Object.assign(settings, Object.fromEntries(Object.entries(changes).map(([key, change]) => [key, change.newValue])))
+    await updateByURL(new URL(location.href))
   })
 
   /*
@@ -127,6 +126,13 @@ window.addEventListener('load', async () =>
   // We should get this from background, so the caching works and we don't get erros in the future if yt decides to impliment CORS
   const requestLbryPathname = async (videoId: string) => await new Promise<string | null>((resolve) => chrome.runtime.sendMessage({ videoId }, resolve))
 
+  function getVideoTime(url: URL)
+  {
+    return settings.redirect ? 
+      (url.searchParams.has('t') ? parseYouTubeURLTimeString(url.searchParams.get('t')!) : null) :
+      (videoElement.currentTime > 3 && videoElement.currentTime < videoElement.duration - 1 ? videoElement.currentTime : null)
+  }
+
   let target: Target | null = null
   async function updateByURL(url: URL) 
   {
@@ -136,15 +142,15 @@ window.addEventListener('load', async () =>
     if (!videoId) return
     const lbryPathname = await requestLbryPathname(videoId)
     if (!lbryPathname) return
-    const time = settings.redirect ? parseYouTubeURLTimeString(url.searchParams.get('t') ?? '0') : videoElement.currentTime
+    const time = getVideoTime(url)
     target = { lbryPathname, platfrom: targetPlatformSettings[settings.targetPlatform], time }
 
     if (settings.redirect) redirectTo(target)
     else updateButton(buttonMountPoint, target)
   }
 
-  videoElement.addEventListener('timeupdate', () => target && updateButton(buttonMountPoint, Object.assign(target, { time: videoElement.currentTime })))
-  videoElement.addEventListener('ended', () => target && updateButton(buttonMountPoint, Object.assign(target, { time: null })))
+  videoElement.addEventListener('timeupdate', 
+    () => target && updateButton(buttonMountPoint, Object.assign(target, { time: getVideoTime(new URL(location.href)) })))
 
   async function onUrlChange()
   {

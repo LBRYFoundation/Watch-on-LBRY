@@ -2,9 +2,6 @@
 
 let db: IDBDatabase | null = null
 
-// Throw if its not in the background
-if (chrome.extension.getBackgroundPage() !== self) throw new Error()
-
 if (typeof self.indexedDB !== 'undefined')
 {
     const openRequest = indexedDB.open("yt-url-resolver-cache")

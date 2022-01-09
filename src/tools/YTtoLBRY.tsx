@@ -5,8 +5,6 @@ import { getFileContent, getSubsFromCsv, getSubsFromJson, getSubsFromOpml } from
 import { resolveById } from '../common/yt/urlResolve'
 import readme from './README.md'
 
-
-
 /**
  * Parses the subscription file and queries the API for lbry channels
  *

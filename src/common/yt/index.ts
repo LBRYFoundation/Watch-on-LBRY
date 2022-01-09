@@ -92,7 +92,7 @@ export function getChannelId(channelURL: string)
 export function parseYouTubeURLTimeString(timeString: string)
 {
     const signs = timeString.replace(/[0-9]/g, '')
-    if (signs.length === 0) return 0
+    if (signs.length === 0) return null
     const numbers = timeString.replace(/[^0-9]/g, '-').split('-')
     let total = 0
     for (let i = 0; i < signs.length; i++)
@@ -104,7 +104,7 @@ export function parseYouTubeURLTimeString(timeString: string)
             case 'h': t *= 60
             case 'm': t *= 60
             case 's': break
-            default: return 0
+            default: return null
         }
         total += t
     }
