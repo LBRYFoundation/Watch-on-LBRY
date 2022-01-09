@@ -1,6 +1,7 @@
-import { getSourcePlatfromSettingsFromHostname, TargetPlatformName, targetPlatformSettings } from '../common/settings'
+import { ExtensionSettings, getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, TargetPlatformName, targetPlatformSettings } from '../common/settings'
 import type { UpdateContext } from '../scripts/tabOnUpdated'
 import { h, JSX, render } from 'preact'
+import { YtIdResolverDescriptor, ytService } from '../common/yt'
 
 const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t));
 
@@ -159,21 +160,37 @@ function redirectTo({ targetPlatform, lbryPathname }: UpdateContext): void {
 findButtonMountPoint().then(() => updateButton(ctxCache))
 findVideoElement().then(() => updateButton(ctxCache))
 
+async function onPageLoad()
+{
+  // Listen History.pushState
+  {
+    const originalPushState = history.pushState
+    history.pushState = function(...params) { onPushState(); return originalPushState(...params) }
+  }
 
-/** Request UpdateContext from background */
-const requestCtxFromUrl = async (url: string) => await new Promise<UpdateContext | null>((resolve) => chrome.runtime.sendMessage({ url }, resolve))
+  const settings = await getExtensionSettingsAsync('redirect', 'targetPlatform', 'urlResolver')
+  
+  // Listen Settings Change
+  chrome.storage.onChanged.addListener(async (changes, areaName) => {
+    if (areaName !== 'local') return;
+    Object.assign(settings, changes)
+  });
 
-/** Handle the location on load of the page */ 
-requestCtxFromUrl(location.href).then((ctx) => handleURLChange(ctx))
+  async function updateByURL(url: URL) 
+  {
+    if (url.pathname !== '/watch') return
+    const videoId = url.searchParams.get('v')
+    if (!videoId) return
+    const descriptor: YtIdResolverDescriptor = { id: videoId, type: 'video' }
+    const lbryPathname = (await ytService.resolveById([descriptor]))[0]
+    if (!lbryPathname) return
+    updateButton({ descriptor, lbryPathname, redirect: settings.redirect, targetPlatform: settings.targetPlatform })
+  }
 
-/*
- * Gets messages from background script which relays tab update events. This is because there's no sensible way to detect
- * history.pushState changes from a content script
- */
-chrome.runtime.onMessage.addListener(async (ctx: UpdateContext) => handleURLChange(ctx));
+  async function onPushState()
+  {
+    await updateByURL(new URL(location.href))
+  }
 
-/** On settings change */
-chrome.storage.onChanged.addListener(async (changes, areaName) => {
-  if (areaName !== 'local') return;
-  if (changes.targetPlatform) handleURLChange(await requestCtxFromUrl(location.href))
-});
+  await updateByURL(new URL(location.href))
+}
