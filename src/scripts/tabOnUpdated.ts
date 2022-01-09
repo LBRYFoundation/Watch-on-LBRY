@@ -33,7 +33,7 @@ async function ctxFromURL(href: string): Promise<UpdateContext | void> {
     const res = await resolveYT(descriptor)
     if (!res) return // couldn't find it on lbry, so we're done
 
-    const { redirect, targetPlatform } = await getExtensionSettingsAsync('redirect', 'targetPlatform')
+    const { redirect, targetPlatform } = await getExtensionSettingsAsync()
     return { descriptor, lbryPathname: res, redirect, targetPlatform }
   })())
   await promise

@@ -6,8 +6,9 @@ export interface ExtensionSettings {
 
 export const DEFAULT_SETTINGS: ExtensionSettings = { redirect: true, targetPlatform: 'odysee', urlResolver: 'lbryInc' };
 
-export function getExtensionSettingsAsync<K extends Array<keyof ExtensionSettings>>(...keys: K): Promise<Pick<ExtensionSettings, K[number]>> {
-  return new Promise(resolve => chrome.storage.local.get(keys, o => resolve(o as any)));
+export function getExtensionSettingsAsync(): Promise<ExtensionSettings> 
+{
+  return new Promise(resolve => chrome.storage.local.get(o => resolve(o as any)));
 }
 
 

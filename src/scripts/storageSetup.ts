@@ -2,7 +2,7 @@ import { DEFAULT_SETTINGS, ExtensionSettings, getExtensionSettingsAsync } from '
 
 /** Reset settings to default value and update the browser badge text */
 async function initSettings() {
-  const settings = await getExtensionSettingsAsync(...Object.keys(DEFAULT_SETTINGS) as Array<keyof ExtensionSettings>);
+  const settings = await getExtensionSettingsAsync();
 
   // get all the values that aren't set and use them as a change set
   const invalidEntries = (Object.entries(DEFAULT_SETTINGS) as Array<[keyof ExtensionSettings, ExtensionSettings[keyof ExtensionSettings]]>)

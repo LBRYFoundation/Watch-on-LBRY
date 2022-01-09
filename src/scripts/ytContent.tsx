@@ -168,7 +168,7 @@ async function onPageLoad()
     history.pushState = function(...params) { onPushState(); return originalPushState(...params) }
   }
 
-  const settings = await getExtensionSettingsAsync('redirect', 'targetPlatform', 'urlResolver')
+  const settings = await getExtensionSettingsAsync()
   
   // Listen Settings Change
   chrome.storage.onChanged.addListener(async (changes, areaName) => {
