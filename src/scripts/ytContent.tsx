@@ -61,12 +61,13 @@ async function redirectTo({ lbryPathname, platfrom, time }: Target)
 
   if (time) url.searchParams.set('t', time.toFixed(0))
 
+  findVideoElement().then((videoElement) => {
+    videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
+    videoElement.pause()
+  })
+
   if (platfrom === targetPlatformSettings.app)
   {
-    findVideoElement().then((videoElement) => {
-      videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
-      videoElement.pause()
-    })
     if (document.hidden) await new Promise((resolve) => document.addEventListener('visibilitychange', resolve, { once: true }))
     open(url, '_blank')
     if (window.history.length === 1) window.close();
