@@ -67,7 +67,8 @@ async function redirectTo({ lbryPathname, platfrom, time }: Target) {
     if (window.history.length === 1) window.close()
     else window.history.back()
   }
-  location.replace(url.toString())
+  else 
+    location.replace(url.toString())
 }
 
 /** Returns a mount point for the button */
