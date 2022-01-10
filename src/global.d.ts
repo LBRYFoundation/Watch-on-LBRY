@@ -1,4 +1,4 @@
 declare module '*.md' {
-    var _: string;
-    export default _;
+    var _: string
+    export default _
 }
