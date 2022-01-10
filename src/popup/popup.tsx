@@ -1,7 +1,9 @@
 import { h, render } from 'preact'
+import { useState } from 'preact/hooks'
 import ButtonRadio, { SelectionOption } from '../common/components/ButtonRadio'
 import { ExtensionSettings, getTargetPlatfromSettingsEntiries, getYtUrlResolversSettingsEntiries, TargetPlatformName, YTUrlResolverName } from '../common/settings'
 import { useLbrySettings } from '../common/useSettings'
+import { LbryPathnameCache } from '../common/yt/urlCache'
 import './popup.sass'
 
 /** Utilty to set a setting in the browser */
@@ -16,6 +18,7 @@ const ytUrlResolverOptions: SelectionOption[] = getYtUrlResolversSettingsEntirie
 
 function WatchOnLbryPopup() {
   const { redirect, targetPlatform, urlResolver } = useLbrySettings()
+  let [clearingCache, updateClearingCache] = useState(() => false)
 
   return <div className='container'>
     <section>
@@ -32,6 +35,14 @@ function WatchOnLbryPopup() {
       <label className='radio-label'>Resolve URL with:</label>
       <ButtonRadio value={urlResolver} options={ytUrlResolverOptions}
         onChange={(urlResolver: YTUrlResolverName) => setSetting('urlResolver', urlResolver)} />
+    </section>
+    <section>
+      <a onClick={async () => {
+        await LbryPathnameCache.clearAll()
+        alert('Cleared Cache.')
+      }}>
+        <button type='button' className='btn1 button is-primary'>{clearingCache ? 'Clearing Cache...' : 'Clear Cache'}</button>
+      </a>
     </section>
     <section>
       <label className='radio-label'>Other useful tools:</label>
