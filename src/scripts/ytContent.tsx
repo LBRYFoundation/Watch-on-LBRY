@@ -63,11 +63,12 @@ async function redirectTo({ lbryPathname, platfrom, time }: Target)
 
   if (platfrom === targetPlatformSettings.app)
   {
-    open(url, '_blank')
     findVideoElement().then((videoElement) => {
       videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
       videoElement.pause()
     })
+    if (document.hidden) await new Promise((resolve) => document.addEventListener('visibilitychange', resolve, { once: true }))
+    open(url, '_blank')
     if (window.history.length === 1) window.close();
     else window.history.back()
   }
@@ -141,7 +142,6 @@ window.addEventListener('load', async () =>
 
   async function updateByURL(url: URL) 
   {
-    console.log(url)
     if (url.pathname !== '/watch') return
 
     const videoId = url.searchParams.get('v')
