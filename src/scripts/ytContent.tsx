@@ -4,8 +4,6 @@ import { parseYouTubeURLTimeString } from '../common/yt'
 
 const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t))
 
-function pauseAllVideos() { document.querySelectorAll<HTMLVideoElement>('video').forEach(v => v.pause()) }
-
 interface WatchOnLbryButtonParameters
 {
   targetPlatform?: TargetPlatform
@@ -28,7 +26,7 @@ export function WatchOnLbryButton({ targetPlatform, lbryPathname, time }: WatchO
   if (time) url.searchParams.set('t', time.toFixed(0))
 
   return <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-    <a href={`${url.toString()}`} onClick={pauseAllVideos} role='button'
+    <a href={`${url.toString()}`} role='button'
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -57,7 +55,7 @@ function updateButton(mountPoint: HTMLDivElement, target: Target | null): void
   render(<WatchOnLbryButton targetPlatform={target.platfrom} lbryPathname={target.lbryPathname} time={target.time ?? undefined} />, mountPoint)
 }
 
-function redirectTo({ lbryPathname, platfrom, time }: Target)
+async function redirectTo({ lbryPathname, platfrom, time }: Target)
 {
   const url = new URL(`${platfrom.domainPrefix}${lbryPathname}`)
 
@@ -65,9 +63,13 @@ function redirectTo({ lbryPathname, platfrom, time }: Target)
 
   if (platfrom === targetPlatformSettings.app)
   {
-    pauseAllVideos()
-    location.assign(url)
-    return
+    open(url, '_blank')
+    findVideoElement().then((videoElement) => {
+      videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
+      videoElement.pause()
+    })
+    if (window.history.length === 1) window.close();
+    else window.history.back()
   }
   location.replace(url.toString())
 }
@@ -78,10 +80,12 @@ async function findButtonMountPoint(): Promise<HTMLDivElement>
   let mountBefore: HTMLDivElement | null = null
   const sourcePlatform = getSourcePlatfromSettingsFromHostname(new URL(location.href).hostname)
   if (!sourcePlatform) throw new Error(`Unknown source of: ${location.href}`)
-
+  const exits: HTMLDivElement | null = document.querySelector('#watch-on-yt-button-container')
+  if (exits) return exits;
   while (!(mountBefore = document.querySelector(sourcePlatform.htmlQueries.mountButtonBefore))) await sleep(200)
-
+  
   const div = document.createElement('div')
+  div.id = 'watch-on-yt-button-container'
   div.style.display = 'flex'
   div.style.alignItems = 'center'
   mountBefore.parentElement?.insertBefore(div, mountBefore)
@@ -103,7 +107,7 @@ async function findVideoElement()
 window.addEventListener('load', async () =>
 {
   const settings = await getExtensionSettingsAsync()
-  if (settings.redirect) return await updateByURL(new URL(location.href))
+  let target: Target | null = null
 
   const [buttonMountPoint, videoElement] = await Promise.all([findButtonMountPoint(), findVideoElement()])
 
@@ -119,12 +123,14 @@ window.addEventListener('load', async () =>
   * Gets messages from background script which relays tab update events. This is because there's no sensible way to detect
   * history.pushState changes from a content script
   */
+  // Listen URL Change
   chrome.runtime.onMessage.addListener(onUrlChange)
 
-
-  // Request Lbry pathname from background
   // We should get this from background, so the caching works and we don't get erros in the future if yt decides to impliment CORS
-  const requestLbryPathname = async (videoId: string) => await new Promise<string | null>((resolve) => chrome.runtime.sendMessage({ videoId }, resolve))
+  async function requestLbryPathname(videoId: string)  
+  {
+    return await new Promise<string | null>((resolve) => chrome.runtime.sendMessage({ videoId }, resolve))
+  }
 
   function getVideoTime(url: URL)
   {
@@ -133,9 +139,9 @@ window.addEventListener('load', async () =>
       (videoElement.currentTime > 3 && videoElement.currentTime < videoElement.duration - 1 ? videoElement.currentTime : null)
   }
 
-  let target: Target | null = null
   async function updateByURL(url: URL) 
   {
+    console.log(url)
     if (url.pathname !== '/watch') return
 
     const videoId = url.searchParams.get('v')
