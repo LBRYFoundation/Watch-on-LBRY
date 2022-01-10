@@ -80,7 +80,7 @@ export interface SourcePlatform {
 
 export const sourcePlatfromSettings: Record<SourcePlatformName, SourcePlatform> = {
   "yewtu.be": {
-    hostnames: ['yewtu.be'],
+    hostnames: ['yewtu.be', 'vid.puffyan.us', 'invidio.xamh.de', 'invidious.kavin.rocks'],
     htmlQueries: {
       mountButtonBefore: '#watch-on-youtube',
       videoPlayer: '#player-container video'
