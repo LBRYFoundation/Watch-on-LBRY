@@ -4,10 +4,13 @@
   "permissions": [
     "https://www.youtube.com/",
     "https://yewtu.be/",
-    "https://api.odysee.com/*",
-    "https://lbry.tv/*",
-    "https://odysee.com/*",
-    "https://madiator.com/*",
+    "https://vid.puffyan.us/",
+    "https://invidio.xamh.de/",
+    "https://invidious.kavin.rocks/",
+    "https://api.odysee.com/",
+    "https://lbry.tv/",
+    "https://odysee.com/",
+    "https://madiator.com/",
     "tabs",
     "storage"
   ],
@@ -15,7 +18,10 @@
     {
       "matches": [
         "https://www.youtube.com/*",
-        "https://yewtu.be/*"
+        "https://yewtu.be/*",
+        "https://vid.puffyan.us/*",
+        "https://invidio.xamh.de/*",
+        "https://invidious.kavin.rocks/*"
       ],
       "js": [
         "scripts/ytContent.js"
