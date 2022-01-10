@@ -73,8 +73,8 @@ export const getTargetPlatfromSettingsEntiries = () =>
 
 
 
-export type SourcePlatfromName = 'youtube.com' | 'yewtu.be'
-export interface SourcePlatfrom
+export type SourcePlatformName = 'youtube.com' | 'yewtu.be'
+export interface SourcePlatform
 {
   hostnames: string[]
   htmlQueries: {
@@ -83,7 +83,7 @@ export interface SourcePlatfrom
   }
 }
 
-export const sourcePlatfromSettings: Record<SourcePlatfromName, SourcePlatfrom> = {
+export const sourcePlatfromSettings: Record<SourcePlatformName, SourcePlatform> = {
   "yewtu.be": {
     hostnames: ['yewtu.be'],
     htmlQueries: {

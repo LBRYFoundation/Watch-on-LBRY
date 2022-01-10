@@ -126,7 +126,7 @@ window.addEventListener('load', async () =>
   // Listen URL Change
   chrome.runtime.onMessage.addListener(onUrlChange)
 
-  // We should get this from background, so the caching works and we don't get erros in the future if yt decides to impliment CORS
+  // We should get this from background, so the caching works and we don't get errors in the future if yt decides to impliment CORS
   async function requestLbryPathname(videoId: string)  
   {
     return await new Promise<string | null>((resolve) => chrome.runtime.sendMessage({ videoId }, resolve))
