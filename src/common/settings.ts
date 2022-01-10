@@ -126,7 +126,7 @@ export interface YTUrlResolver {
 
 export const ytUrlResolversSettings: Record<YTUrlResolverName, YTUrlResolver> = {
   lbryInc: {
-    name: "LBRY Inc.",
+    name: "Odysee",
     hostname: "api.odysee.com",
     functions: {
       getChannelId: {
