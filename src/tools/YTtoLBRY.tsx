@@ -12,23 +12,23 @@ import readme from './README.md'
  * @returns a promise with the list of channels that were found on lbry
  */
 async function lbryChannelsFromFile(file: File) {
-  const ext = file.name.split('.').pop()?.toLowerCase();
-  
+  const ext = file.name.split('.').pop()?.toLowerCase()
+
   const ids = new Set((
-    ext === 'xml' || ext == 'opml' ? getSubsFromOpml : 
-    ext === 'csv' ? getSubsFromCsv : 
-    getSubsFromJson)(await getFileContent(file)))
+    ext === 'xml' || ext == 'opml' ? getSubsFromOpml :
+      ext === 'csv' ? getSubsFromCsv :
+        getSubsFromJson)(await getFileContent(file)))
   const lbryPathnames = await resolveById(
-    Array.from(ids).map(id => ({ id, type: 'channel' } as const)), 
-    (progress) => render(<YTtoLBRY progress={progress} />, document.getElementById('root')!));
-  const { targetPlatform: platform } = await getExtensionSettingsAsync();
-  const urlPrefix = targetPlatformSettings[platform].domainPrefix;
-  return lbryPathnames.map(channel => urlPrefix + channel);
+    Array.from(ids).map(id => ({ id, type: 'channel' } as const)),
+    (progress) => render(<YTtoLBRY progress={progress} />, document.getElementById('root')!))
+  const { targetPlatform: platform } = await getExtensionSettingsAsync()
+  const urlPrefix = targetPlatformSettings[platform].domainPrefix
+  return lbryPathnames.map(channel => urlPrefix + channel)
 }
 
 function ConversionCard({ onSelect, progress }: { onSelect(file: File): Promise<void> | void, progress: number }) {
-  const [file, setFile] = useState(null as File | null);
-  const [isLoading, setLoading] = useState(false);
+  const [file, setFile] = useState(null as File | null)
+  const [isLoading, setLoading] = useState(false)
 
   return <div className='ConversionCard'>
     <h2>Select YouTube Subscriptions</h2>
@@ -36,10 +36,10 @@ function ConversionCard({ onSelect, progress }: { onSelect(file: File): Promise<
       <input type='file' onChange={e => setFile(e.currentTarget.files?.length ? e.currentTarget.files[0] : null)} />
     </div>
     <button class='btn btn-primary' children='Start Conversion!' disabled={!file || isLoading} onClick={async () => {
-      if (!file) return;
-      setLoading(true);
-      await onSelect(file);
-      setLoading(false);
+      if (!file) return
+      setLoading(true)
+      await onSelect(file)
+      setLoading(false)
     }} />
     <div class="progress-text">
       {progress > 0 ? `${(progress * 100).toFixed(1)}%` : ''}
@@ -48,7 +48,7 @@ function ConversionCard({ onSelect, progress }: { onSelect(file: File): Promise<
 }
 
 function YTtoLBRY({ progress }: { progress: number }) {
-  const [lbryChannels, setLbryChannels] = useState([] as string[]);
+  const [lbryChannels, setLbryChannels] = useState([] as string[])
 
   return <div className='YTtoLBRY'>
     <div className='Conversion'>
@@ -65,4 +65,4 @@ function YTtoLBRY({ progress }: { progress: number }) {
   </div>
 }
 
-render(<YTtoLBRY progress={0} />, document.getElementById('root')!);
+render(<YTtoLBRY progress={0} />, document.getElementById('root')!)

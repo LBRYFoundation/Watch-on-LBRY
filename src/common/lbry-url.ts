@@ -8,14 +8,14 @@ interface UrlOptions {
   encode?: boolean
 }
 
-const invalidNamesRegex = /[^=&#:$@%*?;\"/\\<>%{}|^~`\[\]\u0000-\u0020\uD800-\uDFFF\uFFFE-\uFFFF]+/.source;
+const invalidNamesRegex = /[^=&#:$@%*?;\"/\\<>%{}|^~`\[\]\u0000-\u0020\uD800-\uDFFF\uFFFE-\uFFFF]+/.source
 
 /** Creates a named regex group */
-const named = (name: string, regex: string) => `(?<${name}>${regex})`;
+const named = (name: string, regex: string) => `(?<${name}>${regex})`
 /** Creates a non-capturing group */
-const group = (regex: string) => `(?:${regex})`;
+const group = (regex: string) => `(?:${regex})`
 /** Allows for one of the patterns */
-const oneOf = (...choices: string[]) => group(choices.join('|'));
+const oneOf = (...choices: string[]) => group(choices.join('|'))
 /** Create an lbry url claim */
 const claim = (name: string, prefix = '') => group(
   named(`${name}_name`, prefix + invalidNamesRegex)
@@ -24,7 +24,7 @@ const claim = (name: string, prefix = '') => group(
     group('\\*' + named(`${name}_sequence`, '[1-9][0-9]*')),
     group('\\$' + named(`${name}_amount_order`, '[1-9][0-9]*'))
   ) + '?'
-);
+)
 
 /** Create an lbry url claim, but use the old pattern for claims */
 const legacyClaim = (name: string, prefix = '') => group(
@@ -33,34 +33,34 @@ const legacyClaim = (name: string, prefix = '') => group(
     group('#' + named(`${name}_claim_id`, '[0-9a-f]{1,40}')),
     group(':' + named(`${name}_sequence`, '[1-9][0-9]*')),
     group('\\$' + named(`${name}_amount_order`, '[1-9][0-9]*'))
-  ) + '?');
+  ) + '?')
 
-export const builder = { named, group, oneOf, claim, legacyClaim, invalidNamesRegex };
+export const builder = { named, group, oneOf, claim, legacyClaim, invalidNamesRegex }
 
 /** Creates a pattern to parse lbry protocol URLs. Unused, but I left it here. */
 function createProtocolUrlRegex(legacy = false) {
-  const claim = legacy ? builder.legacyClaim : builder.claim;
+  const claim = legacy ? builder.legacyClaim : builder.claim
   return new RegExp('^' + named('scheme', 'lbry://') + '?' + oneOf(
     group(claim('channel_with_stream', '@') + '/' + claim('stream_in_channel')),
     claim('channel', '@'),
     claim('stream'),
-  ) + '$');
+  ) + '$')
 }
 
 /** Creates a pattern to match lbry.tv style sites by their pathname */
 function createWebUrlRegex(legacy = false) {
-  const claim = legacy ? builder.legacyClaim : builder.claim;
+  const claim = legacy ? builder.legacyClaim : builder.claim
   return new RegExp('^/' + oneOf(
     group(claim('channel_with_stream', '@') + '/' + claim('stream_in_channel')),
     claim('channel', '@'),
     claim('stream'),
-  ) + '$');
+  ) + '$')
 }
 
 /** Pattern for lbry.tv style sites */
-export const URL_REGEX = createWebUrlRegex();
-export const PROTOCOL_URL_REGEX = createProtocolUrlRegex();
-const PROTOCOL_URL_REGEX_LEGACY = createProtocolUrlRegex(true);
+export const URL_REGEX = createWebUrlRegex()
+export const PROTOCOL_URL_REGEX = createProtocolUrlRegex()
+const PROTOCOL_URL_REGEX_LEGACY = createProtocolUrlRegex(true)
 
 /**
  * Encapsulates a lbry url path segment.
@@ -78,15 +78,15 @@ export class PathSegment {
       groups[`${segment}_claim_id`],
       parseInt(groups[`${segment}_sequence`]),
       parseInt(groups[`${segment}_amount_order`])
-    );
+    )
   }
 
   /** Prints the segment */
   toString() {
-    if (this.claimID) return `${this.name}:${this.claimID}`;
-    if (this.sequence) return `${this.name}*${this.sequence}`;
-    if (this.amountOrder) return `${this.name}$${this.amountOrder}`;
-    return this.name;
+    if (this.claimID) return `${this.name}:${this.claimID}`
+    if (this.sequence) return `${this.name}*${this.sequence}`
+    if (this.amountOrder) return `${this.name}$${this.amountOrder}`
+    return this.name
   }
 }
 
@@ -98,18 +98,18 @@ export class PathSegment {
  * @returns an array of path segments; if invalid, will return an empty array
  */
 function patternSegmenter(ptn: RegExp, url: string, options: UrlOptions = { encode: false }): string[] {
-  const match = url.match(ptn)?.groups;
-  if (!match) return [];
+  const match = url.match(ptn)?.groups
+  if (!match) return []
 
   const segments = match['channel_name'] ? ['channel']
     : match['channel_with_stream_name'] ? ['channel_with_stream', 'stream_in_channel']
-    : match['stream_name'] ? ['stream']
-    : null;
+      : match['stream_name'] ? ['stream']
+        : null
 
-  if (!segments) throw new Error(`${url} matched the overall pattern, but could not determine type`);
+  if (!segments) throw new Error(`${url} matched the overall pattern, but could not determine type`)
 
   return segments.map(s => PathSegment.fromMatchGroup(s, match).toString())
-    .map(s => options.encode ? encodeURIComponent(s) : s);
+    .map(s => options.encode ? encodeURIComponent(s) : s)
 }
 
 /**
@@ -119,11 +119,11 @@ function patternSegmenter(ptn: RegExp, url: string, options: UrlOptions = { enco
  * @param options options for the redirect
  */
 export function appRedirectUrl(url: string, options?: UrlOptions): string | undefined {
-  const segments = patternSegmenter(URL_REGEX, new URL(url).pathname, options);
-  if (segments.length === 0) return;
-  const path = segments.join('/');
+  const segments = patternSegmenter(URL_REGEX, new URL(url).pathname, options)
+  if (segments.length === 0) return
+  const path = segments.join('/')
 
-  return `lbry://${path}`;
+  return `lbry://${path}`
 }
 
 /**
@@ -134,9 +134,9 @@ export function appRedirectUrl(url: string, options?: UrlOptions): string | unde
  */
 export function parseProtocolUrl(url: string, options: UrlOptions = { encode: false }): string[] {
   for (const ptn of [PROTOCOL_URL_REGEX, PROTOCOL_URL_REGEX_LEGACY]) {
-    const segments = patternSegmenter(ptn, url, options);
-    if (segments.length === 0) continue;
-    return segments;
+    const segments = patternSegmenter(ptn, url, options)
+    if (segments.length === 0) continue
+    return segments
   }
-  return [];
+  return []
 }

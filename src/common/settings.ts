@@ -1,7 +1,6 @@
 import { JSX } from "preact"
 
-export interface ExtensionSettings
-{
+export interface ExtensionSettings {
   redirect: boolean
   targetPlatform: TargetPlatformName
   urlResolver: YTUrlResolverName
@@ -9,15 +8,13 @@ export interface ExtensionSettings
 
 export const DEFAULT_SETTINGS: ExtensionSettings = { redirect: true, targetPlatform: 'odysee', urlResolver: 'lbryInc' }
 
-export function getExtensionSettingsAsync(): Promise<ExtensionSettings>
-{
+export function getExtensionSettingsAsync(): Promise<ExtensionSettings> {
   return new Promise(resolve => chrome.storage.local.get(o => resolve(o as any)))
 }
 
 
 export type TargetPlatformName = 'madiator.com' | 'odysee' | 'app'
-export interface TargetPlatform
-{
+export interface TargetPlatform {
   domainPrefix: string
   displayName: string
   theme: string
@@ -66,16 +63,14 @@ export const targetPlatformSettings: Record<TargetPlatformName, TargetPlatform> 
   },
 }
 
-export const getTargetPlatfromSettingsEntiries = () =>
-{
+export const getTargetPlatfromSettingsEntiries = () => {
   return Object.entries(targetPlatformSettings) as any as [Extract<keyof typeof targetPlatformSettings, string>, TargetPlatform][]
 }
 
 
 
 export type SourcePlatformName = 'youtube.com' | 'yewtu.be'
-export interface SourcePlatform
-{
+export interface SourcePlatform {
   hostnames: string[]
   htmlQueries: {
     mountButtonBefore: string,
@@ -100,8 +95,7 @@ export const sourcePlatfromSettings: Record<SourcePlatformName, SourcePlatform> 
   }
 }
 
-export function getSourcePlatfromSettingsFromHostname(hostname: string)
-{
+export function getSourcePlatfromSettingsFromHostname(hostname: string) {
   const values = Object.values(sourcePlatfromSettings)
   for (const settings of values)
     if (settings.hostnames.includes(hostname)) return settings
@@ -115,15 +109,13 @@ export const Keys = Symbol('keys')
 export const Values = Symbol('values')
 export const SingleValueAtATime = Symbol()
 export type YtUrlResolveResponsePath = (string | number | typeof Keys | typeof Values)[]
-export interface YtUrlResolveFunction
-{
+export interface YtUrlResolveFunction {
   pathname: string
   paramName: string
   paramArraySeperator: string | typeof SingleValueAtATime
   responsePath: YtUrlResolveResponsePath
 }
-export interface YTUrlResolver
-{
+export interface YTUrlResolver {
   name: string
   hostname: string
   functions: {
@@ -171,7 +163,6 @@ export const ytUrlResolversSettings: Record<YTUrlResolverName, YTUrlResolver> = 
   }
 }
 
-export const getYtUrlResolversSettingsEntiries = () =>
-{
+export const getYtUrlResolversSettingsEntiries = () => {
   return Object.entries(ytUrlResolversSettings) as any as [Extract<keyof typeof ytUrlResolversSettings, string>, YTUrlResolver][]
 }

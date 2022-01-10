@@ -1,7 +1,7 @@
-import { h } from 'preact';
-import classnames from 'classnames';
+import classnames from 'classnames'
+import { h } from 'preact'
+import './ButtonRadio.sass'
 
-import './ButtonRadio.sass';
 
 export interface SelectionOption {
   value: string
@@ -9,13 +9,13 @@ export interface SelectionOption {
 }
 
 export interface ButtonRadioProps<T extends string | SelectionOption = string> {
-  name?: string;
-  onChange(redirect: string): void;
-  value: T extends SelectionOption ? T['value'] : T;
-  options: T[];
+  name?: string
+  onChange(redirect: string): void
+  value: T extends SelectionOption ? T['value'] : T
+  options: T[]
 }
 
-const getAttr = (x: string | SelectionOption, key: keyof SelectionOption): string => typeof x === 'string' ? x : x[key];
+const getAttr = (x: string | SelectionOption, key: keyof SelectionOption): string => typeof x === 'string' ? x : x[key]
 
 export default function ButtonRadio<T extends string | SelectionOption = string>({ name = 'buttonRadio', onChange, options, value }: ButtonRadioProps<T>) {
   /** If it's a string, return the string, if it's a SelectionOption get the selection option property */
@@ -27,5 +27,5 @@ export default function ButtonRadio<T extends string | SelectionOption = string>
         <label>{display}</label>
       </div>
     )}
-  </div>;
+  </div>
 }

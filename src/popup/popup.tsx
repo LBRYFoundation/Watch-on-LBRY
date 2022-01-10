@@ -1,21 +1,21 @@
 import { h, render } from 'preact'
 import ButtonRadio, { SelectionOption } from '../common/components/ButtonRadio'
-import { getTargetPlatfromSettingsEntiries, ExtensionSettings, TargetPlatformName, getYtUrlResolversSettingsEntiries, YTUrlResolverName } from '../common/settings'
+import { ExtensionSettings, getTargetPlatfromSettingsEntiries, getYtUrlResolversSettingsEntiries, TargetPlatformName, YTUrlResolverName } from '../common/settings'
 import { useLbrySettings } from '../common/useSettings'
 import './popup.sass'
 
 /** Utilty to set a setting in the browser */
-const setSetting = <K extends keyof ExtensionSettings>(setting: K, value: ExtensionSettings[K]) => chrome.storage.local.set({ [setting]: value });
+const setSetting = <K extends keyof ExtensionSettings>(setting: K, value: ExtensionSettings[K]) => chrome.storage.local.set({ [setting]: value })
 
 /** Gets all the options for redirect destinations as selection options */
 const platformOptions: SelectionOption[] = getTargetPlatfromSettingsEntiries()
-  .map(([value, { displayName: display }]) => ({ value, display }));
+  .map(([value, { displayName: display }]) => ({ value, display }))
 
-  const ytUrlResolverOptions: SelectionOption[] = getYtUrlResolversSettingsEntiries()
-  .map(([value, { name: display }]) => ({ value, display }));
+const ytUrlResolverOptions: SelectionOption[] = getYtUrlResolversSettingsEntiries()
+  .map(([value, { name: display }]) => ({ value, display }))
 
 function WatchOnLbryPopup() {
-  const { redirect, targetPlatform, urlResolver } = useLbrySettings();
+  const { redirect, targetPlatform, urlResolver } = useLbrySettings()
 
   return <div className='container'>
     <section>
@@ -39,7 +39,7 @@ function WatchOnLbryPopup() {
         <button type='button' className='btn1 button is-primary'>Subscriptions Converter</button>
       </a>
     </section>
-  </div>;
+  </div>
 }
 
-render(<WatchOnLbryPopup />, document.getElementById('root')!);
+render(<WatchOnLbryPopup />, document.getElementById('root')!)
