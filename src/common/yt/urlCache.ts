@@ -9,20 +9,44 @@ if (typeof self.indexedDB !== 'undefined') {
     // Delete Expired
     openRequest.addEventListener('success', () => {
         db = openRequest.result
-        const transaction = db.transaction("store", "readwrite")
-        const range = IDBKeyRange.upperBound(new Date())
-
-        const expireAtCursorRequest = transaction.objectStore("store").index("expireAt").openCursor(range)
-        expireAtCursorRequest.addEventListener('success', () => {
-            const expireCursor = expireAtCursorRequest.result
-            if (!expireCursor) return
-            expireCursor.delete()
-            expireCursor.continue()
-        })
+        clearExpired()
     })
 }
 else console.warn(`IndexedDB not supported`)
 
+async function clearExpired() {
+    return new Promise<void>((resolve, reject) => {
+        if (!db) throw new Error(`IDBDatabase not defined.`)
+        const transaction = db.transaction("store", "readwrite")
+        const range = IDBKeyRange.upperBound(new Date())
+
+        const expireAtCursorRequest = transaction.objectStore("store").index("expireAt").openCursor(range)
+        expireAtCursorRequest.addEventListener('error', () => reject(expireAtCursorRequest.error))
+        expireAtCursorRequest.addEventListener('success', () => {
+            try {
+                const expireCursor = expireAtCursorRequest.result
+                if (!expireCursor) return
+                expireCursor.delete()
+                expireCursor.continue()
+                resolve()
+            }
+            catch (ex) {
+                reject(ex)
+            }
+        })
+    })
+}
+
+async function clearAll()
+{
+    return await new Promise<void>((resolve, reject) => {
+        const store = db?.transaction("store", "readwrite").objectStore("store")
+        if (!store) return resolve()
+        const request = store.clear()
+        request.addEventListener('success', () => resolve())
+        request.addEventListener('error', () => reject(request.error))
+    })
+}
 
 async function put(url: string | null, id: string): Promise<void> {
     return await new Promise((resolve, reject) => {
@@ -34,15 +58,26 @@ async function put(url: string | null, id: string): Promise<void> {
     })
 }
 
-async function get(id: string): Promise<string | null> {
-    return (await new Promise((resolve, reject) => {
+// string means there is cache of lbrypathname
+// null means there is cache of that id has no lbrypathname
+// undefined means there is no cache
+async function get(id: string): Promise<string | null | undefined> {
+    const response = (await new Promise((resolve, reject) => {
         const store = db?.transaction("store", "readonly").objectStore("store")
-        if (!store) return resolve(null)
+        if (!store) return reject(`Can't find object store.`)
+
         const request = store.get(id)
         request.addEventListener('success', () => resolve(request.result))
         request.addEventListener('error', () => reject(request.error))
-    }) as any)?.value
+    }) as { value: string | null, expireAt: Date } | undefined)
+
+    if (response === undefined) return undefined
+    if (response.expireAt <= new Date()) {
+        await clearExpired()
+        return undefined
+    }
+    return response.value
 }
 
-export const LbryPathnameCache = { put, get }
+export const LbryPathnameCache = { put, get, clearAll }
 
