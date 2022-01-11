@@ -3,6 +3,5 @@ dist
 node_modules
 web-ext-artifacts
 yarn-error.log
-.devcontainer
 
 .DS_Store
