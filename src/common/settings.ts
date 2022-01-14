@@ -111,7 +111,8 @@ export const SingleValueAtATime = Symbol()
 export type YtUrlResolveResponsePath = (string | number | typeof Keys | typeof Values)[]
 export interface YtUrlResolveFunction {
   pathname: string
-  paramName: string
+  defaultParams: Record<string, string | number>
+  valueParamName: string
   paramArraySeperator: string | typeof SingleValueAtATime
   responsePath: YtUrlResolveResponsePath
 }
@@ -131,13 +132,15 @@ export const ytUrlResolversSettings: Record<YTUrlResolverName, YTUrlResolver> = 
     functions: {
       getChannelId: {
         pathname: "/yt/resolve",
-        paramName: "channel_ids",
+        defaultParams: {},
+        valueParamName: "channel_ids",
         paramArraySeperator: ',',
         responsePath: ["data", "channels", Values]
       },
       getVideoId: {
         pathname: "/yt/resolve",
-        paramName: "video_ids",
+        defaultParams: {},
+        valueParamName: "video_ids",
         paramArraySeperator: ",",
         responsePath: ["data", "videos", Values]
       }
@@ -149,13 +152,19 @@ export const ytUrlResolversSettings: Record<YTUrlResolverName, YTUrlResolver> = 
     functions: {
       getChannelId: {
         pathname: "/api/get-lbry-channel",
-        paramName: "url",
+        defaultParams: {
+          v: 2
+        },
+        valueParamName: "url",
         paramArraySeperator: SingleValueAtATime,
         responsePath: ["lbrych"]
       },
       getVideoId: {
         pathname: "/api/get-lbry-video",
-        paramName: "url",
+        defaultParams: {
+          v: 2
+        },
+        valueParamName: "url",
         paramArraySeperator: SingleValueAtATime,
         responsePath: ["lbryurl"]
       }
