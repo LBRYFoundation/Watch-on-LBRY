@@ -59,10 +59,11 @@ export async function resolveById(descriptors: YtIdResolverDescriptor[], progres
 
         async function requestGroup(urlResolverFunction: YtUrlResolveFunction, descriptorsGroup: typeof descriptorsPayload) {
             url.pathname = urlResolverFunction.pathname
+            Object.entries(urlResolverFunction.defaultParams).forEach(([name, value]) => url.searchParams.set(name, value.toString()))
 
             if (urlResolverFunction.paramArraySeperator === SingleValueAtATime) {
                 await Promise.all(descriptorsGroup.map(async (descriptor) => {
-                    url.searchParams.set(urlResolverFunction.paramName, descriptor.id)
+                    url.searchParams.set(urlResolverFunction.valueParamName, descriptor.id)
 
                     const apiResponse = await fetch(url.toString(), { cache: 'no-store' })
                     if (apiResponse.ok) {
@@ -77,7 +78,7 @@ export async function resolveById(descriptors: YtIdResolverDescriptor[], progres
                 }))
             }
             else {
-                url.searchParams.set(urlResolverFunction.paramName, descriptorsGroup
+                url.searchParams.set(urlResolverFunction.valueParamName, descriptorsGroup
                     .map((descriptor) => descriptor.id)
                     .join(urlResolverFunction.paramArraySeperator))
 
