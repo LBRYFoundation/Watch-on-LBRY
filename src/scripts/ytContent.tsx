@@ -51,26 +51,6 @@ function updateButton(mountPoint: HTMLDivElement, target: Target | null): void {
   render(<WatchOnLbryButton targetPlatform={target.platfrom} lbryPathname={target.lbryPathname} time={target.time ?? undefined} />, mountPoint)
 }
 
-async function redirectTo({ lbryPathname, platfrom, time }: Target) {
-  const url = new URL(`${platfrom.domainPrefix}${lbryPathname}`)
-
-  if (time) url.searchParams.set('t', time.toFixed(0))
-
-  findVideoElement().then((videoElement) => {
-    videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
-    videoElement.pause()
-  })
-
-  if (platfrom === targetPlatformSettings.app) {
-    if (document.hidden) await new Promise((resolve) => document.addEventListener('visibilitychange', resolve, { once: true }))
-    open(url, '_blank')
-    if (window.history.length === 1) window.close()
-    else window.history.back()
-  }
-  else 
-    location.replace(url.toString())
-}
-
 /** Returns a mount point for the button */
 async function findButtonMountPoint(): Promise<HTMLDivElement> {
   const id = 'watch-on-lbry-button-container'
@@ -132,6 +112,37 @@ async function requestLbryPathname(videoId: string) {
     const target: Target | null = lbryPathname ? { lbryPathname, platfrom: targetPlatformSettings[settings.targetPlatform], time: null } : null
 
     return target
+  }
+
+  async function redirectTo({ lbryPathname, platfrom, time }: Target) {
+    const url = new URL(`${platfrom.domainPrefix}${lbryPathname}`)
+  
+    if (time) url.searchParams.set('t', time.toFixed(0))
+  
+    findVideoElement().then((videoElement) => {
+      videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
+      videoElement.pause()
+    })
+  
+    if (platfrom === targetPlatformSettings.app) {
+      if (document.hidden) await new Promise((resolve) => document.addEventListener('visibilitychange', resolve, { once: true }))
+
+      // On redirect with app, people might choose to cancel browser's dialog
+      // So we dont destroy the current window automatically for them
+      // And also we are keeping the same window for less distiraction
+      if (settings.redirect)
+      {
+        location.replace(url.toString())
+      }
+      else
+      {
+        open(url.toString(), '_blank')
+        if (window.history.length === 1) window.close()
+        else window.history.back()
+      }
+    }
+    else 
+      location.replace(url.toString())
   }
 
   let removeVideoTimeUpdateListener: (() => void) | null = null
