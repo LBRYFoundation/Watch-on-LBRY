@@ -95,6 +95,7 @@ async function requestLbryPathname(videoId: string) {
     if (areaName !== 'local') return
     Object.assign(settings, Object.fromEntries(Object.entries(changes).map(([key, change]) => [key, change.newValue])))
     if (changes.redirect) await onModeChange()
+    await updater()
   })
 
   /*
@@ -174,8 +175,6 @@ async function requestLbryPathname(videoId: string) {
         updateButton(mountPoint, target)
       }
     }
-
-    await updater()
   }
 
   await onModeChange()
