@@ -100,7 +100,9 @@ async function findVideoElement() {
 
 // We should get this from background, so the caching works and we don't get errors in the future if yt decides to impliment CORS
 async function requestLbryPathname(videoId: string) {
-  return await new Promise<string | null>((resolve) => chrome.runtime.sendMessage({ videoId }, resolve))
+  const response = await new Promise<string | null | Error>((resolve) => chrome.runtime.sendMessage({ videoId }, resolve))
+  if (response instanceof Error) throw response
+  return response
 }
 
 // Start
