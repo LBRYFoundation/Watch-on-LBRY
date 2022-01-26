@@ -175,7 +175,6 @@ async function requestLbryPathname(videoId: string) {
         updateButton(mountPoint, target)
       }
     }
+    await updater()
   }
-
-  await onModeChange()
 })()
