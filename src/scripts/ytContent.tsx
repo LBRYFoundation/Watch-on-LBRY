@@ -80,8 +80,8 @@ async function findVideoElement() {
 
 // We should get this from background, so the caching works and we don't get errors in the future if yt decides to impliment CORS
 async function requestLbryPathname(videoId: string) {
-  const response = await new Promise<string | null | Error>((resolve) => chrome.runtime.sendMessage({ videoId }, resolve))
-  if (response instanceof Error) throw response
+  const response = await new Promise<string | null | 'error'>((resolve) => chrome.runtime.sendMessage({ videoId }, resolve))
+  if (response === 'error') throw new Error("Background error.")
   return response
 }
 
@@ -95,6 +95,7 @@ async function requestLbryPathname(videoId: string) {
     if (areaName !== 'local') return
     Object.assign(settings, Object.fromEntries(Object.entries(changes).map(([key, change]) => [key, change.newValue])))
     if (changes.redirect) await onModeChange()
+    await updater()
   })
 
   /*
@@ -174,7 +175,6 @@ async function requestLbryPathname(videoId: string) {
         updateButton(mountPoint, target)
       }
     }
-
     await updater()
   }
 
