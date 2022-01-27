@@ -1,4 +1,5 @@
 import { resolveById, YtIdResolverDescriptor } from '../common/yt/urlResolve'
+
 async function resolveYT(descriptor: YtIdResolverDescriptor) {
   const lbryProtocolUrl: string | null = (await resolveById([descriptor]).then(a => a[0])) ?? null
   if (!lbryProtocolUrl) return null

@@ -52,8 +52,9 @@ async function put(url: string | null, id: string): Promise<void> {
     return await new Promise((resolve, reject) => {
         const store = db?.transaction("store", "readwrite").objectStore("store")
         if (!store) return resolve()
-        const request = store.put({ value: url, expireAt: !url ? new Date(Date.now() + 1 * 60 * 60 * 1000) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000) }, id)
-        console.log('caching', id, url)
+        const expireAt = !url ? new Date(Date.now() + 1 * 60 * 60 * 1000) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+        const request = store.put({ value: url, expireAt }, id)
+        console.log('caching', id, url, 'until:', expireAt)
         request.addEventListener('success', () => resolve())
         request.addEventListener('error', () => reject(request.error))
     })
