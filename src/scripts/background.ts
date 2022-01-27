@@ -1,23 +1,34 @@
-import { parseProtocolUrl } from '../common/lbry-url'
 import { resolveById, YtIdResolverDescriptor } from '../common/yt/urlResolve'
 async function resolveYT(descriptor: YtIdResolverDescriptor) {
-  const lbryProtocolUrl: string | null = await resolveById([descriptor]).then(a => a[0])
-  const segments = parseProtocolUrl(lbryProtocolUrl || '', { encode: true })
-  if (segments.length === 0) return
-  return segments.join('/')
+  const lbryProtocolUrl: string | null = (await resolveById([descriptor]).then(a => a[0])) ?? null
+  if (!lbryProtocolUrl) return null
+  return lbryProtocolUrl.replaceAll('#', ':')
+  /* const segments = parseProtocolUrl(lbryProtocolUrl || '', { encode: true })
+  if (segments.length === 0) throw new Error()
+  return segments.join('/') */
 }
 
-const onGoingLbryPathnameRequest: Record<string, Promise<string | void>> = {}
-async function lbryPathnameFromVideoId(videoId: string): Promise<string | void> {
+const onGoingLbryPathnameRequest: Record<string, Promise<string | null>> = {}
+async function lbryPathnameFromVideoId(videoId: string): Promise<string | null> {
   // Don't create a new Promise for same ID until on going one is over.
-  const promise = onGoingLbryPathnameRequest[videoId] ?? (onGoingLbryPathnameRequest[videoId] = resolveYT({ id: videoId, type: 'video' }))
-  await promise
-  delete onGoingLbryPathnameRequest[videoId]
-  return await promise
+  try {
+    const promise = onGoingLbryPathnameRequest[videoId] ?? (onGoingLbryPathnameRequest[videoId] = resolveYT({ id: videoId, type: 'video' }))
+    console.log('lbrypathname request', videoId, await promise)
+    return await promise
+  } catch (error) {
+    throw error
+  }
+  finally {
+    delete onGoingLbryPathnameRequest[videoId]
+  }
 }
 
 chrome.runtime.onMessage.addListener(({ videoId }: { videoId: string }, sender, sendResponse) => {
-  lbryPathnameFromVideoId(videoId).then((lbryPathname) => sendResponse(lbryPathname)).catch((err) => sendResponse(err))
+  lbryPathnameFromVideoId(videoId).then((lbryPathname) => sendResponse(lbryPathname)).catch((err) => 
+  {
+    sendResponse('error')
+    console.error(err)
+  })
   return true
 })
 

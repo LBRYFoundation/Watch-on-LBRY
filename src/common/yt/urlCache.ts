@@ -53,6 +53,7 @@ async function put(url: string | null, id: string): Promise<void> {
         const store = db?.transaction("store", "readwrite").objectStore("store")
         if (!store) return resolve()
         const request = store.put({ value: url, expireAt: !url ? new Date(Date.now() + 1 * 60 * 60 * 1000) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000) }, id)
+        console.log('caching', id, url)
         request.addEventListener('success', () => resolve())
         request.addEventListener('error', () => reject(request.error))
     })
@@ -76,6 +77,7 @@ async function get(id: string): Promise<string | null | undefined> {
         await clearExpired()
         return undefined
     }
+    console.log('cache found', id, response.value)
     return response.value
 }
 
