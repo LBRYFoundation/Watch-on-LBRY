@@ -1,6 +1,6 @@
 {
   "name": "Watch on LBRY",
-  "version": "1.7.7",
+  "version": "1.7.8",
   "permissions": [
     "https://www.youtube.com/",
     "https://yewtu.be/",
@@ -11,6 +11,7 @@
     "https://lbry.tv/",
     "https://odysee.com/",
     "https://madiator.com/",
+    "https://scrap.madiator.com/",
     "tabs",
     "storage"
   ],
