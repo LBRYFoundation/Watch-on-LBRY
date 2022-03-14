@@ -3,7 +3,7 @@ import { getExtensionSettingsAsync, Keys, SingleValueAtATime, Values, YtUrlResol
 import { LbryPathnameCache } from "./urlCache"
 
 // const LBRY_API_HOST = 'https://api.odysee.com'; MOVED TO SETTINGS
-const QUERY_CHUNK_SIZE = 300
+const QUERY_CHUNK_SIZE = 100
 
 export interface YtIdResolverDescriptor {
     id: string
