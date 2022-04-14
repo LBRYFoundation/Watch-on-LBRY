@@ -1,7 +1,7 @@
-import { resolveById, YtIdResolverDescriptor } from '../common/yt/urlResolve'
+import { resolveById, YtUrlResolveItem } from '../common/yt/urlResolve'
 
-async function resolveYT(descriptor: YtIdResolverDescriptor) {
-  const lbryProtocolUrl: string | null = (await resolveById([descriptor]).then(a => a[0])) ?? null
+async function resolveYT(item: YtUrlResolveItem) {
+  const lbryProtocolUrl: string | null = (await resolveById([item]).then((items) => items[item.id]))?.id ?? null
   if (!lbryProtocolUrl) return null
   return lbryProtocolUrl.replaceAll('#', ':')
   /* const segments = parseProtocolUrl(lbryProtocolUrl || '', { encode: true })
