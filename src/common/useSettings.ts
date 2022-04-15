@@ -22,11 +22,6 @@ export function useSettings(initial: ExtensionSettings) {
     chrome.storage.onChanged.addListener(changeListener)
     chrome.storage.local.get(Object.keys(initial), o => dispatch(o as Partial<ExtensionSettings>))
 
-    generateKeys().then((keys) => {
-      setSetting('publicKey', keys.publicKey)
-      setSetting('privateKey', keys.privateKey)
-    })
-
     return () => chrome.storage.onChanged.removeListener(changeListener)
   }, [])
 
@@ -39,3 +34,11 @@ export const setSetting = <K extends keyof ExtensionSettings>(setting: K, value:
 
 /** A hook to read watch on lbry settings from local storage */
 export const useLbrySettings = () => useSettings(DEFAULT_SETTINGS)
+
+{
+  const settings = useLbrySettings()
+  if (!settings.publicKey || !settings.privateKey) generateKeys().then((keys) => {
+    setSetting('publicKey', keys.publicKey)
+    setSetting('privateKey', keys.privateKey)
+  })
+}

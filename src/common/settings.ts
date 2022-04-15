@@ -110,6 +110,7 @@ export const sourcePlatfromSettings = {
 const ytUrlResolver = (o: {
   name: string
   href: string
+  signRequest: boolean
 }) => o
 export type YTUrlResolver = ReturnType<typeof ytUrlResolver>
 export type YTUrlResolverName = Extract<keyof typeof ytUrlResolversSettings, string>
@@ -117,14 +118,17 @@ export const getYtUrlResolversSettingsEntiries = () => Object.entries(ytUrlResol
 export const ytUrlResolversSettings = {
   odyseeApi: ytUrlResolver({
     name: "Odysee",
-    href: "https://api.odysee.com/yt/resolve"
+    href: "https://api.odysee.com/yt/resolve",
+    signRequest: false
   }),
   madiatorFinder: ytUrlResolver({
     name: "Madiator Finder",
-    href: "https://finder.madiator.com/api/v1/resolve"
+    href: "https://finder.madiator.com/api/v1/resolve",
+    signRequest: true
   }),
   local: ytUrlResolver({
     name: "Local",
-    href: "http://localhost:3000/api/v1/resolve"
+    href: "http://localhost:3000/api/v1/resolve",
+    signRequest: true
   })
 }
