@@ -125,10 +125,5 @@ export const ytUrlResolversSettings = {
     name: "Madiator Finder",
     href: "https://finder.madiator.com/api/v1/resolve",
     signRequest: true
-  }),
-  local: ytUrlResolver({
-    name: "Local",
-    href: "http://localhost:3000/api/v1/resolve",
-    signRequest: true
   })
 }
