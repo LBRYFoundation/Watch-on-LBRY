@@ -25,8 +25,7 @@ async function lbryPathnameFromVideoId(videoId: string): Promise<string | null> 
 }
 
 chrome.runtime.onMessage.addListener(({ videoId }: { videoId: string }, sender, sendResponse) => {
-  lbryPathnameFromVideoId(videoId).then((lbryPathname) => sendResponse(lbryPathname)).catch((err) => 
-  {
+  lbryPathnameFromVideoId(videoId).then((lbryPathname) => sendResponse(lbryPathname)).catch((err) => {
     sendResponse('error')
     console.error(err)
   })

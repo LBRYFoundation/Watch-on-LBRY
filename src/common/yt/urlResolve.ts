@@ -1,10 +1,9 @@
 import { chunk } from "lodash"
+import { sign } from "../crypto"
 import { getExtensionSettingsAsync, ytUrlResolversSettings } from "../settings"
 import { LbryPathnameCache } from "./urlCache"
 
-// const LBRY_API_HOST = 'https://api.odysee.com'; MOVED TO SETTINGS
 const QUERY_CHUNK_SIZE = 100
-
 
 export type YtUrlResolveItem = { type: 'video' | 'channel', id: string }
 type Results = Record<string, YtUrlResolveItem>
@@ -16,7 +15,7 @@ interface ApiResponse {
 }
 
 export async function resolveById(params: Paramaters, progressCallback?: (progress: number) => void): Promise<Results> {
-    const { urlResolver: urlResolverSettingName } = await getExtensionSettingsAsync()
+    const { urlResolver: urlResolverSettingName, privateKey, publicKey } = await getExtensionSettingsAsync()
     const urlResolverSetting = ytUrlResolversSettings[urlResolverSettingName]
 
     async function requestChunk(params: Paramaters) {
@@ -43,6 +42,11 @@ export async function resolveById(params: Paramaters, progressCallback?: (progre
         const url = new URL(`${urlResolverSetting.href}`)
         url.searchParams.set('video_ids', params.filter((item) => item.type === 'video').map((item) => item.id).join(','))
         url.searchParams.set('channel_ids', params.filter((item) => item.type === 'channel').map((item) => item.id).join(','))
+        if (publicKey && privateKey)
+            url.searchParams.set('keys', JSON.stringify({
+                signature: await sign(url.searchParams.toString(), privateKey),
+                publicKey
+            }))
 
         const apiResponse = await fetch(url.toString(), { cache: 'no-store' })
         if (apiResponse.ok) {

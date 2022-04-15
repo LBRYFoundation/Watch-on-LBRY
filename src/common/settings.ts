@@ -4,15 +4,21 @@ export interface ExtensionSettings {
   redirect: boolean
   targetPlatform: TargetPlatformName
   urlResolver: YTUrlResolverName
+  publicKey?: string,
+  privateKey?: string
 }
 
-export const DEFAULT_SETTINGS: ExtensionSettings = { redirect: true, targetPlatform: 'odysee', urlResolver: 'lbryInc' }
+
+
+export const DEFAULT_SETTINGS: ExtensionSettings = {
+  redirect: true,
+  targetPlatform: 'odysee',
+  urlResolver: 'odyseeApi'
+}
 
 export function getExtensionSettingsAsync(): Promise<ExtensionSettings> {
   return new Promise(resolve => chrome.storage.local.get(o => resolve(o as any)))
 }
-
-
 
 const targetPlatform = (o: {
   domainPrefix: string
@@ -69,8 +75,6 @@ export const targetPlatformSettings = {
 
 
 
-
-
 const sourcePlatform = (o: {
   hostnames: string[]
   htmlQueries: {
@@ -111,12 +115,16 @@ export type YTUrlResolver = ReturnType<typeof ytUrlResolver>
 export type YTUrlResolverName = Extract<keyof typeof ytUrlResolversSettings, string>
 export const getYtUrlResolversSettingsEntiries = () => Object.entries(ytUrlResolversSettings) as any as [Extract<keyof typeof ytUrlResolversSettings, string>, YTUrlResolver][]
 export const ytUrlResolversSettings = {
-  lbryInc: ytUrlResolver({
+  odyseeApi: ytUrlResolver({
     name: "Odysee",
     href: "https://api.odysee.com/yt/resolve"
   }),
   madiatorFinder: ytUrlResolver({
     name: "Madiator Finder",
     href: "https://finder.madiator.com/api/v1/resolve"
+  }),
+  local: ytUrlResolver({
+    name: "Local",
+    href: "http://localhost:3000/api/v1/resolve"
   })
 }

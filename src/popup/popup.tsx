@@ -1,13 +1,11 @@
 import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
 import ButtonRadio, { SelectionOption } from '../common/components/ButtonRadio'
-import { ExtensionSettings, getTargetPlatfromSettingsEntiries, getYtUrlResolversSettingsEntiries, TargetPlatformName, YTUrlResolverName } from '../common/settings'
-import { useLbrySettings } from '../common/useSettings'
+import { getTargetPlatfromSettingsEntiries, getYtUrlResolversSettingsEntiries, TargetPlatformName, YTUrlResolverName } from '../common/settings'
+import { setSetting, useLbrySettings } from '../common/useSettings'
 import { LbryPathnameCache } from '../common/yt/urlCache'
 import './popup.sass'
 
-/** Utilty to set a setting in the browser */
-const setSetting = <K extends keyof ExtensionSettings>(setting: K, value: ExtensionSettings[K]) => chrome.storage.local.set({ [setting]: value })
 
 /** Gets all the options for redirect destinations as selection options */
 const platformOptions: SelectionOption[] = getTargetPlatfromSettingsEntiries()
@@ -21,6 +19,7 @@ function WatchOnLbryPopup() {
   let [clearingCache, updateClearingCache] = useState(() => false)
 
   return <div className='container'>
+    { }
     <section>
       <label className='radio-label'>Enable Redirection:</label>
       <ButtonRadio value={redirect ? 'YES' : 'NO'} options={['YES', 'NO']}

@@ -1,13 +1,14 @@
 import { useEffect, useReducer } from 'preact/hooks'
-import { DEFAULT_SETTINGS } from './settings'
+import { generateKeys } from './crypto'
+import { DEFAULT_SETTINGS, ExtensionSettings } from './settings'
 
 /**
  * A hook to read the settings from local storage
  *
  * @param initial the default value. Must have all relevant keys present and should not change
  */
-export function useSettings<T extends object>(initial: T) {
-  const [state, dispatch] = useReducer((state, nstate: Partial<T>) => ({ ...state, ...nstate }), initial)
+export function useSettings(initial: ExtensionSettings) {
+  const [state, dispatch] = useReducer((state, nstate: Partial<ExtensionSettings>) => ({ ...state, ...nstate }), initial)
   // register change listeners, gets current values, and cleans up the listeners on unload
   useEffect(() => {
     const changeListener = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
@@ -19,12 +20,22 @@ export function useSettings<T extends object>(initial: T) {
       dispatch(Object.fromEntries(changeSet))
     }
     chrome.storage.onChanged.addListener(changeListener)
-    chrome.storage.local.get(Object.keys(initial), o => dispatch(o as Partial<T>))
+    chrome.storage.local.get(Object.keys(initial), o => dispatch(o as Partial<ExtensionSettings>))
+
+    generateKeys().then((keys) => {
+      setSetting('publicKey', keys.publicKey)
+      setSetting('privateKey', keys.privateKey)
+    })
+
     return () => chrome.storage.onChanged.removeListener(changeListener)
   }, [])
 
   return state
 }
+
+/** Utilty to set a setting in the browser */
+export const setSetting = <K extends keyof ExtensionSettings>(setting: K, value: ExtensionSettings[K]) => chrome.storage.local.set({ [setting]: value })
+
 
 /** A hook to read watch on lbry settings from local storage */
 export const useLbrySettings = () => useSettings(DEFAULT_SETTINGS)
