@@ -4,16 +4,16 @@ export interface ExtensionSettings {
   redirect: boolean
   targetPlatform: TargetPlatformName
   urlResolver: YTUrlResolverName
-  publicKey?: string,
-  privateKey?: string
+  publicKey: string | null,
+  privateKey: string | null
 }
-
-
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
   redirect: true,
   targetPlatform: 'odysee',
-  urlResolver: 'odyseeApi'
+  urlResolver: 'odyseeApi',
+  privateKey: null,
+  publicKey: null
 }
 
 export function getExtensionSettingsAsync(): Promise<ExtensionSettings> {

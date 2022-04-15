@@ -5,28 +5,22 @@ import { DEFAULT_SETTINGS, ExtensionSettings } from './settings'
 /**
  * A hook to read the settings from local storage
  *
- * @param initial the default value. Must have all relevant keys present and should not change
+ * @param defaultSettings the default value. Must have all relevant keys present and should not change
  */
-export function useSettings(initial: ExtensionSettings) {
-  const [state, dispatch] = useReducer((state, nstate: Partial<ExtensionSettings>) => ({ ...state, ...nstate }), initial)
+export function useSettings(defaultSettings: ExtensionSettings) {
+  const [state, dispatch] = useReducer((state, nstate: Partial<ExtensionSettings>) => ({ ...state, ...nstate }), defaultSettings)
+  const settingsKeys = Object.keys(defaultSettings)
   // register change listeners, gets current values, and cleans up the listeners on unload
   useEffect(() => {
     const changeListener = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
       if (areaName !== 'local') return
-      const changeSet = Object.keys(changes)
-        .filter(k => Object.keys(initial).includes(k))
-        .map(k => [k, changes[k].newValue])
-      if (changeSet.length === 0) return // no changes; no use dispatching
-      dispatch(Object.fromEntries(changeSet))
+      const changeEntries = Object.keys(changes).filter((key) => settingsKeys.includes(key)).map((key) => [key, changes[key].newValue])
+      if (changeEntries.length === 0) return // no changes; no use dispatching
+      dispatch(Object.fromEntries(changeEntries))
     }
 
-    if (!state.privateKey || !state.publicKey) generateKeys().then((keys) => {
-      setSetting('publicKey', keys.publicKey)
-      setSetting('privateKey', keys.privateKey)
-    })
-
     chrome.storage.onChanged.addListener(changeListener)
-    chrome.storage.local.get(Object.keys(initial), o => dispatch(o as Partial<ExtensionSettings>))
+    chrome.storage.local.get(settingsKeys, async (settings) => dispatch(settings))
 
     return () => chrome.storage.onChanged.removeListener(changeListener)
   }, [])

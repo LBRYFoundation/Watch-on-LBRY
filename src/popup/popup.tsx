@@ -19,7 +19,6 @@ function WatchOnLbryPopup() {
   let [clearingCache, updateClearingCache] = useState(() => false)
 
   return <div className='container'>
-    { }
     <section>
       <label className='radio-label'>Enable Redirection:</label>
       <ButtonRadio value={redirect ? 'YES' : 'NO'} options={['YES', 'NO']}

@@ -52,5 +52,5 @@ export async function sign(data: string, privateKey: string) {
         { name: "RSASSA-PKCS1-v1_5" },
         await importPrivateKey(privateKey),
         Buffer.from(data)
-    ))
+    )).toString('base64')
 }

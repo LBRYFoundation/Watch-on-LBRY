@@ -1,4 +1,6 @@
+import { generateKeys } from '../common/crypto'
 import { DEFAULT_SETTINGS, ExtensionSettings, getExtensionSettingsAsync } from '../common/settings'
+import { setSetting } from '../common/useSettings'
 
 /** Reset settings to default value and update the browser badge text */
 async function initSettings() {
@@ -6,7 +8,7 @@ async function initSettings() {
 
   // get all the values that aren't set and use them as a change set
   const invalidEntries = (Object.entries(DEFAULT_SETTINGS) as Array<[keyof ExtensionSettings, ExtensionSettings[keyof ExtensionSettings]]>)
-    .filter(([k]) => settings[k] === null || settings[k] === undefined)
+    .filter(([k]) => settings[k] === undefined || settings[k] === null)
 
   // fix our local var and set it in storage for later
   if (invalidEntries.length > 0) {
@@ -14,6 +16,12 @@ async function initSettings() {
     Object.assign(settings, changeSet)
     chrome.storage.local.set(changeSet)
   }
+
+  if (!settings.privateKey || !settings.publicKey)
+    await generateKeys().then((keys) => {
+      setSetting('publicKey', keys.publicKey)
+      setSetting('privateKey', keys.privateKey)
+    })
 
   chrome.browserAction.setBadgeText({ text: settings.redirect ? 'ON' : 'OFF' })
 }
