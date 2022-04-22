@@ -1,6 +1,7 @@
 import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
 import ButtonRadio, { SelectionOption } from '../common/components/ButtonRadio'
+import { loginAndSetNickname } from '../common/crypto'
 import { getTargetPlatfromSettingsEntiries, getYtUrlResolversSettingsEntiries, TargetPlatformName, YTUrlResolverName } from '../common/settings'
 import { setSetting, useLbrySettings } from '../common/useSettings'
 import { LbryPathnameCache } from '../common/yt/urlCache'
@@ -15,7 +16,7 @@ const ytUrlResolverOptions: SelectionOption[] = getYtUrlResolversSettingsEntirie
   .map(([value, { name: display }]) => ({ value, display }))
 
 function WatchOnLbryPopup() {
-  const { redirect, targetPlatform, urlResolver } = useLbrySettings()
+  const { redirect, targetPlatform, urlResolver, privateKey, publicKey } = useLbrySettings()
   let [clearingCache, updateClearingCache] = useState(() => false)
 
   return <div className='container'>
@@ -41,6 +42,40 @@ function WatchOnLbryPopup() {
       }}>
         <button type='button' className='btn1 button is-primary'>{clearingCache ? 'Clearing Cache...' : 'Clear Cache'}</button>
       </a>
+    </section>
+    <section>
+      <label className='radio-label'>Madiator Finder:</label>
+      <a href='https://finder.madiator.com/leaderboard' target='_blank'>
+        <button type='button' className='btn1 button is-primary'>Leaderboard</button>
+      </a>
+    </section>
+    <section>
+      <label className='radio-label'>Madiator Finder Profile:</label>
+      {(!privateKey || !publicKey) ?
+        <span class="options">
+          <a onClick={() => loginAndSetNickname()} target='_blank'>
+            <button type='button' className='btn1 button is-primary'>Login and join the Leaderboard</button>
+          </a>
+          <a onClick={() => loginAndSetNickname()} target='_blank'>
+            <button type='button' className='btn1 button is-primary'>Import Account</button>
+          </a>
+        </span>
+        :
+        <span class="options">
+          <a onClick={() => loginAndSetNickname()} target='_blank'>
+            <button type='button' className='btn1 button is-primary'>Update Nickname</button>
+          </a>
+          <a onClick={() => loginAndSetNickname()} target='_blank'>
+            <button type='button' className='btn1 button is-primary'>Export Account</button>
+          </a>
+          <a onClick={() => loginAndSetNickname()} target='_blank'>
+            <button type='button' className='btn1 button is-primary'>Logout</button>
+          </a>
+          <a onClick={() => loginAndSetNickname()} target='_blank'>
+            <button type='button' className='btn1 button is-primary'>Purge Account</button>
+          </a>
+        </span>
+      }
     </section>
     <section>
       <label className='radio-label'>Other useful tools:</label>

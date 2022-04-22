@@ -17,12 +17,6 @@ async function initSettings() {
     chrome.storage.local.set(changeSet)
   }
 
-  if (!settings.privateKey || !settings.publicKey)
-    await generateKeys().then((keys) => {
-      setSetting('publicKey', keys.publicKey)
-      setSetting('privateKey', keys.privateKey)
-    })
-
   chrome.browserAction.setBadgeText({ text: settings.redirect ? 'ON' : 'OFF' })
 }
 

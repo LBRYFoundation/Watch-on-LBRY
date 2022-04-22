@@ -1,3 +1,6 @@
+import { getExtensionSettingsAsync } from "./settings"
+import { setSetting } from "./useSettings"
+
 export async function generateKeys() {
     const keys = await window.crypto.subtle.generateKey(
         {
@@ -53,4 +56,33 @@ export async function sign(data: string, privateKey: string) {
         await importPrivateKey(privateKey),
         Buffer.from(data)
     )).toString('base64')
+}
+
+export async function loginAndSetNickname() {
+    const settings = await getExtensionSettingsAsync()
+
+    let nickname;
+    while (true)
+    {
+        nickname = prompt("Pick a nickname")
+        if (nickname) break
+        if (nickname === null) return
+        alert("Invalid nickname")
+    }
+
+    if (!settings.privateKey || !settings.publicKey)
+        await generateKeys().then((keys) => {
+            setSetting('publicKey', keys.publicKey)
+            setSetting('privateKey', keys.privateKey)
+        })
+    
+    const url = new URL('https://finder.madiator.com/api/v1/profile')
+    url.searchParams.set('data', JSON.stringify({ nickname }))
+    url.searchParams.set('keys', JSON.stringify({
+        signature: await sign(url.searchParams.toString(), settings.privateKey!),
+        publicKey: settings.publicKey
+    }))
+    const respond = await fetch(url.href, { method: "POST" })
+    if (respond.ok) alert(`Your nickname has been set to ${nickname}`)
+    else alert((await respond.json()).message)
 }
