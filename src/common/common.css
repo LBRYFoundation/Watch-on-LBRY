@@ -1,0 +1,61 @@
+:root {
+    --color-master: #488e77;
+    --color-slave: #458593;
+    --color-error: rgb(245, 81, 69);
+    --color-gradient-0: linear-gradient(130deg, var(--color-master), var(--color-slave));
+    --color-gradient-1: linear-gradient(130deg, #ff7a18, #af002d 41.07%, #319197 76.05%);
+    --color-dark: #0e1117;
+    --color-light: rgb(235, 237, 241);
+    --gradient-animation: gradient-animation 5s linear infinite alternate;
+}
+
+:root {
+    letter-spacing: .2ch;
+}
+
+body {
+    background: linear-gradient(to left top, var(--color-master), var(--color-slave));
+    background-attachment: fixed;
+    color: var(--color-light);
+    padding: 0;
+    margin: 0;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    position: relative;
+}
+
+.button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: .5em 1em;
+
+    background: var(--color-dark);
+    color: var(--color-light);
+
+    cursor: pointer;
+    border-radius: .5em;
+}
+
+.button.active {
+    background: var(--color-gradient-0);
+}
+
+.button.active::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--color-gradient-0);
+    filter: blur(.5em);
+    z-index: -1;
+    border-radius: .5em;
+}
+
+.button.disabled {
+    filter: saturate(0);
+    pointer-events: none;
+}

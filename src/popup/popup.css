@@ -1,0 +1,69 @@
+.popup {
+    width: 35em;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+label {
+    font-size: 2em;
+    font-weight: bold;
+    text-align: center;
+}
+
+header {
+    display: grid;
+    position: sticky;
+    top: 0;
+    justify-content: end;
+    background: rgba(19, 19, 19, 0.95);
+    padding: .5em .2em;
+}
+
+.profile {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: center;
+    gap: .25em;
+}
+
+.profile .name {
+    display: inline-block;
+    width: 10em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+.profile::before {
+    content: '';
+    display: inline-block;
+    width: 4ch;
+    aspect-ratio: 1/1;
+    background: var(--color-gradient-0);
+    border-radius: 100000%;
+}
+
+main {
+    display: grid;
+    gap: 1em;
+    padding: .25em;
+} 
+
+section {
+    display: grid;
+    justify-items: center;
+    gap: .75em;
+    background: rgba(19, 19, 19, 0.75);
+    border-radius: 1em;
+    padding: .5em;
+}
+
+.options {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(3em, 1fr));
+    justify-content: center;
+    gap: .25em;
+}
