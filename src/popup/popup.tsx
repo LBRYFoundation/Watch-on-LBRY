@@ -31,23 +31,32 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
     }
   }
 
-  return <div className='popup'>
-    <header>
-      <div className='profile'>
-        {publicKey
-          ? <span><b>Using As:</b> <a onClick={() => updateRoute('profile')} className='name link'>{nickname}</a></span>
-          : <a className='button filled' onClick={() => updateRoute('profile')} href="#profile">Your Profile</a>}
-      </div>
-    </header>
+  return <div id='popup'>
+
+    {
+      publicKey
+        ? <header>
+          <section>
+            <label>{nickname}</label>
+            <p>{friendlyPublicKey(publicKey)}</p>
+            <span><b>Score: {params.profile?.score ?? '...'}</b> - <a target='_blank' href="https://finder.madiator.com/leaderboard" class="filled">🔗Leaderboard</a></span>
+          </section>
+          <section>
+            {
+              popupRoute === 'profile'
+                ? <a onClick={() => updateRoute('')} className="button filled">⇐ Back</a>
+                : <a className='button filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
+            }
+          </section>
+        </header>
+        : <header><a className='button filled' onClick={() => updateRoute('profile')} href="#profile">Your Profile</a>
+        </header>
+    }
     {
       popupRoute === 'profile' ?
         publicKey ?
           <main>
-            <a onClick={() => updateRoute('')} className="go-back link">⇐ Back</a>
             <section>
-              <label>{nickname}</label>
-              <p>{friendlyPublicKey(publicKey)}</p>
-              <span><b>Score: {params.profile?.score ?? '...'}</b> - <a target='_blank' href="https://finder.madiator.com/leaderboard" class="filled">🔗Leaderboard</a></span>
               <div className='options'>
                 <a onClick={() => startAsyncOperation(generateProfileAndSetNickname()).then(() => renderPopup())} className={`button active`}>
                   Change Nickname
