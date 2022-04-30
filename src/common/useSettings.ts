@@ -1,5 +1,4 @@
 import { useEffect, useReducer } from 'preact/hooks'
-import { generateKeys } from './crypto'
 import { DEFAULT_SETTINGS, ExtensionSettings } from './settings'
 
 /**
@@ -7,7 +6,7 @@ import { DEFAULT_SETTINGS, ExtensionSettings } from './settings'
  *
  * @param defaultSettings the default value. Must have all relevant keys present and should not change
  */
-export function useSettings(defaultSettings: ExtensionSettings) {
+function useSettings(defaultSettings: ExtensionSettings) {
   const [state, dispatch] = useReducer((state, nstate: Partial<ExtensionSettings>) => ({ ...state, ...nstate }), defaultSettings)
   const settingsKeys = Object.keys(defaultSettings)
   // register change listeners, gets current values, and cleans up the listeners on unload

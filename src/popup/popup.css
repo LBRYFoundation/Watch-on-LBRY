@@ -1,12 +1,52 @@
-.popup {
-    width: 35em;
-    max-width: 100%;
-    overflow: hidden;
+:root {
+    --color-master: #499375;
+    --color-slave: #43889d;
+    --color-error: rgb(245, 81, 69);
+    --color-gradient-0: linear-gradient(130deg, var(--color-master), var(--color-slave));
+    --color-gradient-1: linear-gradient(130deg, #ff7a18, #af002d 41.07%, #319197 76.05%);
+    --color-dark: #0e1117;
+    --color-light: rgb(235, 237, 241);
+    --gradient-animation: gradient-animation 5s linear infinite alternate;
+}
+
+:root {
+    letter-spacing: .2ch;
+}
+
+body {
+    background: linear-gradient(to left top, var(--color-master), var(--color-slave));
+    background-attachment: fixed;
+    color: var(--color-light);
+    padding: 0;
+    margin: 0;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(19, 19, 19, 0.75);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    position: relative;
 }
 
 label {
-    font-size: 2em;
+    font-size: 1.75em;
     font-weight: bold;
+    text-align: center;
+}
+
+a {
+    cursor: pointer;
+}
+
+p {
+    margin: 0;
     text-align: center;
 }
 
@@ -19,27 +59,99 @@ header {
     padding: .5em .2em;
 }
 
+.button {
+    display: inline-flex;
+    place-items: center;
+    text-align: center;
+    padding: .5em 1em;
+
+    background: var(--color-dark);
+    color: var(--color-light);
+
+    cursor: pointer;
+    border-radius: .5em;
+}
+
+.filled {
+    background: var(--color-gradient-0);
+    background-clip: text;
+    -webkit-background-clip: text;
+    font-weight: bold;
+    color: transparent;
+}
+
+.button.active {
+    background: var(--color-gradient-0);
+}
+
+.button.active::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--color-gradient-0);
+    filter: blur(.5em);
+    z-index: -1;
+    border-radius: .5em;
+}
+
+.button.disabled {
+    filter: saturate(0);
+    pointer-events: none;
+}
+
+.go-back {
+    color: currentColor;
+    text-decoration: none;
+    font-size: 1.5em;
+}
+
+.popup {
+    width: 35em;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.overlay {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    inset: 0;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: #0e1117;
+    opacity: .75;
+}
+
 .profile {
     display: grid;
     grid-template-columns: auto auto;
     align-items: center;
     gap: .25em;
+    font-size: 1.5em;
 }
 
 .profile .name {
-    display: inline-block;
-    width: 10em;
-    max-width: 100%;
+    display: inline-flex;
+    gap: .5em;
+    place-items: center;
+    max-width: min(10em, 100%);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: bold;
+    color: currentColor;
 }
 
-.profile::before {
+.profile .name::before {
     content: '';
     display: inline-block;
-    width: 4ch;
+    width: 1ch;
     aspect-ratio: 1/1;
     background: var(--color-gradient-0);
     border-radius: 100000%;
@@ -47,17 +159,14 @@ header {
 
 main {
     display: grid;
-    gap: 1em;
-    padding: .25em;
-} 
+    gap: 2em;
+    padding: 1.5em 0.5em;
+}
 
 section {
     display: grid;
     justify-items: center;
     gap: .75em;
-    background: rgba(19, 19, 19, 0.75);
-    border-radius: 1em;
-    padding: .5em;
 }
 
 .options {
@@ -66,4 +175,5 @@ section {
     grid-template-columns: repeat(auto-fit, minmax(3em, 1fr));
     justify-content: center;
     gap: .25em;
+    padding: 0 1.5em;
 }

@@ -1,6 +1,4 @@
-import { generateKeys } from '../common/crypto'
 import { DEFAULT_SETTINGS, ExtensionSettings, getExtensionSettingsAsync } from '../common/settings'
-import { setSetting } from '../common/useSettings'
 
 /** Reset settings to default value and update the browser badge text */
 async function initSettings() {

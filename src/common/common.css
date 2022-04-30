@@ -1,6 +1,6 @@
 :root {
-    --color-master: #488e77;
-    --color-slave: #458593;
+    --color-master: #499375;
+    --color-slave: #43889d;
     --color-error: rgb(245, 81, 69);
     --color-gradient-0: linear-gradient(130deg, var(--color-master), var(--color-slave));
     --color-gradient-1: linear-gradient(130deg, #ff7a18, #af002d 41.07%, #319197 76.05%);
