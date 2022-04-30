@@ -104,7 +104,7 @@ async function requestResolveById(...params: Parameters<typeof resolveById>): Re
   * history.pushState changes from a content script
   */
   // Listen URL Change
-  chrome.runtime.onMessage.addListener(() => updater())
+  chrome.runtime.onMessage.addListener(({ message }, sender) => message === 'url-changed' && updater())
 
   async function getTargetByURL(url: URL) {
     if (url.pathname === '/watch' && url.searchParams.has('v')) {
