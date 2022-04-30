@@ -49,7 +49,12 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
             }
           </section>
         </header>
-        : <header><a className='button filled' onClick={() => updateRoute('profile')} href="#profile">Your Profile</a>
+        : <header>
+          {
+              popupRoute === 'profile'
+                ? <a onClick={() => updateRoute('')} className="button filled">⇐ Back</a>
+                : <a className='button filled' onClick={() => updateRoute('profile')} href="#profile">Your Profile</a>
+            }
         </header>
     }
     {
