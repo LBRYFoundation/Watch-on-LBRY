@@ -41,6 +41,7 @@ export async function resolveById(params: Paramaters, progressCallback?: (progre
         if (params.length === 0) return results
 
         const url = new URL(`${urlResolverSetting.href}`)
+        url.pathname = '/resolve'
         url.searchParams.set('video_ids', params.filter((item) => item.type === 'video').map((item) => item.id).join(','))
         url.searchParams.set('channel_ids', params.filter((item) => item.type === 'channel').map((item) => item.id).join(','))
         if (urlResolverSetting.signRequest && publicKey && privateKey)

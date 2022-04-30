@@ -118,12 +118,17 @@ export const getYtUrlResolversSettingsEntiries = () => Object.entries(ytUrlResol
 export const ytUrlResolversSettings = {
   odyseeApi: ytUrlResolver({
     name: "Odysee",
-    href: "https://api.odysee.com/yt/resolve",
+    href: "https://api.odysee.com/yt",
     signRequest: false
   }),
   madiatorFinder: ytUrlResolver({
     name: "Madiator Finder",
-    href: "https://finder.madiator.com/api/v1/resolve",
+    href: "https://finder.madiator.com/api/v1",
     signRequest: true
-  })
+  }),
+  /* madiatorFinderLocal: ytUrlResolver({
+    name: "Madiator Finder Local",
+    href: "http://127.0.0.1:3001/api/v1",
+    signRequest: true
+  }) */
 }
