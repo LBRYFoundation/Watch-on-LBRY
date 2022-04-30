@@ -1,6 +1,7 @@
 import { h, render } from 'preact'
 import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, TargetPlatform, targetPlatformSettings } from '../common/settings'
 import { parseYouTubeURLTimeString } from '../common/yt'
+import { resolveById } from '../common/yt/urlResolve'
 
 const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t))
 
@@ -79,10 +80,10 @@ async function findVideoElement() {
 }
 
 // We should get this from background, so the caching works and we don't get errors in the future if yt decides to impliment CORS
-async function requestLbryPathname(videoId: string) {
-  const response = await new Promise<string | null | 'error'>((resolve) => chrome.runtime.sendMessage({ videoId }, resolve))
-  if (response === 'error') throw new Error("Background error.")
-  return response
+async function requestResolveById(...params: Parameters<typeof resolveById>): ReturnType<typeof resolveById> {
+  const json = await new Promise<string | null | 'error'>((resolve) => chrome.runtime.sendMessage({ json: JSON.stringify(params) }, resolve))
+  if (json === 'error') throw new Error("Background error.")
+  return json ? JSON.parse(json) : null
 }
 
 // Start
@@ -106,13 +107,29 @@ async function requestLbryPathname(videoId: string) {
   chrome.runtime.onMessage.addListener(() => updater())
 
   async function getTargetByURL(url: URL) {
-    if (url.pathname !== '/watch') return null
+    if (url.pathname === '/watch' && url.searchParams.has('v')) {
+      const videoId = url.searchParams.get('v')!
+      const result = await requestResolveById([{ id: videoId, type: 'video' }])
+      const target: Target | null = result?.[videoId] ? { lbryPathname: result[videoId].id, platfrom: targetPlatformSettings[settings.targetPlatform], time: null } : null
+      
+      return target
+    }
+    else if (url.pathname.startsWith('/channel/')) {
+      await requestResolveById([{ id: url.pathname.substring("/channel/".length), type: 'channel' }])
+    }
+    else if (url.pathname.startsWith('/c/') || url.pathname.startsWith('/user/'))
+    {
+      // We have to download the page content again because these parts of the page are not responsive
+      // yt front end sucks anyway
+      const content = await (await fetch(location.href)).text()
+      const prefix = `https://www.youtube.com/feeds/videos.xml?channel_id=`
+      const suffix = `"`
+      const startsAt = content.indexOf(prefix) + prefix.length
+      const endsAt = content.indexOf(suffix, startsAt)
+      await requestResolveById([{ id: content.substring(startsAt, endsAt), type: 'channel' }])
+    }
 
-    const videoId = url.searchParams.get('v')
-    const lbryPathname = videoId && await requestLbryPathname(videoId)
-    const target: Target | null = lbryPathname ? { lbryPathname, platfrom: targetPlatformSettings[settings.targetPlatform], time: null } : null
-
-    return target
+    return null
   }
 
   async function redirectTo({ lbryPathname, platfrom, time }: Target) {
