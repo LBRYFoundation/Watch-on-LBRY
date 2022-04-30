@@ -172,7 +172,7 @@ async function readFile() {
             const reader = new FileReader()
 
             reader.addEventListener('load', () => resolve(reader.result?.toString() ?? null))
-            reader.readAsBinaryString(myFile)
+            reader.readAsText(myFile)
         })
     })
 }
