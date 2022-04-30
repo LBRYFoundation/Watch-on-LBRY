@@ -4,17 +4,23 @@ export interface ExtensionSettings {
   redirect: boolean
   targetPlatform: TargetPlatformName
   urlResolver: YTUrlResolverName
+  publicKey: string | null,
+  privateKey: string | null
 }
 
-export const DEFAULT_SETTINGS: ExtensionSettings = { redirect: true, targetPlatform: 'odysee', urlResolver: 'lbryInc' }
+export const DEFAULT_SETTINGS: ExtensionSettings = {
+  redirect: true,
+  targetPlatform: 'odysee',
+  urlResolver: 'odyseeApi',
+  privateKey: null,
+  publicKey: null
+}
 
 export function getExtensionSettingsAsync(): Promise<ExtensionSettings> {
   return new Promise(resolve => chrome.storage.local.get(o => resolve(o as any)))
 }
 
-
-export type TargetPlatformName = 'madiator.com' | 'odysee' | 'app'
-export interface TargetPlatform {
+const targetPlatform = (o: {
   domainPrefix: string
   displayName: string
   theme: string
@@ -27,10 +33,14 @@ export interface TargetPlatform {
       button?: JSX.CSSProperties
     }
   }
+}) => o
+export type TargetPlatform = ReturnType<typeof targetPlatform>
+export type TargetPlatformName = Extract<keyof typeof targetPlatformSettings, string>
+export const getTargetPlatfromSettingsEntiries = () => {
+  return Object.entries(targetPlatformSettings) as any as [Extract<keyof typeof targetPlatformSettings, string>, TargetPlatform][]
 }
-
-export const targetPlatformSettings: Record<TargetPlatformName, TargetPlatform> = {
-  'madiator.com': {
+export const targetPlatformSettings = {
+  'madiator.com': targetPlatform({
     domainPrefix: 'https://madiator.com/',
     displayName: 'Madiator.com',
     theme: '#075656',
@@ -42,8 +52,8 @@ export const targetPlatformSettings: Record<TargetPlatformName, TargetPlatform> 
         icon: { transform: 'scale(1.2)' }
       }
     }
-  },
-  odysee: {
+  }),
+  odysee: targetPlatform({
     domainPrefix: 'https://odysee.com/',
     displayName: 'Odysee',
     theme: '#1e013b',
@@ -51,8 +61,8 @@ export const targetPlatformSettings: Record<TargetPlatformName, TargetPlatform> 
       text: 'Watch on Odysee',
       icon: chrome.runtime.getURL('icons/lbry/odysee-logo.svg')
     }
-  },
-  app: {
+  }),
+  app: targetPlatform({
     domainPrefix: 'lbry://',
     displayName: 'LBRY App',
     theme: '#075656',
@@ -60,118 +70,60 @@ export const targetPlatformSettings: Record<TargetPlatformName, TargetPlatform> 
       text: 'Watch on LBRY',
       icon: chrome.runtime.getURL('icons/lbry/lbry-logo.svg')
     }
-  },
-}
-
-export const getTargetPlatfromSettingsEntiries = () => {
-  return Object.entries(targetPlatformSettings) as any as [Extract<keyof typeof targetPlatformSettings, string>, TargetPlatform][]
+  }),
 }
 
 
 
-export type SourcePlatformName = 'youtube.com' | 'yewtu.be'
-export interface SourcePlatform {
+const sourcePlatform = (o: {
   hostnames: string[]
   htmlQueries: {
     mountButtonBefore: string,
     videoPlayer: string
   }
-}
-
-export const sourcePlatfromSettings: Record<SourcePlatformName, SourcePlatform> = {
-  "yewtu.be": {
-    hostnames: ['yewtu.be', 'vid.puffyan.us', 'invidio.xamh.de', 'invidious.kavin.rocks'],
-    htmlQueries: {
-      mountButtonBefore: '#watch-on-youtube',
-      videoPlayer: '#player-container video'
-    }
-  },
-  "youtube.com": {
-    hostnames: ['www.youtube.com'],
-    htmlQueries: {
-      mountButtonBefore: 'ytd-video-owner-renderer~#subscribe-button',
-      videoPlayer: '#ytd-player video'
-    }
-  }
-}
-
+}) => o
+export type SourcePlatform = ReturnType<typeof sourcePlatform>
+export type SourcePlatformName = Extract<keyof typeof sourcePlatfromSettings, string>
 export function getSourcePlatfromSettingsFromHostname(hostname: string) {
   const values = Object.values(sourcePlatfromSettings)
   for (const settings of values)
     if (settings.hostnames.includes(hostname)) return settings
   return null
 }
-
-
-export type YTUrlResolverName = 'lbryInc' | 'madiatorScrap'
-
-export const Keys = Symbol('keys')
-export const Values = Symbol('values')
-export const SingleValueAtATime = Symbol()
-export type YtUrlResolveResponsePath = (string | number | typeof Keys | typeof Values)[]
-export interface YtUrlResolveFunction {
-  pathname: string
-  defaultParams: Record<string, string | number>
-  valueParamName: string
-  paramArraySeperator: string | typeof SingleValueAtATime
-  responsePath: YtUrlResolveResponsePath
+export const sourcePlatfromSettings = {
+  "yewtu.be": sourcePlatform({
+    hostnames: ['yewtu.be', 'vid.puffyan.us', 'invidio.xamh.de', 'invidious.kavin.rocks'],
+    htmlQueries: {
+      mountButtonBefore: '#watch-on-youtube',
+      videoPlayer: '#player-container video'
+    }
+  }),
+  "youtube.com": sourcePlatform({
+    hostnames: ['www.youtube.com'],
+    htmlQueries: {
+      mountButtonBefore: 'ytd-video-owner-renderer~#subscribe-button',
+      videoPlayer: '#ytd-player video'
+    }
+  })
 }
-export interface YTUrlResolver {
+
+const ytUrlResolver = (o: {
   name: string
-  hostname: string
-  functions: {
-    getChannelId: YtUrlResolveFunction
-    getVideoId: YtUrlResolveFunction
-  }
-}
-
-export const ytUrlResolversSettings: Record<YTUrlResolverName, YTUrlResolver> = {
-  lbryInc: {
+  href: string
+  signRequest: boolean
+}) => o
+export type YTUrlResolver = ReturnType<typeof ytUrlResolver>
+export type YTUrlResolverName = Extract<keyof typeof ytUrlResolversSettings, string>
+export const getYtUrlResolversSettingsEntiries = () => Object.entries(ytUrlResolversSettings) as any as [Extract<keyof typeof ytUrlResolversSettings, string>, YTUrlResolver][]
+export const ytUrlResolversSettings = {
+  odyseeApi: ytUrlResolver({
     name: "Odysee",
-    hostname: "api.odysee.com",
-    functions: {
-      getChannelId: {
-        pathname: "/yt/resolve",
-        defaultParams: {},
-        valueParamName: "channel_ids",
-        paramArraySeperator: ',',
-        responsePath: ["data", "channels", Values]
-      },
-      getVideoId: {
-        pathname: "/yt/resolve",
-        defaultParams: {},
-        valueParamName: "video_ids",
-        paramArraySeperator: ",",
-        responsePath: ["data", "videos", Values]
-      }
-    }
-  },
-  madiatorScrap: {
-    name: "Madiator.com",
-    hostname: "scrap.madiator.com",
-    functions: {
-      getChannelId: {
-        pathname: "/api/get-lbry-channel",
-        defaultParams: {
-          v: 2
-        },
-        valueParamName: "url",
-        paramArraySeperator: SingleValueAtATime,
-        responsePath: ["lbrych"]
-      },
-      getVideoId: {
-        pathname: "/api/get-lbry-video",
-        defaultParams: {
-          v: 2
-        },
-        valueParamName: "url",
-        paramArraySeperator: SingleValueAtATime,
-        responsePath: ["lbryurl"]
-      }
-    }
-  }
-}
-
-export const getYtUrlResolversSettingsEntiries = () => {
-  return Object.entries(ytUrlResolversSettings) as any as [Extract<keyof typeof ytUrlResolversSettings, string>, YTUrlResolver][]
+    href: "https://api.odysee.com/yt/resolve",
+    signRequest: false
+  }),
+  madiatorFinder: ytUrlResolver({
+    name: "Madiator Finder",
+    href: "https://finder.madiator.com/api/v1/resolve",
+    signRequest: true
+  })
 }

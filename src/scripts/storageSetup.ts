@@ -6,7 +6,7 @@ async function initSettings() {
 
   // get all the values that aren't set and use them as a change set
   const invalidEntries = (Object.entries(DEFAULT_SETTINGS) as Array<[keyof ExtensionSettings, ExtensionSettings[keyof ExtensionSettings]]>)
-    .filter(([k]) => settings[k] === null || settings[k] === undefined)
+    .filter(([k]) => settings[k] === undefined || settings[k] === null)
 
   // fix our local var and set it in storage for later
   if (invalidEntries.length > 0) {

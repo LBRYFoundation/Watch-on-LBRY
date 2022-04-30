@@ -1,105 +1,81 @@
-import { chunk, groupBy } from "lodash"
-import { getExtensionSettingsAsync, Keys, SingleValueAtATime, Values, YtUrlResolveFunction, YtUrlResolveResponsePath, ytUrlResolversSettings } from "../settings"
+import { chunk } from "lodash"
+import { sign } from "../crypto"
+import { getExtensionSettingsAsync, ytUrlResolversSettings } from "../settings"
 import { LbryPathnameCache } from "./urlCache"
 
-// const LBRY_API_HOST = 'https://api.odysee.com'; MOVED TO SETTINGS
 const QUERY_CHUNK_SIZE = 100
 
-export interface YtIdResolverDescriptor {
-    id: string
-    type: 'channel' | 'video'
+export type YtUrlResolveItem = { type: 'video' | 'channel', id: string }
+type Results = Record<string, YtUrlResolveItem>
+type Paramaters = YtUrlResolveItem[]
+
+interface ApiResponse {
+    channels?: Record<string, string>
+    videos?: Record<string, string>
 }
 
-/**
-* @param descriptorsWithIndex YT resource IDs to check
-* @returns a promise with the list of channels that were found on lbry
-*/
-export async function resolveById(descriptors: YtIdResolverDescriptor[], progressCallback?: (progress: number) => void): Promise<(string | null)[]> {
-    let descriptorsPayload: (YtIdResolverDescriptor & { index: number })[] = descriptors.map((descriptor, index) => ({ ...descriptor, index }))
-    descriptors = null as any
-    const results: (string | null)[] = []
+export async function resolveById(params: Paramaters, progressCallback?: (progress: number) => void): Promise<Results> {
+    const { urlResolver: urlResolverSettingName, privateKey, publicKey } = await getExtensionSettingsAsync()
+    const urlResolverSetting = ytUrlResolversSettings[urlResolverSettingName]
 
+    async function requestChunk(params: Paramaters) {
+        const results: Results = {}
 
-    descriptorsPayload = (await Promise.all(descriptorsPayload.map(async (descriptor, index) => {
-        if (!descriptor?.id) return
-        const cache = await LbryPathnameCache.get(descriptor.id)
+        // Check for cache first, add them to the results if there are any cache
+        // And remove them from the params, so we dont request for them
+        params = (await Promise.all(params.map(async (item) => {
+            const cachedLbryUrl = await LbryPathnameCache.get(item.id)
 
-        // Cache can be null, if there is no lbry url yet
-        if (cache !== undefined) {
-            // Null values shouldn't be in the results
-            if (cache) results[index] = cache
-            return
-        }
-
-        return descriptor
-    }))).filter((descriptor) => descriptor) as any
-
-    const descriptorsPayloadChunks = chunk(descriptorsPayload, QUERY_CHUNK_SIZE)
-    let progressCount = 0
-    await Promise.all(descriptorsPayloadChunks.map(async (descriptorChunk) => {
-        const descriptorsGroupedByType: Record<YtIdResolverDescriptor['type'], typeof descriptorsPayload | null> = groupBy(descriptorChunk, (descriptor) => descriptor.type) as any
-
-        const { urlResolver: urlResolverSettingName } = await getExtensionSettingsAsync()
-        const urlResolverSetting = ytUrlResolversSettings[urlResolverSettingName]
-
-        const url = new URL(`https://${urlResolverSetting.hostname}`)
-
-        function followResponsePath<T>(response: any, responsePath: YtUrlResolveResponsePath) {
-            for (const path of responsePath) {
-                switch (typeof path) {
-                    case 'string': case 'number': response = response[path]; continue
-                }
-                switch (path) {
-                    case Keys: response = Object.keys(response); continue
-                    case Values: response = Object.values(response); continue
-                }
+            // Cache can be null, if there is no lbry url yet
+            if (cachedLbryUrl !== undefined) {
+                // Null values shouldn't be in the results
+                if (cachedLbryUrl !== null) results[item.id] = { id: cachedLbryUrl, type: item.type }
+                return null
             }
-            return response as T
-        }
 
-        async function requestGroup(urlResolverFunction: YtUrlResolveFunction, descriptorsGroup: typeof descriptorsPayload) {
-            url.pathname = urlResolverFunction.pathname
-            Object.entries(urlResolverFunction.defaultParams).forEach(([name, value]) => url.searchParams.set(name, value.toString()))
+            // No cache found
+            return item
+        }))).filter((o) => o) as Paramaters
+        console.log(params)
 
-            if (urlResolverFunction.paramArraySeperator === SingleValueAtATime) {
-                await Promise.all(descriptorsGroup.map(async (descriptor) => {
-                    url.searchParams.set(urlResolverFunction.valueParamName, descriptor.id)
+        if (params.length === 0) return results
 
-                    const apiResponse = await fetch(url.toString(), { cache: 'no-store' })
-                    if (apiResponse.ok) {
-                        const value = followResponsePath<string>(await apiResponse.json(), urlResolverFunction.responsePath)
-                        if (value) results[descriptor.index] = value
-                        await LbryPathnameCache.put(value, descriptor.id)
-                    }
-                    else if (apiResponse.status === 404) await LbryPathnameCache.put(null, descriptor.id)
+        const url = new URL(`${urlResolverSetting.href}`)
+        url.searchParams.set('video_ids', params.filter((item) => item.type === 'video').map((item) => item.id).join(','))
+        url.searchParams.set('channel_ids', params.filter((item) => item.type === 'channel').map((item) => item.id).join(','))
+        if (urlResolverSetting.signRequest && publicKey && privateKey)
+            url.searchParams.set('keys', JSON.stringify({
+                signature: await sign(url.searchParams.toString(), privateKey),
+                publicKey
+            }))
 
-                    progressCount++
-                    if (progressCallback) progressCallback(progressCount / descriptorsPayload.length)
-                }))
-            }
-            else {
-                url.searchParams.set(urlResolverFunction.valueParamName, descriptorsGroup
-                    .map((descriptor) => descriptor.id)
-                    .join(urlResolverFunction.paramArraySeperator))
+        const apiResponse = await fetch(url.toString(), { cache: 'no-store' })
+        if (apiResponse.ok) {
+            const response: ApiResponse = await apiResponse.json()
+            for (const item of params)
+            {
+                const lbryUrl = ((item.type === 'channel' ? response.channels : response.videos) ?? {})[item.id] ?? null
+                // we cache it no matter if its null or not
+                await LbryPathnameCache.put(lbryUrl, item.id)
 
-                const apiResponse = await fetch(url.toString(), { cache: 'no-store' })
-                if (apiResponse.ok) {
-                    const values = followResponsePath<string[]>(await apiResponse.json(), urlResolverFunction.responsePath)
-                    await Promise.all(values.map(async (value, index) => {
-                        const descriptor = descriptorsGroup[index]
-                        if (value) results[descriptor.index] = value
-                        await LbryPathnameCache.put(value, descriptor.id)
-                    }))
-                }
-
-                progressCount += descriptorsGroup.length
-                if (progressCallback) progressCallback(progressCount / descriptorsPayload.length)
+                if (lbryUrl) results[item.id] = { id: lbryUrl, type: item.type }
             }
         }
 
-        if (descriptorsGroupedByType['channel']) await requestGroup(urlResolverSetting.functions.getChannelId, descriptorsGroupedByType['channel'])
-        if (descriptorsGroupedByType['video']) await requestGroup(urlResolverSetting.functions.getVideoId, descriptorsGroupedByType['video'])
-    }))
+        return results
+    }
+
+    const results: Results = {}
+    const chunks = chunk(params, QUERY_CHUNK_SIZE)
+
+    let i = 0
+    if (progressCallback) progressCallback(0)
+    for (const chunk of chunks) {
+        if (progressCallback) progressCallback(++i / (chunks.length + 1))
+        Object.assign(results, await requestChunk(chunk))
+    }
+    console.log(results)
+
     if (progressCallback) progressCallback(1)
     return results
 }

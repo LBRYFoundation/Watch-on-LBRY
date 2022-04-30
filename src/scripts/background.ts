@@ -1,7 +1,7 @@
-import { resolveById, YtIdResolverDescriptor } from '../common/yt/urlResolve'
+import { resolveById, YtUrlResolveItem } from '../common/yt/urlResolve'
 
-async function resolveYT(descriptor: YtIdResolverDescriptor) {
-  const lbryProtocolUrl: string | null = (await resolveById([descriptor]).then(a => a[0])) ?? null
+async function resolveYT(item: YtUrlResolveItem) {
+  const lbryProtocolUrl: string | null = (await resolveById([item]).then((items) => items[item.id]))?.id ?? null
   if (!lbryProtocolUrl) return null
   return lbryProtocolUrl.replaceAll('#', ':')
   /* const segments = parseProtocolUrl(lbryProtocolUrl || '', { encode: true })
@@ -25,8 +25,7 @@ async function lbryPathnameFromVideoId(videoId: string): Promise<string | null> 
 }
 
 chrome.runtime.onMessage.addListener(({ videoId }: { videoId: string }, sender, sendResponse) => {
-  lbryPathnameFromVideoId(videoId).then((lbryPathname) => sendResponse(lbryPathname)).catch((err) => 
-  {
+  lbryPathnameFromVideoId(videoId).then((lbryPathname) => sendResponse(lbryPathname)).catch((err) => {
     sendResponse('error')
     console.error(err)
   })

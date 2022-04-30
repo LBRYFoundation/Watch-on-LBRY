@@ -37,8 +37,7 @@ async function clearExpired() {
     })
 }
 
-async function clearAll()
-{
+async function clearAll() {
     return await new Promise<void>((resolve, reject) => {
         const store = db?.transaction("store", "readwrite").objectStore("store")
         if (!store) return resolve()

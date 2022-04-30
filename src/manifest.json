@@ -11,7 +11,7 @@
     "https://lbry.tv/",
     "https://odysee.com/",
     "https://madiator.com/",
-    "https://scrap.madiator.com/",
+    "https://finder.madiator.com/",
     "tabs",
     "storage"
   ],
@@ -34,7 +34,7 @@
       "scripts/storageSetup.js",
       "scripts/background.js"
     ],
-    "persistent": false
+    "persistent": true
   },
   "browser_action": {
     "default_title": "Watch on LBRY",
