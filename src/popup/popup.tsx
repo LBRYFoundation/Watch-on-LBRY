@@ -82,7 +82,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
               <label>Purge your profile and data!</label>
               <p>Purge your profile data online and offline.</p>
               <div className='options'>
-                <a className="button filled">(╯°□°）╯︵ ┻━┻</a>
+                <span className="filled button">(╯°□°）╯︵ ┻━┻</span>
                 <a onClick={() => startAsyncOperation(purgeProfile()).then(() => renderPopup())} className={`button`}>
                   Purge Everything!!
                 </a>

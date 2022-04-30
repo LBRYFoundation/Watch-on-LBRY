@@ -54,7 +54,7 @@ export async function resolveById(params: Paramaters, progressCallback?: (progre
             const response: ApiResponse = await apiResponse.json()
             for (const item of params)
             {
-                const lbryUrl = ((item.type === 'channel' ? response.channels : response.videos) ?? {})[item.id] ?? null
+                const lbryUrl = ((item.type === 'channel' ? response.channels : response.videos) ?? {})[item.id]?.replaceAll('#', ':') ?? null
                 // we cache it no matter if its null or not
                 await LbryPathnameCache.put(lbryUrl, item.id)
 
