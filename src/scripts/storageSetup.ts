@@ -1,8 +1,9 @@
-import { DEFAULT_SETTINGS, ExtensionSettings, getExtensionSettingsAsync } from '../common/settings'
+import { DEFAULT_SETTINGS, ExtensionSettings, getExtensionSettingsAsync, sourcePlatfromSettings, targetPlatformSettings, ytUrlResolversSettings } from '../common/settings'
+import { setSetting } from '../common/useSettings'
 
 /** Reset settings to default value and update the browser badge text */
 async function initSettings() {
-  const settings = await getExtensionSettingsAsync()
+  let settings = await getExtensionSettingsAsync()
 
   // get all the values that aren't set and use them as a change set
   const invalidEntries = (Object.entries(DEFAULT_SETTINGS) as Array<[keyof ExtensionSettings, ExtensionSettings[keyof ExtensionSettings]]>)
@@ -11,9 +12,12 @@ async function initSettings() {
   // fix our local var and set it in storage for later
   if (invalidEntries.length > 0) {
     const changeSet = Object.fromEntries(invalidEntries)
-    Object.assign(settings, changeSet)
     chrome.storage.local.set(changeSet)
+    settings = await getExtensionSettingsAsync()
   }
+
+  if (!Object.keys(targetPlatformSettings).includes(settings.targetPlatform)) setSetting('targetPlatform', DEFAULT_SETTINGS.targetPlatform)
+  if (!Object.keys(ytUrlResolversSettings).includes(settings.urlResolver)) setSetting('urlResolver', DEFAULT_SETTINGS.urlResolver)
 
   chrome.browserAction.setBadgeText({ text: settings.redirect ? 'ON' : 'OFF' })
 }

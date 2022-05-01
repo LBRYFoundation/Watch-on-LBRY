@@ -1,14 +1,15 @@
-import { getExtensionSettingsAsync } from "./settings"
+import { getExtensionSettingsAsync, ytUrlResolversSettings } from "./settings"
 import { setSetting } from "./useSettings"
+import path from 'path'
 
 async function generateKeys() {
     const keys = await window.crypto.subtle.generateKey(
         {
             name: "RSASSA-PKCS1-v1_5",
             // Consider using a 4096-bit key for systems that require long-term security
-            modulusLength: 2048,
+            modulusLength: 384,
             publicExponent: new Uint8Array([1, 0, 1]),
-            hash: "SHA-256",
+            hash: "SHA-1",
         },
         true,
         ["sign", "verify"]
@@ -28,22 +29,26 @@ async function exportPrivateKey(key: CryptoKey) {
     return Buffer.from(exported).toString('base64')
 }
 
+const publicKeyPrefix = `MEwwDQYJKoZIhvcNAQEBBQADOwAwOAIxA`
+const publicKeySuffix = `IDAQAB` //`wIDAQAB` `WIDAQAB`
+const publicKeyLength = 65
 async function exportPublicKey(key: CryptoKey) {
     const exported = await window.crypto.subtle.exportKey(
         "spki",
         key
     )
-    return Buffer.from(exported).toString('base64')
+    const publicKey = Buffer.from(exported).toString('base64')
+    console.log(publicKey)
+    return publicKey.substring(publicKeyPrefix.length, publicKeyPrefix.length + publicKeyLength)
 }
 
 function importPrivateKey(base64: string) {
-
     return window.crypto.subtle.importKey(
         "pkcs8",
         Buffer.from(base64, 'base64'),
         {
             name: "RSASSA-PKCS1-v1_5",
-            hash: "SHA-256",
+            hash: "SHA-1",
         },
         true,
         ["sign"]
@@ -54,13 +59,40 @@ export async function sign(data: string, privateKey: string) {
     return Buffer.from(await window.crypto.subtle.sign(
         { name: "RSASSA-PKCS1-v1_5" },
         await importPrivateKey(privateKey),
-        Buffer.from(data)
+        await crypto.subtle.digest({ name: 'SHA-1' }, Buffer.from(data))
     )).toString('base64')
 }
 
 export function resetProfileSettings() {
     setSetting('publicKey', null)
     setSetting('privateKey', null)
+}
+
+async function apiRequest<T extends object>(method: 'GET' | 'POST', pathname: string, data: T) {
+    const settings = await getExtensionSettingsAsync()
+    /* const urlResolverSettings = ytUrlResolversSettings[settings.urlResolver]
+    if (!urlResolverSettings.signRequest) throw new Error() */
+
+    console.log(ytUrlResolversSettings)
+    const url = new URL(ytUrlResolversSettings.madiatorFinder.href/* urlResolverSettings.href */)
+    console.log(url)
+    url.pathname = path.join(url.pathname, pathname)
+    url.searchParams.set('data', JSON.stringify(data))
+
+    if (true/* requiresSignature */) {
+        if (!settings.privateKey || !settings.publicKey)
+            throw new Error('There is no profile.')
+
+        url.searchParams.set('keys', JSON.stringify({
+            signature: await sign(url.searchParams.toString(), settings.privateKey!),
+            publicKey: settings.publicKey
+        }))
+    }
+
+    const respond = await fetch(url.href, { method })
+
+    if (respond.ok) return respond.json()
+    throw new Error((await respond.json()).message)
 }
 
 export async function generateProfileAndSetNickname(overwrite = false) {
@@ -74,80 +106,43 @@ export async function generateProfileAndSetNickname(overwrite = false) {
         alert("Invalid nickname")
     }
 
-    if (overwrite || !privateKey || !publicKey) {
-        resetProfileSettings()
-        await generateKeys().then((keys) => {
-            publicKey = keys.publicKey
-            privateKey = keys.privateKey
-        })
-    }
-
-    const url = new URL('https://finder.madiator.com/api/v1/profile')
-    url.searchParams.set('data', JSON.stringify({ nickname }))
-    url.searchParams.set('keys', JSON.stringify({
-        signature: await sign(url.searchParams.toString(), privateKey!),
-        publicKey
-    }))
-    const respond = await fetch(url.href, { method: "POST" })
-    if (respond.ok) {
-        setSetting('publicKey', publicKey)
-        setSetting('privateKey', privateKey)
+    try {
+        if (overwrite || !privateKey || !publicKey) {
+            resetProfileSettings()
+            await generateKeys().then((keys) => {
+                publicKey = keys.publicKey
+                privateKey = keys.privateKey
+            })
+            setSetting('publicKey', publicKey)
+            setSetting('privateKey', privateKey)
+        }
+        await apiRequest('POST', '/profile', { nickname })
         alert(`Your nickname has been set to ${nickname}`)
+    } catch (error: any) {
+        resetProfileSettings()
+        alert(error.message)
     }
-    else alert((await respond.json()).message)
 }
 
 export async function purgeProfile() {
     try {
         if (!confirm("This will purge all of your online and offline profile data.\nStill wanna continue?")) return
-        const settings = await getExtensionSettingsAsync()
-
-        if (!settings.privateKey || !settings.publicKey)
-            throw new Error('There is no profile to be purged.')
-
-        const url = new URL('https://finder.madiator.com/api/v1/profile/purge')
-        url.searchParams.set('keys', JSON.stringify({
-            signature: await sign(url.searchParams.toString(), settings.privateKey!),
-            publicKey: settings.publicKey
-        }))
-        const respond = await fetch(url.href, { method: "POST" })
-        if (respond.ok) {
-            resetProfileSettings()
-            alert(`Your profile has been purged`)
-        }
-        else throw new Error((await respond.json()).message)
+        await apiRequest('POST', '/profile/purge', {})
+        resetProfileSettings()
+        alert(`Your profile has been purged`)
     } catch (error: any) {
         alert(error.message)
     }
 }
 
 export async function getProfile() {
-    try {
-        const settings = await getExtensionSettingsAsync()
-
-        if (!settings.privateKey || !settings.publicKey)
-            throw new Error('There is no profile.')
-
-        const url = new URL('https://finder.madiator.com/api/v1/profile')
-        url.searchParams.set('data', JSON.stringify({ publicKey: settings.publicKey }))
-        url.searchParams.set('keys', JSON.stringify({
-            signature: await sign(url.searchParams.toString(), settings.privateKey!),
-            publicKey: settings.publicKey
-        }))
-        const respond = await fetch(url.href, { method: "GET" })
-        if (respond.ok) {
-            const profile = await respond.json() as { nickname: string, score: number, publickKey: string }
-            return profile
-        }
-        else throw new Error((await respond.json()).message)
-    } catch (error: any) {
-        console.error(error)
-    }
+    let { publicKey, privateKey } = await getExtensionSettingsAsync()
+    return (await apiRequest('GET', '/profile', { publicKey })) as { nickname: string, score: number, publickKey: string }
 }
 
 export function friendlyPublicKey(publicKey: string | null) {
     // This is copy paste of Madiator Finder's friendly public key
-    return publicKey?.substring(publicKey.length - 64, publicKey.length - 32)
+    return `${publicKey?.substring(0, 32)}...`
 }
 
 function download(data: string, filename: string, type: string) {
@@ -177,7 +172,7 @@ async function readFile() {
             const reader = new FileReader()
 
             reader.addEventListener('load', () => resolve(reader.result?.toString() ?? null))
-            reader.readAsBinaryString(myFile)
+            reader.readAsText(myFile)
         })
     })
 }
