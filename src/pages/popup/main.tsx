@@ -154,7 +154,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
           </section>
           <section>
             <label>Tools</label>
-            <a target='_blank' href='/tools/YTtoLBRY/index.html' className={`filled`}>
+            <a target='_blank' href='/pages/YTtoLBRY/index.html' className={`filled`}>
               Subscription Converter
             </a>
           </section>
