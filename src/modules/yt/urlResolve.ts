@@ -1,8 +1,8 @@
 import { chunk } from "lodash"
-import { sign } from "../crypto"
-import { getExtensionSettingsAsync, ytUrlResolversSettings } from "../settings"
-import { LbryPathnameCache } from "./urlCache"
 import path from "path"
+import { getExtensionSettingsAsync, ytUrlResolversSettings } from "../../settings"
+import { sign } from "../crypto"
+import { LbryPathnameCache } from "./urlCache"
 
 const QUERY_CHUNK_SIZE = 100
 
@@ -11,8 +11,10 @@ type Results = Record<string, YtUrlResolveItem>
 type Paramaters = YtUrlResolveItem[]
 
 interface ApiResponse {
-    channels?: Record<string, string>
-    videos?: Record<string, string>
+    data: {
+        channels?: Record<string, string>
+        videos?: Record<string, string>
+    }
 }
 
 export async function resolveById(params: Paramaters, progressCallback?: (progress: number) => void): Promise<Results> {
@@ -37,7 +39,6 @@ export async function resolveById(params: Paramaters, progressCallback?: (progre
             // No cache found
             return item
         }))).filter((o) => o) as Paramaters
-        console.log(params)
 
         if (params.length === 0) return results
 
@@ -54,9 +55,8 @@ export async function resolveById(params: Paramaters, progressCallback?: (progre
         const apiResponse = await fetch(url.toString(), { cache: 'no-store' })
         if (apiResponse.ok) {
             const response: ApiResponse = await apiResponse.json()
-            for (const item of params)
-            {
-                const lbryUrl = ((item.type === 'channel' ? response.channels : response.videos) ?? {})[item.id]?.replaceAll('#', ':') ?? null
+            for (const item of params) {
+                const lbryUrl = (item.type === 'channel' ? response.data.channels : response.data.videos)?.[item.id]?.replaceAll('#', ':') ?? null
                 // we cache it no matter if its null or not
                 await LbryPathnameCache.put(lbryUrl, item.id)
 
@@ -76,7 +76,6 @@ export async function resolveById(params: Paramaters, progressCallback?: (progre
         if (progressCallback) progressCallback(++i / (chunks.length + 1))
         Object.assign(results, await requestChunk(chunk))
     }
-    console.log(results)
 
     if (progressCallback) progressCallback(1)
     return results

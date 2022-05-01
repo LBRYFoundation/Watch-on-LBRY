@@ -1,9 +1,9 @@
 import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
-import { targetPlatformSettings } from '../../common/settings'
-import { useLbrySettings } from '../../common/useSettings'
-import { getFileContent, getSubsFromCsv, getSubsFromJson, getSubsFromOpml } from '../../common/yt'
-import { resolveById } from '../../common/yt/urlResolve'
+import { getFileContent } from '../../modules/file'
+import { getSubsFromCsv, getSubsFromJson, getSubsFromOpml } from '../../modules/yt'
+import { resolveById } from '../../modules/yt/urlResolve'
+import { targetPlatformSettings, useExtensionSettings } from '../../settings'
 import readme from './README.md'
 
 async function getSubscribedChannelIdsFromFile(file: File) {
@@ -29,7 +29,7 @@ function Conversion() {
   const [file, setFile] = useState(null as File | null)
   const [progress, setProgress] = useState(0)
   const [lbryChannelIds, setLbryChannels] = useState([] as Awaited<ReturnType<typeof findChannels>>)
-  const settings = useLbrySettings()
+  const settings = useExtensionSettings()
 
   let loading = progress > 0 && progress !== 1
 

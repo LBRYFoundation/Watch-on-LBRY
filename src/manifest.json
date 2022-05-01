@@ -31,26 +31,26 @@
   ],
   "background": {
     "scripts": [
-      "scripts/storageSetup.js",
+      "settings/background.js",
       "scripts/background.js"
     ],
     "persistent": true
   },
   "browser_action": {
     "default_title": "Watch on LBRY",
-    "default_popup": "popup/popup.html"
+    "default_popup": "pages/popup/index.html"
   },
   "web_accessible_resources": [
-    "popup.html",
-    "tools/YTtoLBRY/index.html",
-    "icons/lbry/lbry-logo.svg",
-    "icons/lbry/odysee-logo.svg",
-    "icons/lbry/madiator-logo.svg"
+    "pages/popup/index.html",
+    "pages/YTtoLBRY/index.html",
+    "assets/icons/lbry/lbry-logo.svg",
+    "assets/icons/lbry/odysee-logo.svg",
+    "assets/icons/lbry/madiator-logo.svg"
   ],
   "icons": {
-    "16": "icons/wol/icon16.png",
-    "48": "icons/wol/icon48.png",
-    "128": "icons/wol/icon128.png"
+    "16": "assets/icons/wol/icon16.png",
+    "48": "assets/icons/wol/icon48.png",
+    "128": "assets/icons/wol/icon128.png"
   },
   "manifest_version": 2
 }

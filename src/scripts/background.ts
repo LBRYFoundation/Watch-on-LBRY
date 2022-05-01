@@ -1,4 +1,4 @@
-import { resolveById } from '../common/yt/urlResolve'
+import { resolveById } from "../modules/yt/urlResolve"
 
 const onGoingLbryPathnameRequest: Record<string, ReturnType<typeof resolveById>> = {}
 
