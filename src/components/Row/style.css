@@ -1,0 +1,6 @@
+.responsive-row {
+    display: grid;
+    grid-template-columns: repeat(var(--type), minmax(min(max(100% / var(--max-column-count) - var(--gap), var(--ideal-size)), 100%), 1fr));
+    gap: var(--gap);
+    justify-items: var(--justify-items);
+}

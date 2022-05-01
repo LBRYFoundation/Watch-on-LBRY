@@ -1,7 +1,7 @@
 import { h, render } from 'preact'
-import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, TargetPlatform, targetPlatformSettings } from '../common/settings'
-import { parseYouTubeURLTimeString } from '../common/yt'
-import { resolveById } from '../common/yt/urlResolve'
+import { parseYouTubeURLTimeString } from '../modules/yt'
+import { resolveById } from '../modules/yt/urlResolve'
+import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, TargetPlatform, targetPlatformSettings } from '../settings'
 
 const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t))
 
@@ -111,14 +111,13 @@ async function requestResolveById(...params: Parameters<typeof resolveById>): Re
       const videoId = url.searchParams.get('v')!
       const result = await requestResolveById([{ id: videoId, type: 'video' }])
       const target: Target | null = result?.[videoId] ? { lbryPathname: result[videoId].id, platfrom: targetPlatformSettings[settings.targetPlatform], time: null } : null
-      
+
       return target
     }
     else if (url.pathname.startsWith('/channel/')) {
       await requestResolveById([{ id: url.pathname.substring("/channel/".length), type: 'channel' }])
     }
-    else if (url.pathname.startsWith('/c/') || url.pathname.startsWith('/user/'))
-    {
+    else if (url.pathname.startsWith('/c/') || url.pathname.startsWith('/user/')) {
       // We have to download the page content again because these parts of the page are not responsive
       // yt front end sucks anyway
       const content = await (await fetch(location.href)).text()

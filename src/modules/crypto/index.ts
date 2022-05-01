@@ -1,6 +1,5 @@
-import { getExtensionSettingsAsync, ytUrlResolversSettings } from "./settings"
-import { setSetting } from "./useSettings"
 import path from 'path'
+import { getExtensionSettingsAsync, setExtensionSetting, ytUrlResolversSettings } from "../../settings"
 
 async function generateKeys() {
     const keys = await window.crypto.subtle.generateKey(
@@ -38,7 +37,6 @@ async function exportPublicKey(key: CryptoKey) {
         key
     )
     const publicKey = Buffer.from(exported).toString('base64')
-    console.log(publicKey)
     return publicKey.substring(publicKeyPrefix.length, publicKeyPrefix.length + publicKeyLength)
 }
 
@@ -64,8 +62,8 @@ export async function sign(data: string, privateKey: string) {
 }
 
 export function resetProfileSettings() {
-    setSetting('publicKey', null)
-    setSetting('privateKey', null)
+    setExtensionSetting('publicKey', null)
+    setExtensionSetting('privateKey', null)
 }
 
 async function apiRequest<T extends object>(method: 'GET' | 'POST', pathname: string, data: T) {
@@ -73,9 +71,7 @@ async function apiRequest<T extends object>(method: 'GET' | 'POST', pathname: st
     /* const urlResolverSettings = ytUrlResolversSettings[settings.urlResolver]
     if (!urlResolverSettings.signRequest) throw new Error() */
 
-    console.log(ytUrlResolversSettings)
     const url = new URL(ytUrlResolversSettings.madiatorFinder.href/* urlResolverSettings.href */)
-    console.log(url)
     url.pathname = path.join(url.pathname, pathname)
     url.searchParams.set('data', JSON.stringify(data))
 
@@ -113,8 +109,8 @@ export async function generateProfileAndSetNickname(overwrite = false) {
                 publicKey = keys.publicKey
                 privateKey = keys.privateKey
             })
-            setSetting('publicKey', publicKey)
-            setSetting('privateKey', privateKey)
+            setExtensionSetting('publicKey', publicKey)
+            setExtensionSetting('privateKey', privateKey)
         }
         await apiRequest('POST', '/profile', { nickname })
         alert(`Your nickname has been set to ${nickname}`)
@@ -198,8 +194,8 @@ export async function importProfileKeysFromFile() {
         const json = await readFile()
         if (!json) throw new Error("Invalid")
         const { publicKey, privateKey } = JSON.parse(json) as ExportedProfileKeysFile
-        setSetting('publicKey', publicKey)
-        setSetting('privateKey', privateKey)
+        setExtensionSetting('publicKey', publicKey)
+        setExtensionSetting('privateKey', privateKey)
     } catch (error: any) {
         alert(error.message)
     }

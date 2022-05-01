@@ -1,5 +1,4 @@
-import { DEFAULT_SETTINGS, ExtensionSettings, getExtensionSettingsAsync, sourcePlatfromSettings, targetPlatformSettings, ytUrlResolversSettings } from '../common/settings'
-import { setSetting } from '../common/useSettings'
+import { DEFAULT_SETTINGS, ExtensionSettings, getExtensionSettingsAsync, setExtensionSetting, targetPlatformSettings, ytUrlResolversSettings } from '.'
 
 /** Reset settings to default value and update the browser badge text */
 async function initSettings() {
@@ -16,8 +15,8 @@ async function initSettings() {
     settings = await getExtensionSettingsAsync()
   }
 
-  if (!Object.keys(targetPlatformSettings).includes(settings.targetPlatform)) setSetting('targetPlatform', DEFAULT_SETTINGS.targetPlatform)
-  if (!Object.keys(ytUrlResolversSettings).includes(settings.urlResolver)) setSetting('urlResolver', DEFAULT_SETTINGS.urlResolver)
+  if (!Object.keys(targetPlatformSettings).includes(settings.targetPlatform)) setExtensionSetting('targetPlatform', DEFAULT_SETTINGS.targetPlatform)
+  if (!Object.keys(ytUrlResolversSettings).includes(settings.urlResolver)) setExtensionSetting('urlResolver', DEFAULT_SETTINGS.urlResolver)
 
   chrome.browserAction.setBadgeText({ text: settings.redirect ? 'ON' : 'OFF' })
 }

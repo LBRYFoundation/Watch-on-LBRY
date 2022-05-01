@@ -1,11 +1,8 @@
 import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
-import '../common/common.css'
-import { exportProfileKeysAsFile, friendlyPublicKey, generateProfileAndSetNickname, getProfile, importProfileKeysFromFile, purgeProfile, resetProfileSettings } from '../common/crypto'
-import { getTargetPlatfromSettingsEntiries, getYtUrlResolversSettingsEntiries } from '../common/settings'
-import { setSetting, useLbrySettings } from '../common/useSettings'
-import { LbryPathnameCache } from '../common/yt/urlCache'
-import './popup.css'
+import { exportProfileKeysAsFile, friendlyPublicKey, generateProfileAndSetNickname, getProfile, importProfileKeysFromFile, purgeProfile, resetProfileSettings } from '../../modules/crypto'
+import { LbryPathnameCache } from '../../modules/yt/urlCache'
+import { getTargetPlatfromSettingsEntiries, getYtUrlResolversSettingsEntiries, setExtensionSetting, useExtensionSettings } from '../../settings'
 
 
 /** Gets all the options for redirect destinations as selection options */
@@ -13,7 +10,7 @@ const targetPlatforms = getTargetPlatfromSettingsEntiries()
 const ytUrlResolverOptions = getYtUrlResolversSettingsEntiries()
 
 function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfile>> | null }) {
-  const { redirect, targetPlatform, urlResolver, privateKey, publicKey } = useLbrySettings()
+  const { redirect, targetPlatform, urlResolver, privateKey, publicKey } = useExtensionSettings()
   let [loading, updateLoading] = useState(() => false)
   let [popupRoute, updateRoute] = useState<string | null>(() => null)
 
@@ -40,21 +37,22 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
             <label>{nickname}</label>
             <p>{friendlyPublicKey(publicKey)}</p>
             <span><b>Score: {params.profile?.score ?? '...'}</b> - <a target='_blank' href="https://finder.madiator.com/leaderboard" class="filled">🔗Leaderboard</a></span>
+            {urlResolver !== 'madiatorFinder' && <span class="error">You need to use Madiator Finder API for scoring to work</span>}
           </section>
           <section>
             {
               popupRoute === 'profile'
-                ? <a onClick={() => updateRoute('')} className="button filled">⇐ Back</a>
-                : <a className='button filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
+                ? <a onClick={() => updateRoute('')} className="filled">⇐ Back</a>
+                : <a className='filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
             }
           </section>
         </header>
         : <header>
           {
-              popupRoute === 'profile'
-                ? <a onClick={() => updateRoute('')} className="button filled">⇐ Back</a>
-                : <a className='button filled' onClick={() => updateRoute('profile')} href="#profile">Your Profile</a>
-            }
+            popupRoute === 'profile'
+              ? <a onClick={() => updateRoute('')} className="filled">⇐ Back</a>
+              : <a className='filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
+          }
         </header>
     }
     {
@@ -123,10 +121,10 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
           <section>
             <label>Pick a mode:</label>
             <div className='options'>
-              <a onClick={() => setSetting('redirect', true)} className={`button ${redirect ? 'active' : ''}`}>
+              <a onClick={() => setExtensionSetting('redirect', true)} className={`button ${redirect ? 'active' : ''}`}>
                 Redirect
               </a>
-              <a onClick={() => setSetting('redirect', false)} className={`button ${redirect ? '' : 'active'}`}>
+              <a onClick={() => setExtensionSetting('redirect', false)} className={`button ${redirect ? '' : 'active'}`}>
                 Show a button
               </a>
             </div>
@@ -135,7 +133,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
             <label>Which platform you would like to redirect?</label>
             <div className='options'>
               {targetPlatforms.map(([name, value]) =>
-                <a onClick={() => setSetting('targetPlatform', name)} className={`button ${targetPlatform === name ? 'active' : ''}`}>
+                <a onClick={() => setExtensionSetting('targetPlatform', name)} className={`button ${targetPlatform === name ? 'active' : ''}`}>
                   {value.displayName}
                 </a>
               )}
@@ -145,7 +143,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
             <label>Which resolver API you want to use?</label>
             <div className='options'>
               {ytUrlResolverOptions.map(([name, value]) =>
-                <a onClick={() => setSetting('urlResolver', name)} className={`button ${urlResolver === name ? 'active' : ''}`}>
+                <a onClick={() => setExtensionSetting('urlResolver', name)} className={`button ${urlResolver === name ? 'active' : ''}`}>
                   {value.name}
                 </a>
               )}
@@ -156,7 +154,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
           </section>
           <section>
             <label>Tools</label>
-            <a target='_blank' href='/tools/YTtoLBRY.html' className={`button filled`}>
+            <a target='_blank' href='/tools/YTtoLBRY/index.html' className={`filled`}>
               Subscription Converter
             </a>
           </section>
