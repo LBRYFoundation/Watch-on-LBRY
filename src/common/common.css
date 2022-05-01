@@ -10,8 +10,15 @@
 }
 
 :root {
+    font-size: .95rem;
     font-family: Arial, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Open Sans, Helvetica Neue, sans-serif;
     letter-spacing: .2ch;
+}
+
+body#page {
+    --root-smallest-font-size: .95rem;
+    --root-font-size-relative-to-screen: 1;
+    font-size: max(var(--root-smallest-font-size), calc(min(1vw, 2vh) * var(--root-font-size-relative-to-screen)));
 }
 
 body {
@@ -24,7 +31,7 @@ body {
 
 body::before {
     content: "";
-    position: absolute;
+    position: fixed;
     inset: 0;
     background: rgba(19, 19, 19, 0.75);
 }
@@ -36,6 +43,30 @@ body::before {
     position: relative;
 }
 
+a {
+    cursor: pointer;
+}
+
+p,
+ul,
+ol,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+}
+
+.options {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(3em, 1fr));
+    justify-content: center;
+    gap: .25em;
+    padding: 0 1.5em;
+}
 
 .button {
     display: inline-flex;
@@ -48,14 +79,9 @@ body::before {
     color: var(--color-light);
 
     border-radius: .5em;
-}
+    border: unset;
 
-.filled {
-    background: var(--color-gradient-0);
-    background-clip: text;
-    -webkit-background-clip: text;
-    font-weight: bold;
-    color: transparent;
+    font-size: inherit;
 }
 
 .button.active {
@@ -77,13 +103,36 @@ body::before {
     pointer-events: none;
 }
 
-.options {
+.filled {
+    background: var(--color-gradient-0);
+    background-clip: text;
+    -webkit-background-clip: text;
+    font-weight: bold;
+    color: transparent;
+}
+
+.error {
     display: grid;
-    width: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(3em, 1fr));
-    justify-content: center;
-    gap: .25em;
-    padding: 0 1.5em;
+    grid-auto-flow: column;
+    gap: .5em;
+    align-items: center;
+    justify-content: start;
+    color: var(--color-error);
+}
+
+.error::before {
+    content: "!";
+    width: 2em;
+    aspect-ratio: 1/1;
+
+    display: grid;
+    place-items: center;
+    letter-spacing: 0;
+    line-height: 0;
+
+    border: .1em solid currentColor;
+    border-radius: 100000vw;
+    font-weight: bold;
 }
 
 .overlay {

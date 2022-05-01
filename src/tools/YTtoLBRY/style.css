@@ -1,0 +1,86 @@
+main {
+    display: flex;
+    flex-wrap: wrap-reverse;
+    min-height: 100vh;
+    gap: 2em;
+    padding: 1em;
+    overflow-wrap: break-word;
+    align-items: start;
+}
+
+.conversion,
+.help {
+    flex: 1;
+    min-width: 40em;
+    display: grid;
+    gap: 1em;
+}
+
+.conversion>*,
+.help>* {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: .5em;
+    padding: .5em;
+}
+
+.help iframe {
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16/9;
+    max-height: 50vh;
+    border: none;
+}
+
+.conversion {
+    height: 100%;
+}
+
+.conversion form {
+    display: grid;
+    gap: 1em;
+    justify-items: center;
+}
+
+.conversion form .fields {
+    display: grid;
+    gap: .5em;
+}
+
+.conversion form .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5em;
+}
+
+.conversion form .actions::after {
+    content: "";
+    flex-grow: 100000000000000000;
+}
+
+.conversion form button {
+    cursor: pointer;
+}
+
+.conversion form button:disabled {
+    cursor: not-allowed;
+}
+
+.conversion .results {
+    display: grid;
+    gap: .5em;
+}
+
+.help a,
+.conversion .results a {
+    background: var(--color-gradient-0);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    font-weight: bold;
+}
+
+.conversion .results .result-item {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}

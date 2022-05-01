@@ -40,20 +40,21 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
             <label>{nickname}</label>
             <p>{friendlyPublicKey(publicKey)}</p>
             <span><b>Score: {params.profile?.score ?? '...'}</b> - <a target='_blank' href="https://finder.madiator.com/leaderboard" class="filled">🔗Leaderboard</a></span>
+            { urlResolver !== 'madiatorFinder' && <span class="error">You need to use Madiator Finder API for scoring to work</span> }
           </section>
           <section>
             {
               popupRoute === 'profile'
-                ? <a onClick={() => updateRoute('')} className="button filled">⇐ Back</a>
-                : <a className='button filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
+                ? <a onClick={() => updateRoute('')} className="filled">⇐ Back</a>
+                : <a className='filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
             }
           </section>
         </header>
         : <header>
           {
               popupRoute === 'profile'
-                ? <a onClick={() => updateRoute('')} className="button filled">⇐ Back</a>
-                : <a className='button filled' onClick={() => updateRoute('profile')} href="#profile">Your Profile</a>
+                ? <a onClick={() => updateRoute('')} className="filled">⇐ Back</a>
+                : <a className='filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
             }
         </header>
     }
@@ -156,7 +157,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
           </section>
           <section>
             <label>Tools</label>
-            <a target='_blank' href='/tools/YTtoLBRY.html' className={`button filled`}>
+            <a target='_blank' href='/tools/YTtoLBRY/index.html' className={`filled`}>
               Subscription Converter
             </a>
           </section>

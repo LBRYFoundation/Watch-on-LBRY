@@ -1,18 +1,3 @@
-label {
-    font-size: 1.75em;
-    font-weight: bold;
-    text-align: center;
-}
-
-a {
-    cursor: pointer;
-}
-
-p {
-    margin: 0;
-    text-align: center;
-}
-
 header {
     display: grid;
     gap: .5em;
@@ -32,6 +17,12 @@ section {
     display: grid;
     justify-items: center;
     gap: .75em;
+}
+
+section label {
+    font-size: 1.75em;
+    font-weight: bold;
+    text-align: center;
 }
 
 #popup {
