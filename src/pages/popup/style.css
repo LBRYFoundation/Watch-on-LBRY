@@ -5,6 +5,7 @@ header {
     position: sticky;
     top: 0;
     background: rgba(19, 19, 19, 0.5);
+    justify-items: center;
 }
 
 main {

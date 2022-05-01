@@ -1,5 +1,6 @@
 import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
+import { createDialogManager, Dialogs } from '../../components/dialogs'
 import { exportProfileKeysAsFile, friendlyPublicKey, generateProfileAndSetNickname, getProfile, importProfileKeysFromFile, purgeProfile, resetProfileSettings } from '../../modules/crypto'
 import { LbryPathnameCache } from '../../modules/yt/urlCache'
 import { getTargetPlatfromSettingsEntiries, getYtUrlResolversSettingsEntiries, setExtensionSetting, useExtensionSettings } from '../../settings'
@@ -28,8 +29,10 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
     }
   }
 
-  return <div id='popup'>
+  const dialogManager = createDialogManager()
 
+  return <div id='popup'>
+    <Dialogs manager={dialogManager} />
     {
       publicKey
         ? <header>
@@ -61,10 +64,16 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
           <main>
             <section>
               <div className='options'>
-                <a onClick={() => startAsyncOperation(generateProfileAndSetNickname()).then(() => renderPopup())} className={`button active`}>
+                <a onClick={() => startAsyncOperation(generateProfileAndSetNickname(dialogManager)).then(() => renderPopup())} className={`button active`}>
                   Change Nickname
                 </a>
-                <a onClick={() => confirm("This will delete your keypair from this device.\nStill wanna continue?\n\nNOTE: Without keypair you can't purge your data online.\nSo if you wish to purge, please use purging instead.") && resetProfileSettings() && renderPopup()} className={`button`}>
+                <a onClick={async () =>
+                  await dialogManager.confirm("This will delete your keypair from this device.\nStill wanna continue?\n\nNOTE: Without keypair you can't purge your data online.\nSo if you wish to purge, please use purging instead.")
+                  && resetProfileSettings()
+                  && renderPopup()
+                }
+                  className={`button`}
+                >
                   Forget/Logout
                 </a>
               </div>
@@ -76,7 +85,12 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
                 <a onClick={() => exportProfileKeysAsFile()} className={`button active`}>
                   Export
                 </a>
-                <a onClick={() => confirm("This will overwrite your old keypair.\nStill wanna continue?\n\nNOTE: Without keypair you can't purge your data online.\nSo if you wish to purge, please use purging instead.") && startAsyncOperation(importProfileKeysFromFile()).then(() => renderPopup())} className={`button`}>
+                <a onClick={async () =>
+                  await dialogManager.confirm("This will overwrite your old keypair.\nStill wanna continue?\n\nNOTE: Without keypair you can't purge your data online.\nSo if you wish to purge, please use purging instead.")
+                  && startAsyncOperation(importProfileKeysFromFile(dialogManager)).then(() => renderPopup())
+                }
+                  className={`button`}
+                >
                   Import
                 </a>
               </div>
@@ -86,7 +100,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
               <p>Purge your profile data online and offline.</p>
               <div className='options'>
                 <span className="filled button">(╯°□°）╯︵ ┻━┻</span>
-                <a onClick={() => startAsyncOperation(purgeProfile()).then(() => renderPopup())} className={`button`}>
+                <a onClick={() => startAsyncOperation(purgeProfile(dialogManager)).then(() => renderPopup())} className={`button`}>
                   Purge Everything!!
                 </a>
               </div>
@@ -95,7 +109,11 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
               <label>Generate new profile</label>
               <p>Generate a new keypair.</p>
               <div className='options'>
-                <a onClick={() => confirm("This will overwrite your old keypair.\nStill wanna continue?\n\nNOTE: Without keypair you can't purge your data online.\nSo if you wish to purge, please use purging instead.") && startAsyncOperation(generateProfileAndSetNickname(true)).then(() => renderPopup())} className={`button`}>
+                <a onClick={async () => await dialogManager.confirm("This will overwrite your old keypair.\nStill wanna continue?\n\nNOTE: Without keypair you can't purge your data online.\nSo if you wish to purge, please use purging instead.")
+                  && startAsyncOperation(generateProfileAndSetNickname(dialogManager, true)).then(() => renderPopup())
+                }
+                  className={`button`}
+                >
                   Generate New Account
                 </a>
               </div>
@@ -107,10 +125,10 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
               <label>You don't have a profile.</label>
               <p>You can either import keypair for an existing profile or generate a new profile keypair.</p>
               <div className='options'>
-                <a onClick={() => startAsyncOperation(importProfileKeysFromFile()).then(() => renderPopup())} className={`button`}>
+                <a onClick={() => startAsyncOperation(importProfileKeysFromFile(dialogManager)).then(() => renderPopup())} className={`button`}>
                   Import
                 </a>
-                <a onClick={() => startAsyncOperation(generateProfileAndSetNickname()).then(() => renderPopup())} className={`button active`}>
+                <a onClick={() => startAsyncOperation(generateProfileAndSetNickname(dialogManager)).then(() => renderPopup())} className={`button active`}>
                   Generate
                 </a>
               </div>
@@ -148,7 +166,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
                 </a>
               )}
             </div>
-            <a onClick={() => startAsyncOperation(LbryPathnameCache.clearAll()).then(() => alert("Cleared Cache!"))} className={`button active`}>
+            <a onClick={() => startAsyncOperation(LbryPathnameCache.clearAll().then(() => dialogManager.alert("Cleared Cache!")))} className={`button active`}>
               Clear Resolver Cache
             </a>
           </section>

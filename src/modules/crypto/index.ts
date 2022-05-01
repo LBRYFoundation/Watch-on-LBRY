@@ -1,4 +1,5 @@
 import path from 'path'
+import { DialogManager } from '../../components/dialogs'
 import { getExtensionSettingsAsync, setExtensionSetting, ytUrlResolversSettings } from "../../settings"
 
 async function generateKeys() {
@@ -91,15 +92,15 @@ async function apiRequest<T extends object>(method: 'GET' | 'POST', pathname: st
     throw new Error((await respond.json()).message)
 }
 
-export async function generateProfileAndSetNickname(overwrite = false) {
+export async function generateProfileAndSetNickname(dialogManager: DialogManager, overwrite = false) {
     let { publicKey, privateKey } = await getExtensionSettingsAsync()
 
     let nickname
     while (true) {
-        nickname = prompt("Pick a nickname")
+        nickname = await dialogManager.prompt("Pick a nickname")
         if (nickname) break
         if (nickname === null) return
-        alert("Invalid nickname")
+        await dialogManager.alert("Invalid nickname")
     }
 
     try {
@@ -113,21 +114,21 @@ export async function generateProfileAndSetNickname(overwrite = false) {
             setExtensionSetting('privateKey', privateKey)
         }
         await apiRequest('POST', '/profile', { nickname })
-        alert(`Your nickname has been set to ${nickname}`)
+        await dialogManager.alert(`Your nickname has been set to ${nickname}`)
     } catch (error: any) {
         resetProfileSettings()
-        alert(error.message)
+        await dialogManager.alert(error.message)
     }
 }
 
-export async function purgeProfile() {
+export async function purgeProfile(dialogManager: DialogManager) {
     try {
-        if (!confirm("This will purge all of your online and offline profile data.\nStill wanna continue?")) return
+        if (!await dialogManager.confirm("This will purge all of your online and offline profile data.\nStill wanna continue?")) return
         await apiRequest('POST', '/profile/purge', {})
         resetProfileSettings()
-        alert(`Your profile has been purged`)
+        await dialogManager.alert(`Your profile has been purged`)
     } catch (error: any) {
-        alert(error.message)
+        await dialogManager.alert(error.message)
     }
 }
 
@@ -189,7 +190,7 @@ export async function exportProfileKeysAsFile() {
     download(json, `watch-on-lbry-profile-export-${friendlyPublicKey(publicKey)}.wol-keys.json`, 'application/json')
 }
 
-export async function importProfileKeysFromFile() {
+export async function importProfileKeysFromFile(dialogManager: DialogManager) {
     try {
         const json = await readFile()
         if (!json) throw new Error("Invalid")
@@ -197,6 +198,6 @@ export async function importProfileKeysFromFile() {
         setExtensionSetting('publicKey', publicKey)
         setExtensionSetting('privateKey', privateKey)
     } catch (error: any) {
-        alert(error.message)
+        await dialogManager.alert(error.message)
     }
 }
