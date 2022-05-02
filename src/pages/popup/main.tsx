@@ -2,8 +2,9 @@ import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
 import { createDialogManager, Dialogs } from '../../components/dialogs'
 import { exportProfileKeysAsFile, friendlyPublicKey, generateProfileAndSetNickname, getProfile, purgeProfile, resetProfileSettings } from '../../modules/crypto'
-import { LbryPathnameCache } from '../../modules/yt/urlCache'
+import { lbryUrlCache } from '../../modules/yt/urlCache'
 import { getTargetPlatfromSettingsEntiries, getYtUrlResolversSettingsEntiries, setExtensionSetting, useExtensionSettings } from '../../settings'
+import { openImportPopup } from '../import/main'
 
 
 /** Gets all the options for redirect destinations as selection options */
@@ -29,21 +30,6 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
     finally {
       updateLoading(false)
     }
-  }
-
-  async function importButtonClick() {
-    const importPopupWindow = open(
-      '/pages/import/index.html',
-      'Import Profile',
-      [
-        `height=${Math.max(document.body.clientHeight, screen.height * .5)}`,
-        `width=${document.body.clientWidth}`,
-        `toolbar=0,menubar=0,location=0`,
-        `top=${screenY}`,
-        `left=${screenX}`
-      ].join(','))
-    close()
-    importPopupWindow?.focus()
   }
 
   return <div id='popup'>
@@ -100,7 +86,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
                 <a onClick={() => exportProfileKeysAsFile()} className={`button active`}>
                   Export
                 </a>
-                <a onClick={() => importButtonClick()}
+                <a onClick={() => openImportPopup()}
                   className={`button`}
                 >
                   Import
@@ -139,7 +125,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
               <label>You don't have a profile.</label>
               <p>You can either import keypair for an existing profile or generate a new profile keypair.</p>
               <div className='options'>
-                <a onClick={() => importButtonClick()} className={`button`}>
+                <a onClick={() => openImportPopup()} className={`button`}>
                   Import
                 </a>
                 <a onClick={() => loads(generateProfileAndSetNickname(dialogManager)).then(() => renderPopup())} className={`button active`}>
@@ -180,7 +166,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
                 </a>
               )}
             </div>
-            <a onClick={() => loads(LbryPathnameCache.clearAll().then(() => dialogManager.alert("Cleared Cache!")))} className={`button active`}>
+            <a onClick={() => loads(lbryUrlCache.clearAll().then(() => dialogManager.alert("Cleared Cache!")))} className={`button active`}>
               Clear Resolver Cache
             </a>
           </section>

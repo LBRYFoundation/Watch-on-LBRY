@@ -1,4 +1,3 @@
-
 interface YtExportedJsonSubscription {
     id: string
     etag: string
