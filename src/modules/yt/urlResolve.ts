@@ -2,7 +2,7 @@ import { chunk } from "lodash"
 import path from "path"
 import { getExtensionSettingsAsync, ytUrlResolversSettings } from "../../settings"
 import { sign } from "../crypto"
-import { LbryPathnameCache } from "./urlCache"
+import { lbryUrlCache } from "./urlCache"
 
 const QUERY_CHUNK_SIZE = 100
 
@@ -27,7 +27,7 @@ export async function resolveById(params: Paramaters, progressCallback?: (progre
         // Check for cache first, add them to the results if there are any cache
         // And remove them from the params, so we dont request for them
         params = (await Promise.all(params.map(async (item) => {
-            const cachedLbryUrl = await LbryPathnameCache.get(item.id)
+            const cachedLbryUrl = await lbryUrlCache.get(item.id)
 
             // Cache can be null, if there is no lbry url yet
             if (cachedLbryUrl !== undefined) {
@@ -58,7 +58,7 @@ export async function resolveById(params: Paramaters, progressCallback?: (progre
             for (const item of params) {
                 const lbryUrl = (item.type === 'channel' ? response.data.channels : response.data.videos)?.[item.id]?.replaceAll('#', ':') ?? null
                 // we cache it no matter if its null or not
-                await LbryPathnameCache.put(lbryUrl, item.id)
+                await lbryUrlCache.put(lbryUrl, item.id)
 
                 if (lbryUrl) results[item.id] = { id: lbryUrl, type: item.type }
             }

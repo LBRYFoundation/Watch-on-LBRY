@@ -1,4 +1,4 @@
-import { JSX } from "preact"
+import type { JSX } from "preact"
 import { useEffect, useReducer } from "preact/hooks"
 
 export interface ExtensionSettings {

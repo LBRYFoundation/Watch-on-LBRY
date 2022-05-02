@@ -1,10 +1,10 @@
 import path from 'path'
-import { DialogManager } from '../../components/dialogs'
+import type { DialogManager } from '../../components/dialogs'
 import { getExtensionSettingsAsync, setExtensionSetting, ytUrlResolversSettings } from "../../settings"
 import { getFileContent } from '../file'
 
 async function generateKeys() {
-    const keys = await window.crypto.subtle.generateKey(
+    const keys = await crypto.subtle.generateKey(
         {
             name: "RSASSA-PKCS1-v1_5",
             // Consider using a 4096-bit key for systems that require long-term security
@@ -23,7 +23,7 @@ async function generateKeys() {
 }
 
 async function exportPrivateKey(key: CryptoKey) {
-    const exported = await window.crypto.subtle.exportKey(
+    const exported = await crypto.subtle.exportKey(
         "pkcs8",
         key
     )
@@ -34,7 +34,7 @@ const publicKeyPrefix = `MEwwDQYJKoZIhvcNAQEBBQADOwAwOAIxA`
 const publicKeySuffix = `IDAQAB` //`wIDAQAB` `WIDAQAB`
 const publicKeyLength = 65
 async function exportPublicKey(key: CryptoKey) {
-    const exported = await window.crypto.subtle.exportKey(
+    const exported = await crypto.subtle.exportKey(
         "spki",
         key
     )
@@ -43,7 +43,7 @@ async function exportPublicKey(key: CryptoKey) {
 }
 
 function importPrivateKey(base64: string) {
-    return window.crypto.subtle.importKey(
+    return crypto.subtle.importKey(
         "pkcs8",
         Buffer.from(base64, 'base64'),
         {
@@ -56,7 +56,7 @@ function importPrivateKey(base64: string) {
 }
 
 export async function sign(data: string, privateKey: string) {
-    return Buffer.from(await window.crypto.subtle.sign(
+    return Buffer.from(await crypto.subtle.sign(
         { name: "RSASSA-PKCS1-v1_5" },
         await importPrivateKey(privateKey),
         await crypto.subtle.digest({ name: 'SHA-1' }, Buffer.from(data))

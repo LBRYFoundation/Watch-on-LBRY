@@ -2,6 +2,8 @@
 
 let db: IDBDatabase | null = null
 
+if (typeof chrome.extension === 'undefined') throw new Error("YT urlCache can only be accessed from extension windows and service-workers.")
+
 if (typeof self.indexedDB !== 'undefined') {
     const openRequest = indexedDB.open("yt-url-resolver-cache")
     openRequest.addEventListener('upgradeneeded', () => openRequest.result.createObjectStore("store").createIndex("expireAt", "expireAt"))
@@ -81,5 +83,5 @@ async function get(id: string): Promise<string | null | undefined> {
     return response.value
 }
 
-export const LbryPathnameCache = { put, get, clearAll }
+export const lbryUrlCache = { put, get, clearAll }
 

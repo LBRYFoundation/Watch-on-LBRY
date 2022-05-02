@@ -3,6 +3,21 @@ import { useState } from 'preact/hooks'
 import { createDialogManager, Dialogs } from '../../components/dialogs'
 import { importProfileKeysFromFile, inputKeyFile } from '../../modules/crypto'
 
+export async function openImportPopup() {
+  const importPopupWindow = open(
+    '/pages/import/index.html',
+    'Import Profile',
+    [
+      `height=${Math.max(document.body.clientHeight, screen.height * .5)}`,
+      `width=${document.body.clientWidth}`,
+      `toolbar=0,menubar=0,location=0`,
+      `top=${screenY}`,
+      `left=${screenX}`
+    ].join(','))
+  close()
+  importPopupWindow?.focus()
+}
+
 function ImportPage() {
   const [loading, updateLoading] = useState(() => false)
 

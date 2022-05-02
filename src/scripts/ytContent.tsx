@@ -1,6 +1,6 @@
 import { h, render } from 'preact'
 import { parseYouTubeURLTimeString } from '../modules/yt'
-import { resolveById } from '../modules/yt/urlResolve'
+import type { resolveById } from '../modules/yt/urlResolve'
 import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, TargetPlatform, targetPlatformSettings } from '../settings'
 
 const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t))
