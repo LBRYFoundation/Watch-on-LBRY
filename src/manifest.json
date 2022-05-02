@@ -43,6 +43,7 @@
   "web_accessible_resources": [
     "pages/popup/index.html",
     "pages/YTtoLBRY/index.html",
+    "pages/import/index.html",
     "assets/icons/lbry/lbry-logo.svg",
     "assets/icons/lbry/odysee-logo.svg",
     "assets/icons/lbry/madiator-logo.svg"

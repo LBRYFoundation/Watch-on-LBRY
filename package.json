@@ -5,8 +5,8 @@
   "scripts": {
     "build:assets": "cpx \"src/**/*.{json,png,svg}\" dist/",
     "watch:assets": "cpx --watch -v \"src/**/*.{json,png,svg}\" dist/",
-    "build:parcel": "cross-env NODE_ENV=production parcel build --no-source-maps --no-minify \"src/**/*.{js,jsx,ts,tsx}\" \"src/**/*.html\"",
-    "watch:parcel": "parcel watch --no-hmr --no-source-maps \"src/**/*.{js,jsx,ts,tsx}\" \"src/**/*.html\"",
+    "build:parcel": "cross-env NODE_ENV=production parcel build --no-source-maps --no-minify \"src/**/*.{js,jsx,ts,tsx}\" \"src/**/*.html\" \"src/**/*.md\"",
+    "watch:parcel": "parcel watch --no-hmr --no-source-maps \"src/**/*.{js,jsx,ts,tsx}\" \"src/**/*.html\" \"src/**/*.md\"",
     "build:webext": "web-ext build --source-dir ./dist --overwrite-dest",
     "build": "npm-run-all -l -p build:parcel build:assets",
     "watch": "npm-run-all -l -p watch:parcel watch:assets",

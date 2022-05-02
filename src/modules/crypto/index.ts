@@ -1,5 +1,7 @@
 import path from 'path'
+import { DialogManager } from '../../components/dialogs'
 import { getExtensionSettingsAsync, setExtensionSetting, ytUrlResolversSettings } from "../../settings"
+import { getFileContent } from '../file'
 
 async function generateKeys() {
     const keys = await window.crypto.subtle.generateKey(
@@ -91,15 +93,15 @@ async function apiRequest<T extends object>(method: 'GET' | 'POST', pathname: st
     throw new Error((await respond.json()).message)
 }
 
-export async function generateProfileAndSetNickname(overwrite = false) {
+export async function generateProfileAndSetNickname(dialogManager: DialogManager, overwrite = false) {
     let { publicKey, privateKey } = await getExtensionSettingsAsync()
 
     let nickname
     while (true) {
-        nickname = prompt("Pick a nickname")
+        nickname = await dialogManager.prompt("Pick a nickname")
         if (nickname) break
         if (nickname === null) return
-        alert("Invalid nickname")
+        await dialogManager.alert("Invalid nickname")
     }
 
     try {
@@ -113,21 +115,21 @@ export async function generateProfileAndSetNickname(overwrite = false) {
             setExtensionSetting('privateKey', privateKey)
         }
         await apiRequest('POST', '/profile', { nickname })
-        alert(`Your nickname has been set to ${nickname}`)
+        await dialogManager.alert(`Your nickname has been set to ${nickname}`)
     } catch (error: any) {
         resetProfileSettings()
-        alert(error.message)
+        await dialogManager.alert(error.message)
     }
 }
 
-export async function purgeProfile() {
+export async function purgeProfile(dialogManager: DialogManager) {
     try {
-        if (!confirm("This will purge all of your online and offline profile data.\nStill wanna continue?")) return
+        if (!await dialogManager.confirm("This will purge all of your online and offline profile data.\nStill wanna continue?")) return
         await apiRequest('POST', '/profile/purge', {})
         resetProfileSettings()
-        alert(`Your profile has been purged`)
+        await dialogManager.alert(`Your profile has been purged`)
     } catch (error: any) {
-        alert(error.message)
+        await dialogManager.alert(error.message)
     }
 }
 
@@ -155,22 +157,13 @@ function download(data: string, filename: string, type: string) {
     })
 }
 
-async function readFile() {
-    return await new Promise<string | null>((resolve) => {
-        const input = document.createElement("input")
-        input.type = 'file'
-        input.accept = '.wol-keys.json'
-
-        input.click()
-        input.addEventListener("change", () => {
-            if (!input.files?.[0]) return
-            const myFile = input.files[0]
-            const reader = new FileReader()
-
-            reader.addEventListener('load', () => resolve(reader.result?.toString() ?? null))
-            reader.readAsText(myFile)
-        })
-    })
+// Using callback here because there is no good solution for detecting cancel event
+export function inputKeyFile(callback: (file: File | null) => void) {
+    const input = document.createElement("input")
+    input.type = 'file'
+    input.accept = '.wol-keys.json'
+    input.click()
+    input.addEventListener("change", () => callback(input.files?.[0] ?? null))
 }
 
 interface ExportedProfileKeysFile {
@@ -189,14 +182,23 @@ export async function exportProfileKeysAsFile() {
     download(json, `watch-on-lbry-profile-export-${friendlyPublicKey(publicKey)}.wol-keys.json`, 'application/json')
 }
 
-export async function importProfileKeysFromFile() {
+export async function importProfileKeysFromFile(dialogManager: DialogManager, file: File) {
     try {
-        const json = await readFile()
-        if (!json) throw new Error("Invalid")
+        let settings = await getExtensionSettingsAsync()
+        if (settings.publicKey && !await dialogManager.confirm(
+            "This will overwrite your old keypair." +
+            "\nStill wanna continue?\n\n" +
+            "NOTE: Without keypair you can't purge your data online.\n" +
+            "So if you wish to purge, please use purging instead."
+        )) return false
+        const json = await getFileContent(file)
+        if (!json) return false
         const { publicKey, privateKey } = JSON.parse(json) as ExportedProfileKeysFile
         setExtensionSetting('publicKey', publicKey)
         setExtensionSetting('privateKey', privateKey)
+        return true
     } catch (error: any) {
-        alert(error.message)
+        await dialogManager.alert(error.message)
+        return false
     }
 }

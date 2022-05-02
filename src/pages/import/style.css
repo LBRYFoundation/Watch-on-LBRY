@@ -21,14 +21,10 @@ section {
     gap: .75em;
 }
 
-section>label {
+section label {
     font-size: 1.75em;
     font-weight: bold;
     text-align: center;
-}
-
-section>.options {
-    padding: 0 1.5em;
 }
 
 #popup {
@@ -36,9 +32,4 @@ section>.options {
     max-width: 100%;
     overflow: hidden;
     margin: auto;
-}
-
-.purge-aaaaaaa {
-    display: grid;
-    justify-items: center;
 }
