@@ -42,6 +42,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
         `top=${screenY}`,
         `left=${screenX}`
       ].join(','))
+    close()
     importPopupWindow?.focus()
   }
 
