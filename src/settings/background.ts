@@ -1,4 +1,8 @@
 import { DEFAULT_SETTINGS, ExtensionSettings, getExtensionSettingsAsync, setExtensionSetting, targetPlatformSettings, ytUrlResolversSettings } from '../settings'
+
+// This is for manifest v2 and v3
+const chromeAction = chrome.action ?? chrome.browserAction
+
 /** Reset settings to default value and update the browser badge text */
 async function initSettings() {
     let settings = await getExtensionSettingsAsync()
@@ -17,12 +21,12 @@ async function initSettings() {
     if (!Object.keys(targetPlatformSettings).includes(settings.targetPlatform)) setExtensionSetting('targetPlatform', DEFAULT_SETTINGS.targetPlatform)
     if (!Object.keys(ytUrlResolversSettings).includes(settings.urlResolver)) setExtensionSetting('urlResolver', DEFAULT_SETTINGS.urlResolver)
 
-    chrome.action.setBadgeText({ text: settings.redirect ? 'ON' : 'OFF' })
+    chromeAction.setBadgeText({ text: settings.redirect ? 'ON' : 'OFF' })
 }
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'local' || !changes.redirect) return
-    chrome.action.setBadgeText({ text: changes.redirect.newValue ? 'ON' : 'OFF' })
+    chromeAction.setBadgeText({ text: changes.redirect.newValue ? 'ON' : 'OFF' })
 })
 
 chrome.runtime.onStartup.addListener(initSettings)
