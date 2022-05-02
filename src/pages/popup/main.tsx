@@ -1,7 +1,7 @@
 import { h, render } from 'preact'
 import { useState } from 'preact/hooks'
 import { createDialogManager, Dialogs } from '../../components/dialogs'
-import { exportProfileKeysAsFile, friendlyPublicKey, generateProfileAndSetNickname, getProfile, importProfileKeysFromFile, purgeProfile, resetProfileSettings } from '../../modules/crypto'
+import { exportProfileKeysAsFile, friendlyPublicKey, generateProfileAndSetNickname, getProfile, purgeProfile, resetProfileSettings } from '../../modules/crypto'
 import { LbryPathnameCache } from '../../modules/yt/urlCache'
 import { getTargetPlatfromSettingsEntiries, getYtUrlResolversSettingsEntiries, setExtensionSetting, useExtensionSettings } from '../../settings'
 
@@ -13,11 +13,13 @@ const ytUrlResolverOptions = getYtUrlResolversSettingsEntiries()
 function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfile>> | null }) {
   const { redirect, targetPlatform, urlResolver, privateKey, publicKey } = useExtensionSettings()
   let [loading, updateLoading] = useState(() => false)
-  let [popupRoute, updateRoute] = useState<string | null>(() => null)
+  let [route, updateRoute] = useState<string | null>(() => null)
 
+  const dialogManager = createDialogManager()
   const nickname = params.profile ? params.profile.nickname ?? 'No Nickname' : '...'
 
-  async function startAsyncOperation<T>(operation: Promise<T>) {
+
+  async function loads<T>(operation: Promise<T>) {
     try {
       updateLoading(true)
       await operation
@@ -29,7 +31,19 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
     }
   }
 
-  const dialogManager = createDialogManager()
+  async function importButtonClick() {
+    const importPopupWindow = open(
+      '/pages/import/index.html',
+      'Import Profile',
+      [
+        `height=${Math.max(document.body.clientHeight, screen.height * .5)}`,
+        `width=${document.body.clientWidth}`,
+        `toolbar=0,menubar=0,location=0`,
+        `top=${screenY}`,
+        `left=${screenX}`
+      ].join(','))
+    importPopupWindow?.focus()
+  }
 
   return <div id='popup'>
     <Dialogs manager={dialogManager} />
@@ -44,7 +58,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
           </section>
           <section>
             {
-              popupRoute === 'profile'
+              route === 'profile'
                 ? <a onClick={() => updateRoute('')} className="filled">⇐ Back</a>
                 : <a className='filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
             }
@@ -52,19 +66,19 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
         </header>
         : <header>
           {
-            popupRoute === 'profile'
+            route === 'profile'
               ? <a onClick={() => updateRoute('')} className="filled">⇐ Back</a>
               : <a className='filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
           }
         </header>
     }
     {
-      popupRoute === 'profile' ?
+      route === 'profile' ?
         publicKey ?
           <main>
             <section>
               <div className='options'>
-                <a onClick={() => startAsyncOperation(generateProfileAndSetNickname(dialogManager)).then(() => renderPopup())} className={`button active`}>
+                <a onClick={() => loads(generateProfileAndSetNickname(dialogManager)).then(() => renderPopup())} className={`button active`}>
                   Change Nickname
                 </a>
                 <a onClick={async () =>
@@ -85,10 +99,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
                 <a onClick={() => exportProfileKeysAsFile()} className={`button active`}>
                   Export
                 </a>
-                <a onClick={async () =>
-                  await dialogManager.confirm("This will overwrite your old keypair.\nStill wanna continue?\n\nNOTE: Without keypair you can't purge your data online.\nSo if you wish to purge, please use purging instead.")
-                  && startAsyncOperation(importProfileKeysFromFile(dialogManager)).then(() => renderPopup())
-                }
+                <a onClick={() => importButtonClick()}
                   className={`button`}
                 >
                   Import
@@ -99,8 +110,10 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
               <label>Purge your profile and data!</label>
               <p>Purge your profile data online and offline.</p>
               <div className='options'>
-                <span className="filled button">(╯°□°）╯︵ ┻━┻</span>
-                <a onClick={() => startAsyncOperation(purgeProfile(dialogManager)).then(() => renderPopup())} className={`button`}>
+                <div className="purge-aaaaaaa">
+                  <span className='filled'>(╯°□°）╯︵ ┻━┻</span>
+                </div>
+                <a onClick={() => loads(purgeProfile(dialogManager)).then(() => renderPopup())} className={`button`}>
                   Purge Everything!!
                 </a>
               </div>
@@ -110,7 +123,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
               <p>Generate a new keypair.</p>
               <div className='options'>
                 <a onClick={async () => await dialogManager.confirm("This will overwrite your old keypair.\nStill wanna continue?\n\nNOTE: Without keypair you can't purge your data online.\nSo if you wish to purge, please use purging instead.")
-                  && startAsyncOperation(generateProfileAndSetNickname(dialogManager, true)).then(() => renderPopup())
+                  && loads(generateProfileAndSetNickname(dialogManager, true)).then(() => renderPopup())
                 }
                   className={`button`}
                 >
@@ -125,10 +138,10 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
               <label>You don't have a profile.</label>
               <p>You can either import keypair for an existing profile or generate a new profile keypair.</p>
               <div className='options'>
-                <a onClick={() => startAsyncOperation(importProfileKeysFromFile(dialogManager)).then(() => renderPopup())} className={`button`}>
+                <a onClick={() => importButtonClick()} className={`button`}>
                   Import
                 </a>
-                <a onClick={() => startAsyncOperation(generateProfileAndSetNickname(dialogManager)).then(() => renderPopup())} className={`button active`}>
+                <a onClick={() => loads(generateProfileAndSetNickname(dialogManager)).then(() => renderPopup())} className={`button active`}>
                   Generate
                 </a>
               </div>
@@ -166,7 +179,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
                 </a>
               )}
             </div>
-            <a onClick={() => startAsyncOperation(LbryPathnameCache.clearAll().then(() => dialogManager.alert("Cleared Cache!")))} className={`button active`}>
+            <a onClick={() => loads(LbryPathnameCache.clearAll().then(() => dialogManager.alert("Cleared Cache!")))} className={`button active`}>
               Clear Resolver Cache
             </a>
           </section>

@@ -79,6 +79,7 @@ export function Dialogs(params: { manager: ReturnType<typeof createDialogManager
     margin-bottom: 0;
     width: 100%;
     max-width: unset;
+    padding: 1.5em;
 }
 
 .alert-dialog::before {
@@ -94,12 +95,16 @@ export function Dialogs(params: { manager: ReturnType<typeof createDialogManager
 
 .alert-dialog form {
     display: grid;
-    gap: 1em
+    gap: 2em
 }
 
 .alert-dialog form .fields {
     display: grid;
     gap: .5em
+}
+
+.alert-dialog form .fields pre {
+    font: inherit;
 }
 
 .alert-dialog form .actions {
@@ -119,10 +124,13 @@ export function Dialogs(params: { manager: ReturnType<typeof createDialogManager
             currentAlert.resolve(cancelled ? null : currentAlert.type === 'confirm' ? true : value)
         }}>
             <div class="fields">
-                <label>{currentAlert.message}</label>
+                <pre>{currentAlert.message}</pre>
                 {currentAlert.type === 'prompt' && <input type='text' onInput={(event) => setValue(event.currentTarget.value)} />}
             </div>
             <div class="actions">
+                {/* This is here to capture, return key */}
+                <button style="position:0;opacity:0;pointer-events:none"></button>
+
                 {currentAlert.type !== 'alert' && <button className='button' onClick={() => cancelled = true}>Cancel</button>}
                 <button className='button active'>
                     {
