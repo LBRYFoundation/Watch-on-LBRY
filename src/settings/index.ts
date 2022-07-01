@@ -77,7 +77,7 @@ export const targetPlatformSettings = {
   'madiator.com': targetPlatform({
     domainPrefix: 'https://madiator.com/',
     displayName: 'Madiator.com',
-    theme: '#075656',
+    theme: 'linear-gradient(130deg, #499375, #43889d)',
     button: {
       text: 'Watch on',
       icon: chrome.runtime.getURL('assets/icons/lbry/madiator-logo.svg'),
@@ -90,7 +90,7 @@ export const targetPlatformSettings = {
   odysee: targetPlatform({
     domainPrefix: 'https://odysee.com/',
     displayName: 'Odysee',
-    theme: '#1e013b',
+    theme: 'linear-gradient(130deg, #c63d59, #f77937)',
     button: {
       text: 'Watch on Odysee',
       icon: chrome.runtime.getURL('assets/icons/lbry/odysee-logo.svg')
@@ -99,7 +99,7 @@ export const targetPlatformSettings = {
   app: targetPlatform({
     domainPrefix: 'lbry://',
     displayName: 'LBRY App',
-    theme: '#075656',
+    theme: 'linear-gradient(130deg, #499375, #43889d)',
     button: {
       text: 'Watch on LBRY',
       icon: chrome.runtime.getURL('assets/icons/lbry/lbry-logo.svg')
