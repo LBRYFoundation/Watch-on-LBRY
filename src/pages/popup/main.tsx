@@ -68,11 +68,15 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
                 <a onClick={() => loads(generateProfileAndSetNickname(dialogManager)).then(() => renderPopup())} className={`button active`}>
                   Change Nickname
                 </a>
-                <a onClick={async () =>
-                  await dialogManager.confirm("This will delete your keypair from this device.\nStill wanna continue?\n\nNOTE: Without keypair you can't purge your data online.\nSo if you wish to purge, please use purging instead.")
-                  && resetProfileSettings()
-                  && renderPopup()
-                }
+                <a onClick={async () => {
+                  if (!await dialogManager.confirm("This will delete your keypair from this device."
+                    + "\nStill wanna continue?"
+                    + "\n\nNOTE: Without keypair you can't purge your data online."
+                    + "\nSo if you wish to purge, please use purging instead.")) return
+                  resetProfileSettings()
+                  renderPopup()
+
+                }}
                   className={`button`}
                 >
                   Forget/Logout
