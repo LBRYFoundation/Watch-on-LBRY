@@ -46,11 +46,6 @@ export function createDialogManager() {
     }
 }
 
-interface DialogElement extends HTMLDivElement {
-    open: boolean
-    showModal(): void
-}
-
 export function Dialogs(params: { manager: ReturnType<typeof createDialogManager> }) {
     const alerts = params.manager.useAlerts()
     let currentAlert = Object.values(alerts)[0]
@@ -60,7 +55,7 @@ export function Dialogs(params: { manager: ReturnType<typeof createDialogManager
 
     let cancelled = false
 
-    const dialog = useRef(null as any as DialogElement)
+    const dialog = useRef(null as any as HTMLDialogElement)
     useEffect(() => {
         if (!dialog.current) return
         if (!dialog.current.open) dialog.current.showModal()

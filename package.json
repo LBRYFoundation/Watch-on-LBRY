@@ -21,8 +21,8 @@
     "build:v2": "npm run clear:dist ; npm run build:base && npm run pick:manifest:v2",
     "build:v3": "npm run clear:dist ; npm run build:base && npm run pick:manifest:v3",
 
-    "build": "npm run build:v3",
-
+    "build": "rm -r ./build ; mkdir ./build && npm run build:v2 && zip -r ./build/manifest-v2.zip ./dist && npm run build:v3 && zip -r ./build/manifest-v3.zip ./dist",
+    
     "watch:v2": "npm run clear:dist ; npm run pick:manifest:v2 && npm-run-all -l -p watch:parcel watch:assets",
     "watch:v3": "npm run clear:dist ; npm run pick:manifest:v3 && npm-run-all -l -p watch:parcel watch:assets",
 

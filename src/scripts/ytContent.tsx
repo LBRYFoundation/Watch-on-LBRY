@@ -32,6 +32,8 @@ function WatchOnLbryButton({ targetPlatform, lbryPathname, time }: WatchOnLbryBu
         gap: '12px',
         borderRadius: '2px',
         backgroundColor: targetPlatform.theme,
+        backgroundImage: targetPlatform.theme,
+        fontWeight: 'bold',
         border: '0',
         color: 'whitesmoke',
         padding: '10px 16px',
