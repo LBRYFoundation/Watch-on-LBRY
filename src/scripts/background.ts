@@ -24,5 +24,3 @@ chrome.runtime.onMessage.addListener(({ json }, sender, sendResponse) => {
 
   return true
 })
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => changeInfo.status === 'complete' && chrome.tabs.sendMessage(tabId, { message: 'url-changed' }))
