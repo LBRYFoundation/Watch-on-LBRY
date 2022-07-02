@@ -1,5 +1,6 @@
 import type { JSX } from "preact"
 import { useEffect, useReducer } from "preact/hooks"
+import type { ResolveUrlTypes } from "../modules/yt/urlResolve"
 
 export interface ExtensionSettings {
   redirect: boolean
@@ -112,8 +113,9 @@ export const targetPlatformSettings = {
 const sourcePlatform = (o: {
   hostnames: string[]
   htmlQueries: {
-    mountButtonBefore: string,
-    videoPlayer: string
+    mountButtonBefore: Record<ResolveUrlTypes, string>,
+    videoPlayer: string,
+    videoDescription: string
   }
 }) => o
 export type SourcePlatform = ReturnType<typeof sourcePlatform>
@@ -125,18 +127,27 @@ export function getSourcePlatfromSettingsFromHostname(hostname: string) {
   return null
 }
 export const sourcePlatfromSettings = {
-  "yewtu.be": sourcePlatform({
-    hostnames: ['yewtu.be', 'vid.puffyan.us', 'invidio.xamh.de', 'invidious.kavin.rocks'],
-    htmlQueries: {
-      mountButtonBefore: '#watch-on-youtube',
-      videoPlayer: '#player-container video'
-    }
-  }),
   "youtube.com": sourcePlatform({
     hostnames: ['www.youtube.com'],
     htmlQueries: {
-      mountButtonBefore: 'ytd-video-owner-renderer~#subscribe-button',
-      videoPlayer: '#ytd-player video'
+      mountButtonBefore: {
+        video: 'ytd-video-owner-renderer~#subscribe-button',
+        channel: '#channel-header-container #buttons'
+      },
+      videoPlayer: '#ytd-player video',
+      videoDescription: 'ytd-video-secondary-info-renderer #description'
+    }
+  }),
+  "yewtu.be": sourcePlatform({
+    hostnames: ['yewtu.be', 'vid.puffyan.us', 'invidio.xamh.de', 'invidious.kavin.rocks'],
+    htmlQueries: {
+      mountButtonBefore: 
+      {
+        video: '#watch-on-youtube',
+        channel: '#subscribe'
+      },
+      videoPlayer: '#player-container video',
+      videoDescription: '#descriptionWrapper'
     }
   })
 }
