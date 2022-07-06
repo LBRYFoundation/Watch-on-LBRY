@@ -49,7 +49,11 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
           fontSize: '14px',
           textDecoration: 'none',
           ...target.platform.button.style?.button,
-        }}>
+        }}
+        onClick={() => findVideoElementAwait().then((videoElement) => {
+          videoElement.pause()
+        })}
+      >
         <img src={target.platform.button.icon} height={16}
           style={{ transform: 'scale(1.5)', ...target.platform.button.style?.icon }} />
         <span>{target.platform.button.text}</span>
