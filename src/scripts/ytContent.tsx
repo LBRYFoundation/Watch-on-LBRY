@@ -159,69 +159,73 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     const url = new URL(location.href);
     let target = (await getTargetsByURL(url))[url.href]
 
-    if (settings.redirect) {
-      if (!target) continue
-      if (url === urlCache) continue
-
-      const lbryURL = getLbryUrlByTarget(target)
-
-      findVideoElementAwait().then((videoElement) => {
-        videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
-        videoElement.pause()
-      })
-
-      if (target.platform === targetPlatformSettings.app) {
-        if (document.hidden) await new Promise((resolve) => document.addEventListener('visibilitychange', resolve, { once: true }))
-        // Its not gonna be able to replace anyway
-        // This was empty window doesnt stay open
-        location.replace(lbryURL)
+    try {
+      if (settings.redirect) {
+        if (!target) continue
+        if (url === urlCache) continue
+  
+        const lbryURL = getLbryUrlByTarget(target)
+  
+        findVideoElementAwait().then((videoElement) => {
+          videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
+          videoElement.pause()
+        })
+  
+        if (target.platform === targetPlatformSettings.app) {
+          if (document.hidden) await new Promise((resolve) => document.addEventListener('visibilitychange', resolve, { once: true }))
+          // Its not gonna be able to replace anyway
+          // This was empty window doesnt stay open
+          location.replace(lbryURL)
+        }
+        else {
+          open(lbryURL, '_blank')
+          if (window.history.length === 1) window.close()
+          else window.history.back()
+        }
       }
       else {
-        open(lbryURL, '_blank')
-        if (window.history.length === 1) window.close()
-        else window.history.back()
-      }
-    }
-    else {
-      if (!target) {
-        const descriptionElement = document.querySelector(sourcePlatform.htmlQueries.videoDescription)
-        if (descriptionElement) {
-          const anchors = Array.from(descriptionElement.querySelectorAll<HTMLAnchorElement>('a'))
-
-          for (const anchor of anchors) {
-            const url = new URL(anchor.href)
-            let lbryURL: URL | null = null
-            if (sourcePlatform === sourcePlatfromSettings['youtube.com']) {
-              if (!targetPlatforms.some(([key, platform]) => url.searchParams.get('q')?.startsWith(platform.domainPrefix))) continue
-              lbryURL = new URL(url.searchParams.get('q')!)
-            }
-            else {
-              if (!targetPlatforms.some(([key, platform]) => url.href.startsWith(platform.domainPrefix))) continue
-              lbryURL = new URL(url.href)
-            }
-
-            if (lbryURL) {
-              target = {
-                lbryPathname: lbryURL.pathname.substring(1),
-                time: null,
-                type: 'video',
-                platform: targetPlatformSettings[settings.targetPlatform]
+        if (!target) {
+          const descriptionElement = document.querySelector(sourcePlatform.htmlQueries.videoDescription)
+          if (descriptionElement) {
+            const anchors = Array.from(descriptionElement.querySelectorAll<HTMLAnchorElement>('a'))
+  
+            for (const anchor of anchors) {
+              if (!anchor.href) continue
+              const url = new URL(anchor.href)
+              let lbryURL: URL | null = null
+              if (sourcePlatform === sourcePlatfromSettings['youtube.com']) {
+                if (!targetPlatforms.some(([key, platform]) => url.searchParams.get('q')?.startsWith(platform.domainPrefix))) continue
+                lbryURL = new URL(url.searchParams.get('q')!)
               }
-              break
+              else {
+                if (!targetPlatforms.some(([key, platform]) => url.href.startsWith(platform.domainPrefix))) continue
+                lbryURL = new URL(url.href)
+              }
+  
+              if (lbryURL) {
+                target = {
+                  lbryPathname: lbryURL.pathname.substring(1),
+                  time: null,
+                  type: 'video',
+                  platform: targetPlatformSettings[settings.targetPlatform]
+                }
+                break
+              }
             }
           }
         }
+  
+        if (target) {
+          const videoElement = document.querySelector<HTMLVideoElement>(sourcePlatform.htmlQueries.videoPlayer)
+          if (videoElement) target.time = videoElement.currentTime > 3 && videoElement.currentTime < videoElement.duration - 1 ? videoElement.currentTime : null
+        }
+  
+        // We run it anyway with null target to hide the button
+        updateButton(target)
       }
-
-      if (target) {
-        const videoElement = document.querySelector<HTMLVideoElement>(sourcePlatform.htmlQueries.videoPlayer)
-        if (videoElement) target.time = videoElement.currentTime > 3 && videoElement.currentTime < videoElement.duration - 1 ? videoElement.currentTime : null
-      }
-
-      // We run it anyway with null target to hide the button
-      updateButton(target)
+    } catch (error) {
+      console.error(error)
     }
-
     urlCache = url
   }
 
