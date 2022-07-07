@@ -141,7 +141,11 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
   // We should get this from background, so the caching works and we don't get errors in the future if yt decides to impliment CORS
   async function requestResolveById(...params: Parameters<typeof resolveById>): ReturnType<typeof resolveById> {
     const json = await new Promise<string | null | 'error'>((resolve) => chrome.runtime.sendMessage({ json: JSON.stringify(params) }, resolve))
-    if (json === 'error') throw new Error("Background error.")
+    if (json === 'error') 
+    {
+      console.error("Background error on:", params)
+      throw new Error("Background error.")
+    }
     return json ? JSON.parse(json) : null
   }
 
@@ -156,11 +160,10 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
   while (true) {
     await sleep(500)
 
-    const url = new URL(location.href);
-    let target = (await getTargetsByURL(url))[url.href]
-
+    const url: URL = (urlCache?.href === location.href) ? urlCache : new URL(location.href);
     try {
       if (settings.redirect) {
+        const target = (await getTargetsByURL(url))[url.href]
         if (!target) continue
         if (url === urlCache) continue
   
@@ -184,6 +187,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
         }
       }
       else {
+        if (urlCache !== url) updateButton(null)
+        let target = (await getTargetsByURL(url))[url.href]
         if (!target) {
           const descriptionElement = document.querySelector(sourcePlatform.htmlQueries.videoDescription)
           if (descriptionElement) {
@@ -215,7 +220,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
           }
         }
   
-        if (target) {
+        if (target?.type === 'video') {
           const videoElement = document.querySelector<HTMLVideoElement>(sourcePlatform.htmlQueries.videoPlayer)
           if (videoElement) target.time = videoElement.currentTime > 3 && videoElement.currentTime < videoElement.duration - 1 ? videoElement.currentTime : null
         }
