@@ -60,7 +60,6 @@ const targetPlatform = (o: {
   displayName: string
   theme: string
   button: {
-    text: string
     icon: string
     style?:
     {
@@ -80,7 +79,6 @@ export const targetPlatformSettings = {
     displayName: 'Madiator.com',
     theme: 'linear-gradient(130deg, #499375, #43889d)',
     button: {
-      text: 'Watch on',
       icon: chrome.runtime.getURL('assets/icons/lbry/madiator-logo.svg'),
       style: {
         button: { flexDirection: 'row-reverse' },
@@ -93,7 +91,6 @@ export const targetPlatformSettings = {
     displayName: 'Odysee',
     theme: 'linear-gradient(130deg, #c63d59, #f77937)',
     button: {
-      text: 'Watch on Odysee',
       icon: chrome.runtime.getURL('assets/icons/lbry/odysee-logo.svg')
     }
   }),
@@ -102,7 +99,6 @@ export const targetPlatformSettings = {
     displayName: 'LBRY App',
     theme: 'linear-gradient(130deg, #499375, #43889d)',
     button: {
-      text: 'Watch on LBRY',
       icon: chrome.runtime.getURL('assets/icons/lbry/lbry-logo.svg')
     }
   }),
