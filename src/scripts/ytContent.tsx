@@ -28,8 +28,11 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     Object.assign(settings, Object.fromEntries(Object.entries(changes).map(([key, change]) => [key, change.newValue])))
   })
 
-  const mountPoint = document.createElement('div')
-  mountPoint.style.display = 'flex'
+  const buttonMountPoint = document.createElement('div')
+  buttonMountPoint.style.display = 'flex'
+
+  const playerButtonMountPoint = document.createElement('div')
+  playerButtonMountPoint.style.display = 'flex'
 
   function WatchOnLbryButton({ source, target }: { source?: Source, target?: Target }) {
     if (!target || !source) return null
@@ -60,19 +63,65 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
       >
         <img src={target.platform.button.icon} height={16}
           style={{ transform: 'scale(1.5)', ...target.platform.button.style?.icon }} />
-        <span>{target.type === 'channel' ? 'Channel on' : 'Watch on'} {target.platform.displayName}</span>
+        <span>{target.type === 'channel' ? 'Channel on' : 'Watch on'} {target.platform.button.platformNameText}</span>
+      </a>
+    </div>
+  }
+
+  function WatchOnLbryPlayerButton({ source, target }: { source?: Source, target?: Target }) {
+    if (!target || !source) return null
+    const url = getLbryUrlByTarget(target)
+
+    return <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+      <a href={`${url.href}`} target={target.platform === targetPlatformSettings.app ? '' : '_blank'} role='button'
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px',
+          fontWeight: 'bold',
+          border: '0',
+          color: 'whitesmoke',
+          marginRight: '10px',
+          fontSize: '14px',
+          textDecoration: 'none',
+          ...target.platform.button.style?.button,
+        }}
+        onClick={() => findVideoElementAwait(source).then((videoElement) => {
+          videoElement.pause()
+        })}
+      >
+        <img src={target.platform.button.icon} height={16}
+          style={{ transform: 'scale(1.5)', ...target.platform.button.style?.icon }} />
+        <span>{target.type === 'channel' ? 'Channel on' : 'Watch on'} {target.platform.button.platformNameText}</span>
       </a>
     </div>
   }
 
   function updateButton(params: { source: Source, target: Target } | null): void {
-    if (!params) return render(<WatchOnLbryButton />, mountPoint)
+    if (!params) {
+      render(<WatchOnLbryButton />, buttonMountPoint)
+      render(<WatchOnLbryPlayerButton />, playerButtonMountPoint)
+      return
+    }
 
-    const mountBefore = document.querySelector(params.source.platform.htmlQueries.mountButtonBefore[params.source.type])
-    if (!mountBefore) return render(<WatchOnLbryButton />, mountPoint)
+    const mountPlayerButtonBefore = params.source.platform.htmlQueries.mountPoints.mountPlayerButtonBefore ?
+      document.querySelector(params.source.platform.htmlQueries.mountPoints.mountPlayerButtonBefore) :
+      null
+    if (!mountPlayerButtonBefore) render(<WatchOnLbryPlayerButton />, playerButtonMountPoint)
+    else {
+      if (mountPlayerButtonBefore.previousSibling !== playerButtonMountPoint)
+        mountPlayerButtonBefore.parentElement?.insertBefore(playerButtonMountPoint, mountPlayerButtonBefore)
+      render(<WatchOnLbryPlayerButton target={params.target} source={params.source} />, playerButtonMountPoint)
+    }
 
-    mountBefore.parentElement?.insertBefore(mountPoint, mountBefore)
-    render(<WatchOnLbryButton target={params.target} source={params.source} />, mountPoint)
+    const mountButtonBefore = document.querySelector(params.source.platform.htmlQueries.mountPoints.mountButtonBefore[params.source.type])
+    if (!mountButtonBefore) render(<WatchOnLbryButton />, playerButtonMountPoint)
+    else {
+      if (mountButtonBefore.previousSibling !== buttonMountPoint)
+        mountButtonBefore.parentElement?.insertBefore(buttonMountPoint, mountButtonBefore)
+      render(<WatchOnLbryButton target={params.target} source={params.source} />, buttonMountPoint)
+    }
   }
 
   async function findVideoElementAwait(source: Source) {
@@ -205,9 +254,15 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
 
         // There is no target found via API try to check Video Description for LBRY links.
         if (!target) {
-          const descriptionElement = document.querySelector(source.platform.htmlQueries.videoDescription)
-          if (descriptionElement) {
-            const anchors = Array.from(descriptionElement.querySelectorAll<HTMLAnchorElement>('a'))
+          const linksContainer =
+            source.type === 'video' ?
+              document.querySelector(source.platform.htmlQueries.videoDescription) :
+              source.platform.htmlQueries.channelLinks ? document.querySelector(source.platform.htmlQueries.channelLinks) : null
+
+          console.log(linksContainer)
+
+          if (linksContainer) {
+            const anchors = Array.from(linksContainer.querySelectorAll<HTMLAnchorElement>('a'))
 
             for (const anchor of anchors) {
               if (!anchor.href) continue

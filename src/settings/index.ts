@@ -60,6 +60,7 @@ const targetPlatform = (o: {
   displayName: string
   theme: string
   button: {
+    platformNameText: string,
     icon: string
     style?:
     {
@@ -79,6 +80,7 @@ export const targetPlatformSettings = {
     displayName: 'Madiator.com',
     theme: 'linear-gradient(130deg, #499375, #43889d)',
     button: {
+      platformNameText: '',
       icon: chrome.runtime.getURL('assets/icons/lbry/madiator-logo.svg'),
       style: {
         button: { flexDirection: 'row-reverse' },
@@ -91,6 +93,7 @@ export const targetPlatformSettings = {
     displayName: 'Odysee',
     theme: 'linear-gradient(130deg, #c63d59, #f77937)',
     button: {
+      platformNameText: 'Odysee',
       icon: chrome.runtime.getURL('assets/icons/lbry/odysee-logo.svg')
     }
   }),
@@ -99,6 +102,7 @@ export const targetPlatformSettings = {
     displayName: 'LBRY App',
     theme: 'linear-gradient(130deg, #499375, #43889d)',
     button: {
+      platformNameText: 'LBRY',
       icon: chrome.runtime.getURL('assets/icons/lbry/lbry-logo.svg')
     }
   }),
@@ -109,9 +113,13 @@ export const targetPlatformSettings = {
 const sourcePlatform = (o: {
   hostnames: string[]
   htmlQueries: {
-    mountButtonBefore: Record<ResolveUrlTypes, string>,
+    mountPoints: {
+      mountButtonBefore: Record<ResolveUrlTypes, string>,
+      mountPlayerButtonBefore: string | null,
+    }
     videoPlayer: string,
     videoDescription: string
+    channelLinks: string | null
   }
 }) => o
 export type SourcePlatform = ReturnType<typeof sourcePlatform>
@@ -126,24 +134,32 @@ export const sourcePlatfromSettings = {
   "youtube.com": sourcePlatform({
     hostnames: ['www.youtube.com'],
     htmlQueries: {
-      mountButtonBefore: {
-        video: 'ytd-video-owner-renderer~#subscribe-button',
-        channel: '#channel-header-container #buttons'
+      mountPoints: {
+        mountButtonBefore: {
+          video: 'ytd-video-owner-renderer~#subscribe-button',
+          channel: '#channel-header-container #buttons'
+        },
+        mountPlayerButtonBefore: 'ytd-player .ytp-right-controls',
       },
       videoPlayer: '#ytd-player video',
-      videoDescription: 'ytd-video-secondary-info-renderer #description'
+      videoDescription: 'ytd-video-secondary-info-renderer #description',
+      channelLinks: '#channel-header #links-holder'
     }
   }),
   "yewtu.be": sourcePlatform({
     hostnames: ['yewtu.be', 'vid.puffyan.us', 'invidio.xamh.de', 'invidious.kavin.rocks'],
     htmlQueries: {
-      mountButtonBefore: 
-      {
-        video: '#watch-on-youtube',
-        channel: '#subscribe'
+      mountPoints: {
+        mountButtonBefore:
+        {
+          video: '#watch-on-youtube',
+          channel: '#subscribe'
+        },
+        mountPlayerButtonBefore: null,
       },
       videoPlayer: '#player-container video',
-      videoDescription: '#descriptionWrapper'
+      videoDescription: '#descriptionWrapper',
+      channelLinks: null
     }
   })
 }
