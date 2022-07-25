@@ -174,7 +174,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     const params: Parameters<typeof requestResolveById>[0] = sources.map((source) => ({ id: source.id, type: source.type }))
     const platform = targetPlatformSettings[settings.targetPlatform]
 
-    const results = await requestResolveById(params)
+    const results = await requestResolveById(params) ?? []
     const targets: Record<string, Target | null> = Object.fromEntries(
       sources.map((source) => {
         const result = results[source.id]
@@ -258,8 +258,6 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
             source.type === 'video' ?
               document.querySelector(source.platform.htmlQueries.videoDescription) :
               source.platform.htmlQueries.channelLinks ? document.querySelector(source.platform.htmlQueries.channelLinks) : null
-
-          console.log(linksContainer)
 
           if (linksContainer) {
             const anchors = Array.from(linksContainer.querySelectorAll<HTMLAnchorElement>('a'))
