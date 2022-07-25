@@ -38,31 +38,37 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     if (!target || !source) return null
     const url = getLbryUrlByTarget(target)
 
-    return <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+    return <div
+      style={{
+        display: 'grid',
+        gridTemplateRows: '36px',
+        gridAutoColumns: 'auto',
+        alignContent: 'center'
+      }}
+    >
       <a href={`${url.href}`} target={target.platform === targetPlatformSettings.app ? '' : '_blank'} role='button'
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
+          gap: '7px',
           borderRadius: '2px',
-          backgroundColor: target.platform.theme,
-          backgroundImage: target.platform.theme,
+          padding: '0 16px',
+          margin: '0 4px',
+
           fontWeight: 'bold',
           border: '0',
           color: 'whitesmoke',
-          padding: '10px 16px',
-          marginRight: source?.type === 'channel' ? '10px' : '4px',
           fontSize: '14px',
           textDecoration: 'none',
+          backgroundColor: target.platform.theme,
+          backgroundImage: target.platform.theme,
           ...target.platform.button.style?.button,
         }}
         onClick={() => findVideoElementAwait(source).then((videoElement) => {
           videoElement.pause()
         })}
       >
-        <img src={target.platform.button.icon} height={16}
-          style={{ transform: 'scale(1.5)', ...target.platform.button.style?.icon }} />
+        <img src={target.platform.button.icon} height={24} style={{ ...target.platform.button.style?.icon }} />
         <span>{target.type === 'channel' ? 'Channel on' : 'Watch on'} {target.platform.button.platformNameText}</span>
       </a>
     </div>
@@ -72,17 +78,25 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     if (!target || !source) return null
     const url = getLbryUrlByTarget(target)
 
-    return <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+    return <div
+      style={{
+        display: 'grid',
+        gridTemplateRows: '36px',
+        gridAutoColumns: 'auto',
+        alignContent: 'center'
+      }}
+    >
       <a href={`${url.href}`} target={target.platform === targetPlatformSettings.app ? '' : '_blank'} role='button'
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
+          gap: '7px',
+          borderRadius: '2px',
+          paddingRight: '10px',
+
           fontWeight: 'bold',
           border: '0',
           color: 'whitesmoke',
-          marginRight: '10px',
           fontSize: '14px',
           textDecoration: 'none',
           ...target.platform.button.style?.button,
@@ -91,8 +105,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
           videoElement.pause()
         })}
       >
-        <img src={target.platform.button.icon} height={16}
-          style={{ transform: 'scale(1.5)', ...target.platform.button.style?.icon }} />
+        <img src={target.platform.button.icon} height={24} style={{ ...target.platform.button.style?.icon }} />
         <span>{target.type === 'channel' ? 'Channel on' : 'Watch on'} {target.platform.button.platformNameText}</span>
       </a>
     </div>
@@ -110,16 +123,20 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
       null
     if (!mountPlayerButtonBefore) render(<WatchOnLbryPlayerButton />, playerButtonMountPoint)
     else {
-      if (mountPlayerButtonBefore.previousSibling !== playerButtonMountPoint)
+      if (playerButtonMountPoint.getAttribute('data-id') !== params.source.id) {
         mountPlayerButtonBefore.parentElement?.insertBefore(playerButtonMountPoint, mountPlayerButtonBefore)
+        playerButtonMountPoint.setAttribute('data-id', params.source.id)
+      }
       render(<WatchOnLbryPlayerButton target={params.target} source={params.source} />, playerButtonMountPoint)
     }
 
     const mountButtonBefore = document.querySelector(params.source.platform.htmlQueries.mountPoints.mountButtonBefore[params.source.type])
     if (!mountButtonBefore) render(<WatchOnLbryButton />, playerButtonMountPoint)
     else {
-      if (mountButtonBefore.previousSibling !== buttonMountPoint)
+      if (buttonMountPoint.getAttribute('data-id') !== params.source.id) {
         mountButtonBefore.parentElement?.insertBefore(buttonMountPoint, mountButtonBefore)
+        buttonMountPoint.setAttribute('data-id', params.source.id)
+      }
       render(<WatchOnLbryButton target={params.target} source={params.source} />, buttonMountPoint)
     }
   }
