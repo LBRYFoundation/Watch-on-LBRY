@@ -84,7 +84,7 @@ export const targetPlatformSettings = {
       icon: chrome.runtime.getURL('assets/icons/lbry/madiator-logo.svg'),
       style: {
         button: { flexDirection: 'row-reverse' },
-        icon: { transform: 'scale(1.2)' }
+        icon: {  }
       }
     }
   }),
@@ -137,9 +137,9 @@ export const sourcePlatfromSettings = {
       mountPoints: {
         mountButtonBefore: {
           video: 'ytd-video-owner-renderer~#subscribe-button',
-          channel: '#channel-header-container #buttons'
+          channel: '#channel-header-container #buttons #subscribe-button'
         },
-        mountPlayerButtonBefore: 'ytd-player .ytp-right-controls',
+        mountPlayerButtonBefore: 'ytd-watch-flexy ytd-player .ytp-right-controls',
       },
       videoPlayer: '#ytd-player video',
       videoDescription: 'ytd-video-secondary-info-renderer #description',
