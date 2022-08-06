@@ -8,7 +8,6 @@
     "128": "assets/icons/wol/icon128.png"
   },
   "permissions": [
-    "tabs",
     "storage"
   ],
   "host_permissions": [
