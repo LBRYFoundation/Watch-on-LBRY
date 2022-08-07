@@ -27,8 +27,14 @@ section>label {
     text-align: center;
 }
 
-section>.options {
-    padding: 0 1.5em;
+section>b {
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+section>* {
+    padding: 0 1rem;
 }
 
 #popup {
@@ -38,7 +44,14 @@ section>.options {
     margin: auto;
 }
 
-.purge-aaaaaaa {
+.center {
     display: grid;
-    justify-items: center;
+    place-items: center;
+}
+
+.left {
+    display: grid;
+    justify-items: start;
+    align-items: center;
+    text-align: left;
 }
