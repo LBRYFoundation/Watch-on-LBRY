@@ -29,10 +29,10 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
   })
 
   const buttonMountPoint = document.createElement('div')
-  buttonMountPoint.style.display = 'flex'
+  buttonMountPoint.style.display = 'inline-flex'
 
   const playerButtonMountPoint = document.createElement('div')
-  playerButtonMountPoint.style.display = 'flex'
+  playerButtonMountPoint.style.display = 'inline-flex'
 
   function WatchOnLbryButton({ source, target }: { source?: Source, target?: Target }) {
     if (!target || !source) return null
@@ -118,26 +118,32 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
       return
     }
 
-    const mountPlayerButtonBefore = params.source.platform.htmlQueries.mountPoints.mountPlayerButtonBefore ?
-      document.querySelector(params.source.platform.htmlQueries.mountPoints.mountPlayerButtonBefore) :
-      null
-    if (!mountPlayerButtonBefore) render(<WatchOnLbryPlayerButton />, playerButtonMountPoint)
-    else {
-      if (playerButtonMountPoint.getAttribute('data-id') !== params.source.id) {
-        mountPlayerButtonBefore.parentElement?.insertBefore(playerButtonMountPoint, mountPlayerButtonBefore)
-        playerButtonMountPoint.setAttribute('data-id', params.source.id)
+    {
+      const mountPlayerButtonBefore = settings.videoPlayerButton ?
+        document.querySelector(params.source.platform.htmlQueries.mountPoints.mountPlayerButtonBefore) :
+        null
+      if (!mountPlayerButtonBefore) render(<WatchOnLbryPlayerButton />, playerButtonMountPoint)
+      else {
+        if (playerButtonMountPoint.getAttribute('data-id') !== params.source.id) {
+          mountPlayerButtonBefore.parentElement?.insertBefore(playerButtonMountPoint, mountPlayerButtonBefore)
+          playerButtonMountPoint.setAttribute('data-id', params.source.id)
+        }
+        render(<WatchOnLbryPlayerButton target={params.target} source={params.source} />, playerButtonMountPoint)
       }
-      render(<WatchOnLbryPlayerButton target={params.target} source={params.source} />, playerButtonMountPoint)
     }
 
-    const mountButtonBefore = document.querySelector(params.source.platform.htmlQueries.mountPoints.mountButtonBefore[params.source.type])
-    if (!mountButtonBefore) render(<WatchOnLbryButton />, playerButtonMountPoint)
-    else {
-      if (buttonMountPoint.getAttribute('data-id') !== params.source.id) {
-        mountButtonBefore.parentElement?.insertBefore(buttonMountPoint, mountButtonBefore)
-        buttonMountPoint.setAttribute('data-id', params.source.id)
+    {
+      const mountButtonBefore = settings[(`${params.source.type}SubButton`) as 'videoSubButton' | 'channelSubButton'] ?
+        document.querySelector(params.source.platform.htmlQueries.mountPoints.mountButtonBefore[params.source.type]) :
+        null
+      if (!mountButtonBefore) render(<WatchOnLbryButton />, buttonMountPoint)
+      else {
+        if (buttonMountPoint.getAttribute('data-id') !== params.source.id) {
+          mountButtonBefore.parentElement?.insertBefore(buttonMountPoint, mountButtonBefore)
+          buttonMountPoint.setAttribute('data-id', params.source.id)
+        }
+        render(<WatchOnLbryButton target={params.target} source={params.source} />, buttonMountPoint)
       }
-      render(<WatchOnLbryButton target={params.target} source={params.source} />, buttonMountPoint)
     }
   }
 

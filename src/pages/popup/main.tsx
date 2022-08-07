@@ -12,7 +12,7 @@ const targetPlatforms = getTargetPlatfromSettingsEntiries()
 const ytUrlResolverOptions = getYtUrlResolversSettingsEntiries()
 
 function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfile>> | null }) {
-  const { redirect, targetPlatform, urlResolver, privateKey, publicKey } = useExtensionSettings()
+  const { redirect, targetPlatform, urlResolver, videoSubButton, channelSubButton, videoPlayerButton, privateKey, publicKey } = useExtensionSettings()
   let [loading, updateLoading] = useState(() => false)
   let [route, updateRoute] = useState<string | null>(() => null)
 
@@ -100,7 +100,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
               <label>Purge your profile and data!</label>
               <p>Purge your profile data online and offline.</p>
               <div className='options'>
-                <div className="purge-aaaaaaa">
+                <div className="center">
                   <span className='filled'>(╯°□°）╯︵ ┻━┻</span>
                 </div>
                 <a onClick={() => loads(purgeProfile(dialogManager)).then(() => renderPopup())} className={`button`}>
@@ -140,7 +140,7 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
         :
         <main>
           <section>
-            <label>Pick a mode:</label>
+            <label>Pick a mode</label>
             <div className='options'>
               <a onClick={() => setExtensionSetting('redirect', true)} className={`button ${redirect ? 'active' : ''}`}>
                 Redirect
@@ -150,6 +150,38 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
               </a>
             </div>
           </section>
+          {
+            !redirect &&
+            <section>
+              <label>Show button at:</label>
+              <b className='filled'>Video</b>
+              <div className='options'>
+                <div className="left">
+                  <span>Subscribe Button:</span>
+                </div>
+                <a onClick={() => setExtensionSetting('videoSubButton', !videoSubButton)} className={`button ${videoSubButton ? 'active' : ''}`}>
+                  {videoSubButton ? 'Active' : 'Deactive'}
+                </a>
+              </div>
+              <div className='options'>
+                <div className="left">
+                  <span>Video Player:</span>
+                </div>
+                <a onClick={() => setExtensionSetting('videoPlayerButton', !videoPlayerButton)} className={`button ${videoPlayerButton ? 'active' : ''}`}>
+                  {videoPlayerButton ? 'Active' : 'Deactive'}
+                </a>
+              </div>
+              <b className='filled'>Channel</b>
+              <div className='options'>
+                <div className="left">
+                  <span>Subscribe Button:</span>
+                </div>
+                <a onClick={() => setExtensionSetting('channelSubButton', !channelSubButton)} className={`button ${channelSubButton ? 'active' : ''}`}>
+                  {channelSubButton ? 'Active' : 'Deactive'}
+                </a>
+              </div>
+            </section>
+          }
           <section>
             <label>Which platform you would like to redirect?</label>
             <div className='options'>
