@@ -357,6 +357,11 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
           if (window.history.length === 1) 
           {
             location.replace(lbryURL)
+
+            // Some extensions such as Firefox Multi-Account Containers, opens new tab for Odysee even though we say replace
+            // In those cases if the window is still active after 2 seconds we close it manually
+            await sleep(2000)
+            window.close()
           }
           else 
           {
