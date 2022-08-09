@@ -354,10 +354,15 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
           location.replace(lbryURL)
         }
         else {
-          openNewTab(lbryURL)
-
-          if (window.history.length === 1) window.close()
-          else window.history.back()
+          if (window.history.length === 1) 
+          {
+            location.replace(lbryURL)
+          }
+          else 
+          {
+            openNewTab(lbryURL)
+            window.history.back()
+          }
         }
       }
     } catch (error) {
