@@ -256,7 +256,6 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
         if (settings.redirect) {
           const target = (await getTargetsBySources(source))[source.id]
           if (!target) return
-          console.log(url.href, urlHrefCache)
           if (url.href === urlHrefCache) return
   
           const lbryURL = getLbryUrlByTarget(target)
@@ -276,7 +275,6 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
             location.replace(lbryURL)
           }
           else {
-            console.log('open', lbryURL.href)
             openNewTab(lbryURL, document.hasFocus())
   
             if (window.history.length === 1) window.close()
