@@ -55,3 +55,8 @@ section>* {
     align-items: center;
     text-align: left;
 }
+
+.toggle-option {
+    display: grid;
+    gap: .5em;
+}

@@ -21,13 +21,13 @@ async function initSettings() {
     if (!Object.keys(targetPlatformSettings).includes(settings.targetPlatform)) setExtensionSetting('targetPlatform', DEFAULT_SETTINGS.targetPlatform)
     if (!Object.keys(ytUrlResolversSettings).includes(settings.urlResolver)) setExtensionSetting('urlResolver', DEFAULT_SETTINGS.urlResolver)
 
-    chromeAction.setBadgeText({ text: settings.redirect ? 'ON' : 'OFF' })
+    // chromeAction.setBadgeText({ text: settings.redirect ? 'ON' : 'OFF' })
 }
 
-chrome.storage.onChanged.addListener((changes, areaName) => {
+/* chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'local' || !changes.redirect) return
     chromeAction.setBadgeText({ text: changes.redirect.newValue ? 'ON' : 'OFF' })
-})
+}) */
 
 chrome.runtime.onStartup.addListener(initSettings)
 chrome.runtime.onInstalled.addListener(initSettings)
