@@ -26,6 +26,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
   chrome.storage.onChanged.addListener(async (changes, areaName) => {
     if (areaName !== 'local') return
     Object.assign(settings, Object.fromEntries(Object.entries(changes).map(([key, change]) => [key, change.newValue])))
+    if (settings.redirect) updateButton(null)
   })
 
   const buttonMountPoint = document.createElement('div')
@@ -222,17 +223,17 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
   }
   // We should get this from background, so the caching works and we don't get errors in the future if yt decides to impliment CORS
   async function requestResolveById(...params: Parameters<typeof resolveById>): ReturnType<typeof resolveById> {
-    const json = await new Promise<string | null | 'error'>((resolve) => chrome.runtime.sendMessage({ method: 'resolveUrl', data: JSON.stringify(params) }, resolve))
-    if (json === 'error') {
+    const response = await new Promise<string | null | 'error'>((resolve) => chrome.runtime.sendMessage({ method: 'resolveUrl', data: JSON.stringify(params) }, resolve))
+    if (response?.startsWith('error:')) {
       console.error("Background error on:", params)
-      throw new Error("Background error.")
+      throw new Error(`Background error.${response ?? ''}`)
     }
-    return json ? JSON.parse(json) : null
+    return response ? JSON.parse(response) : null
   }
 
   // Request new tab
-  async function openNewTab(url: URL) {
-    chrome.runtime.sendMessage({ method: 'openTab', data: url.href })
+  async function openNewTab(url: URL, active: boolean) {
+    chrome.runtime.sendMessage({ method: 'openTab', data: JSON.stringify({ href: url.href, active }) })
   }
 
   function getLbryUrlByTarget(target: Target) {
@@ -242,11 +243,11 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     return url
   }
 
-  let urlCache: URL | null = null
+  let urlHrefCache: string | null = null
   while (true) {
     await sleep(500)
 
-    const url: URL = (urlCache?.href === location.href) ? urlCache : new URL(location.href)
+    const url: URL = new URL(location.href)
     const source = await getSourceByUrl(new URL(location.href))
     if (!source) continue
 
@@ -254,7 +255,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
       if (settings.redirect) {
         const target = (await getTargetsBySources(source))[source.id]
         if (!target) continue
-        if (url === urlCache) continue
+        if (url.href === urlHrefCache) continue
 
         const lbryURL = getLbryUrlByTarget(target)
 
@@ -273,14 +274,14 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
           location.replace(lbryURL)
         }
         else {
-          openNewTab(lbryURL)
+          openNewTab(lbryURL, document.hasFocus())
 
           if (window.history.length === 1) window.close()
           else window.history.back()
         }
       }
       else {
-        if (urlCache !== url) updateButton(null)
+        if (urlHrefCache !== url.href) updateButton(null)
         let target = (await getTargetsBySources(source))[source.id]
 
         // There is no target found via API try to check Video Description for LBRY links.
@@ -336,7 +337,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     } catch (error) {
       console.error(error)
     }
-    urlCache = url
+    urlHrefCache = url.href
   }
 
 })()
