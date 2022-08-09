@@ -8,7 +8,8 @@
     "128": "assets/icons/wol/icon128.png"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "https://www.youtube.com/",

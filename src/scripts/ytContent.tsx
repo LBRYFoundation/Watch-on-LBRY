@@ -222,12 +222,17 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
   }
   // We should get this from background, so the caching works and we don't get errors in the future if yt decides to impliment CORS
   async function requestResolveById(...params: Parameters<typeof resolveById>): ReturnType<typeof resolveById> {
-    const json = await new Promise<string | null | 'error'>((resolve) => chrome.runtime.sendMessage({ json: JSON.stringify(params) }, resolve))
+    const json = await new Promise<string | null | 'error'>((resolve) => chrome.runtime.sendMessage({ method: 'resolveUrl', data: JSON.stringify(params) }, resolve))
     if (json === 'error') {
       console.error("Background error on:", params)
       throw new Error("Background error.")
     }
     return json ? JSON.parse(json) : null
+  }
+
+  // Request new tab
+  async function openNewTab(url: URL) {
+    chrome.runtime.sendMessage({ method: 'openTab', data: url.href })
   }
 
   function getLbryUrlByTarget(target: Target) {
@@ -253,11 +258,13 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
 
         const lbryURL = getLbryUrlByTarget(target)
 
-        // As soon as video play is ready and start playing, pause it.
-        findVideoElementAwait(source).then((videoElement) => {
-          videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
-          videoElement.pause()
-        })
+        if (source.type === 'video') {
+          // As soon as video play is ready and start playing, pause it.
+          findVideoElementAwait(source).then((videoElement) => {
+            videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
+            videoElement.pause()
+          })
+        }
 
         if (target.platform === targetPlatformSettings.app) {
           if (document.hidden) await new Promise((resolve) => document.addEventListener('visibilitychange', resolve, { once: true }))
@@ -266,7 +273,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
           location.replace(lbryURL)
         }
         else {
-          open(lbryURL, '_blank')
+          openNewTab(lbryURL)
+
           if (window.history.length === 1) window.close()
           else window.history.back()
         }
