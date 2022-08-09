@@ -23,7 +23,7 @@ chrome.runtime.onMessage.addListener(({ method, data }, sender, sendResponse) =>
           console.log('lbrypathname request', params, await promise)
           resolve(await promise)
         } catch (error) {
-          sendResponse(`error:${(error as any).toString()}`)
+          sendResponse(`error: ${(error as any).toString()}`)
           console.error(error)
         }
         finally {

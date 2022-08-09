@@ -1,25 +1,21 @@
 // This should only work in background
-
-let db: IDBDatabase | null = null
-
 if (typeof chrome.extension === 'undefined') throw new Error("YT urlCache can only be accessed from extension windows and service-workers.")
 
-if (typeof self.indexedDB !== 'undefined') {
-    const openRequest = indexedDB.open("yt-url-resolver-cache")
-    openRequest.addEventListener('upgradeneeded', () => openRequest.result.createObjectStore("store").createIndex("expireAt", "expireAt"))
-
-    // Delete Expired
-    openRequest.addEventListener('success', () => {
-        db = openRequest.result
-        clearExpired()
-    })
-}
-else console.warn(`IndexedDB not supported`)
+let db = new Promise<IDBDatabase>((resolve, reject) => {
+    if (typeof self.indexedDB !== 'undefined') {
+        const openRequest = indexedDB.open("yt-url-resolver-cache")
+        openRequest.addEventListener('upgradeneeded', () => openRequest.result.createObjectStore("store").createIndex("expireAt", "expireAt"))
+        openRequest.addEventListener('success', () => {
+            resolve(openRequest.result)
+            clearExpired()
+        }, { once: true })
+    }
+    else reject(`IndexedDB not supported`)
+})
 
 async function clearExpired() {
-    return new Promise<void>((resolve, reject) => {
-        if (!db) throw new Error(`IDBDatabase not defined.`)
-        const transaction = db.transaction("store", "readwrite")
+    return new Promise<void>(async (resolve, reject) => {
+        const transaction = (await db).transaction("store", "readwrite")
         const range = IDBKeyRange.upperBound(new Date())
 
         const expireAtCursorRequest = transaction.objectStore("store").index("expireAt").openCursor(range)
@@ -40,8 +36,8 @@ async function clearExpired() {
 }
 
 async function clearAll() {
-    return await new Promise<void>((resolve, reject) => {
-        const store = db?.transaction("store", "readwrite").objectStore("store")
+    return await new Promise<void>(async (resolve, reject) => {
+        const store = (await db).transaction("store", "readwrite").objectStore("store")
         if (!store) return resolve()
         const request = store.clear()
         request.addEventListener('success', () => resolve())
@@ -50,8 +46,8 @@ async function clearAll() {
 }
 
 async function put(url: string | null, id: string): Promise<void> {
-    return await new Promise((resolve, reject) => {
-        const store = db?.transaction("store", "readwrite").objectStore("store")
+    return await new Promise(async (resolve, reject) => {
+        const store = (await db).transaction("store", "readwrite").objectStore("store")
         if (!store) return resolve()
         const expireAt = !url ? new Date(Date.now() + 1 * 60 * 60 * 1000) : new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
         const request = store.put({ value: url, expireAt }, id)
@@ -65,8 +61,8 @@ async function put(url: string | null, id: string): Promise<void> {
 // null means there is cache of that id has no lbrypathname
 // undefined means there is no cache
 async function get(id: string): Promise<string | null | undefined> {
-    const response = (await new Promise((resolve, reject) => {
-        const store = db?.transaction("store", "readonly").objectStore("store")
+    const response = (await new Promise(async (resolve, reject) => {
+        const store = (await db).transaction("store", "readonly").objectStore("store")
         if (!store) return reject(`Can't find object store.`)
 
         const request = store.get(id)

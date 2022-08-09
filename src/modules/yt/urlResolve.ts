@@ -55,7 +55,7 @@ export async function resolveById(params: Paramaters, progressCallback?: (progre
 
         const controller = new AbortController()
         // 5 second timeout:
-        const timeoutId = setTimeout(() => controller.abort(), 5000)
+        const timeoutId = setTimeout(() => controller.abort(), 15000)
         const apiResponse = await fetch(url.toString(), { cache: 'no-store', signal: controller.signal })
         clearTimeout(timeoutId)
         
