@@ -68,6 +68,7 @@ export function Dialogs(params: { manager: ReturnType<typeof createDialogManager
             {`
 .alert-dialog
 {
+    position: fixed;
     border: none;
     background: var(--color-dark);
     color: var(--color-light);
