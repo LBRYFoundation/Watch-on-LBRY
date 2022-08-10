@@ -237,8 +237,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
 
   // Request new tab
   async function openNewTab(url: URL) {
-    if (!open(url.href, '_blank'))
-      chrome.runtime.sendMessage({ method: 'openTab', data: JSON.stringify({ href: url.href, active: document.hasFocus() }) })
+    chrome.runtime.sendMessage({ method: 'openTab', data: JSON.stringify({ href: url.href }) })
   }
 
   function findTargetFromSourcePage(source: Source): Target | null {
@@ -350,20 +349,11 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
           location.replace(lbryURL)
         }
         else {
+          openNewTab(lbryURL)
           if (window.history.length === 1) 
-          {
-            location.replace(lbryURL)
-
-            // Some extensions such as Firefox Multi-Account Containers, opens new tab for Odysee even though we say replace
-            // In those cases if the window is still active after 2 seconds we close it manually
-            await sleep(2000)
             window.close()
-          }
           else 
-          {
-            openNewTab(lbryURL)
             window.history.back()
-          }
         }
       }
     } catch (error) {
