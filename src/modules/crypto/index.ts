@@ -70,22 +70,18 @@ export function resetProfileSettings() {
 
 async function apiRequest<T extends object>(method: 'GET' | 'POST', pathname: string, data: T) {
     const settings = await getExtensionSettingsAsync()
-    /* const urlResolverSettings = ytUrlResolversSettings[settings.urlResolver]
-    if (!urlResolverSettings.signRequest) throw new Error() */
 
-    const url = new URL(ytUrlResolversSettings.madiatorFinder.href/* urlResolverSettings.href */)
+    const url = new URL(ytUrlResolversSettings.madiatorFinder.href)
     url.pathname = path.join(url.pathname, pathname)
     url.searchParams.set('data', JSON.stringify(data))
 
-    if (true/* requiresSignature */) {
-        if (!settings.privateKey || !settings.publicKey)
-            throw new Error('There is no profile.')
+    if (!settings.privateKey || !settings.publicKey)
+        throw new Error('There is no profile.')
 
-        url.searchParams.set('keys', JSON.stringify({
-            signature: await sign(url.searchParams.toString(), settings.privateKey!),
-            publicKey: settings.publicKey
-        }))
-    }
+    url.searchParams.set('keys', JSON.stringify({
+        signature: await sign(url.searchParams.toString(), settings.privateKey!),
+        publicKey: settings.publicKey
+    }))
 
     const respond = await fetch(url.href, { method })
 
