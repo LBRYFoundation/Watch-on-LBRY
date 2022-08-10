@@ -1,3 +1,10 @@
+#popup {
+    width: 40em;
+    max-width: 100%;
+    overflow: hidden;
+    margin: auto;
+}
+
 header {
     display: grid;
     gap: .5em;
@@ -35,13 +42,6 @@ section>b {
 
 section>* {
     padding: 0 1rem;
-}
-
-#popup {
-    width: 35em;
-    max-width: 100%;
-    overflow: hidden;
-    margin: auto;
 }
 
 .center {
