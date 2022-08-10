@@ -17,6 +17,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     platform: SourcePlatform
     id: string
     type: ResolveUrlTypes
+    url: URL
     time: number | null
   }
 
@@ -26,7 +27,6 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
   chrome.storage.onChanged.addListener(async (changes, areaName) => {
     if (areaName !== 'local') return
     Object.assign(settings, Object.fromEntries(Object.entries(changes).map(([key, change]) => [key, change.newValue])))
-    if (settings.redirect) updateButton(null)
   })
 
   const buttonMountPoint = document.createElement('div')
@@ -112,7 +112,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     </div>
   }
 
-  function updateButton(params: { source: Source, target: Target } | null): void {
+  function updateButtons(params: { source: Source, target: Target } | null): void {
     if (!params) {
       render(<WatchOnLbryButton />, buttonMountPoint)
       render(<WatchOnLbryPlayerButton />, playerButtonMountPoint)
@@ -120,7 +120,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     }
 
     {
-      const mountPlayerButtonBefore = settings.videoPlayerButton ?
+      const mountPlayerButtonBefore = settings.buttonVideoPlayer ?
         document.querySelector(params.source.platform.htmlQueries.mountPoints.mountPlayerButtonBefore) :
         null
       if (!mountPlayerButtonBefore) render(<WatchOnLbryPlayerButton />, playerButtonMountPoint)
@@ -134,7 +134,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     }
 
     {
-      const mountButtonBefore = settings[(`${params.source.type}SubButton`) as 'videoSubButton' | 'channelSubButton'] ?
+      const mountButtonBefore = settings[(`button${params.source.type[0].toUpperCase() + params.source.type.substring(1)}Sub`) as 'buttonVideoSub' | 'buttonChannelSub'] ?
         document.querySelector(params.source.platform.htmlQueries.mountPoints.mountButtonBefore[params.source.type]) :
         null
       if (!mountButtonBefore) render(<WatchOnLbryButton />, buttonMountPoint)
@@ -163,7 +163,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
         id: url.searchParams.get('v')!,
         platform,
         time: url.searchParams.has('t') ? parseYouTubeURLTimeString(url.searchParams.get('t')!) : null,
-        type: 'video'
+        type: 'video',
+        url
       }
     }
     else if (url.pathname.startsWith('/channel/')) {
@@ -171,7 +172,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
         id: url.pathname.substring("/channel/".length),
         platform,
         time: null,
-        type: 'channel'
+        type: 'channel',
+        url
       }
     }
     else if (url.pathname.startsWith('/c/') || url.pathname.startsWith('/user/')) {
@@ -187,7 +189,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
         id,
         platform,
         time: null,
-        type: 'channel'
+        type: 'channel',
+        url
       }
     }
 
@@ -233,9 +236,46 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
   }
 
   // Request new tab
-  async function openNewTab(url: URL, active: boolean) {
-    if (!open(url.href, '_blank'))
-      chrome.runtime.sendMessage({ method: 'openTab', data: JSON.stringify({ href: url.href, active }) })
+  async function openNewTab(url: URL) {
+    chrome.runtime.sendMessage({ method: 'openTab', data: JSON.stringify({ href: url.href }) })
+  }
+
+  function findTargetFromSourcePage(source: Source): Target | null {
+    const linksContainer =
+      source.type === 'video' ?
+        document.querySelector(source.platform.htmlQueries.videoDescription) :
+        source.platform.htmlQueries.channelLinks ? document.querySelector(source.platform.htmlQueries.channelLinks) : null
+
+    if (linksContainer) {
+      const anchors = Array.from(linksContainer.querySelectorAll<HTMLAnchorElement>('a'))
+
+      for (const anchor of anchors) {
+        if (!anchor.href) continue
+        const url = new URL(anchor.href)
+        let lbryURL: URL | null = null
+
+        // Extract real link from youtube's redirect link
+        if (source.platform === sourcePlatfromSettings['youtube.com']) {
+          if (!targetPlatforms.some(([key, platform]) => url.searchParams.get('q')?.startsWith(platform.domainPrefix))) continue
+          lbryURL = new URL(url.searchParams.get('q')!)
+        }
+        // Just directly use the link itself on other platforms
+        else {
+          if (!targetPlatforms.some(([key, platform]) => url.href.startsWith(platform.domainPrefix))) continue
+          lbryURL = new URL(url.href)
+        }
+
+        if (lbryURL) {
+          return {
+            lbryPathname: lbryURL.pathname.substring(1),
+            time: null,
+            type: lbryURL.pathname.substring(1).includes('/') ? 'video' : 'channel',
+            platform: targetPlatformSettings[settings.targetPlatform]
+          }
+        }
+      }
+    }
+    return null
   }
 
   function getLbryUrlByTarget(target: Target) {
@@ -245,104 +285,80 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     return url
   }
 
-  let urlHrefCache: string | null = null
-  while (true) {
+
+  // Master Loop
+  for (
+    let url = new URL(location.href),
+    urlHrefCache: string | null = null;
+    ;
+    urlHrefCache = url.href,
+    url = new URL(location.href)
+  ) {
     await sleep(500)
-    const url: URL = new URL(location.href)
-
-    await (async () => {
+    try {
       const source = await getSourceByUrl(new URL(location.href))
-      if (!source) return
+      if (!source) {
+        updateButtons(null)
+        continue
+      }
+      const target = (await getTargetsBySources(source))[source.id] ?? findTargetFromSourcePage(source)
+      if (!target) {
+        updateButtons(null)
+        continue
+      }
 
-      try {
-        if (settings.redirect) {
-          const target = (await getTargetsBySources(source))[source.id]
-          if (!target) return
-          if (url.href === urlHrefCache) return
+      // Update Buttons
+      if (urlHrefCache !== url.href) updateButtons(null)
+      // If target is a video target add timestampt to it
+      if (target.type === 'video') {
+        const videoElement = document.querySelector<HTMLVideoElement>(source.platform.htmlQueries.videoPlayer)
+        if (videoElement) target.time = videoElement.currentTime > 3 && videoElement.currentTime < videoElement.duration - 1 ? videoElement.currentTime : null
+      }
+      updateButtons({ target, source })
 
-          const lbryURL = getLbryUrlByTarget(target)
+      // Redirect
+      if (
+        source.type === target.type &&
+        (
+          (
+            settings.redirectVideo &&
+            source.type === 'video' && !source.url.searchParams.has('list')
+          ) ||
+          (
+            settings.redirectVideoPlaylist &&
+            source.type === 'video' && source.url.searchParams.has('list')
+          ) ||
+          (
+            settings.redirectChannel &&
+            source.type === 'channel'
+          )
+        )
+      ) {
+        if (url.href === urlHrefCache) continue
 
-          if (source.type === 'video') {
-            // As soon as video play is ready and start playing, pause it.
-            findVideoElementAwait(source).then((videoElement) => {
-              videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
-              videoElement.pause()
-            })
-          }
+        const lbryURL = getLbryUrlByTarget(target)
 
-          if (target.platform === targetPlatformSettings.app) {
-            if (document.hidden) await new Promise((resolve) => document.addEventListener('visibilitychange', resolve, { once: true }))
-            // Replace is being used so browser doesnt start an empty window
-            // Its not gonna be able to replace anyway, since its a LBRY Uri
-            location.replace(lbryURL)
-          }
-          else {
-            openNewTab(lbryURL, document.hasFocus())
+        if (source.type === 'video') {
+          findVideoElementAwait(source).then((videoElement) => videoElement.pause())
+        }
 
-            if (window.history.length === 1) window.close()
-            else window.history.back()
-          }
+        if (target.platform === targetPlatformSettings.app) {
+          if (document.hidden) await new Promise((resolve) => document.addEventListener('visibilitychange', resolve, { once: true }))
+          // Replace is being used so browser doesnt start an empty window
+          // Its not gonna be able to replace anyway, since its a LBRY Uri
+          location.replace(lbryURL)
         }
         else {
-          if (urlHrefCache !== url.href) updateButton(null)
-          let target = (await getTargetsBySources(source))[source.id]
-
-          // There is no target found via API try to check Video Description for LBRY links.
-          if (!target) {
-            const linksContainer =
-              source.type === 'video' ?
-                document.querySelector(source.platform.htmlQueries.videoDescription) :
-                source.platform.htmlQueries.channelLinks ? document.querySelector(source.platform.htmlQueries.channelLinks) : null
-
-            if (linksContainer) {
-              const anchors = Array.from(linksContainer.querySelectorAll<HTMLAnchorElement>('a'))
-
-              for (const anchor of anchors) {
-                if (!anchor.href) continue
-                const url = new URL(anchor.href)
-                let lbryURL: URL | null = null
-
-                // Extract real link from youtube's redirect link
-                if (source.platform === sourcePlatfromSettings['youtube.com']) {
-                  if (!targetPlatforms.some(([key, platform]) => url.searchParams.get('q')?.startsWith(platform.domainPrefix))) continue
-                  lbryURL = new URL(url.searchParams.get('q')!)
-                }
-                // Just directly use the link itself on other platforms
-                else {
-                  if (!targetPlatforms.some(([key, platform]) => url.href.startsWith(platform.domainPrefix))) continue
-                  lbryURL = new URL(url.href)
-                }
-
-                if (lbryURL) {
-                  target = {
-                    lbryPathname: lbryURL.pathname.substring(1),
-                    time: null,
-                    type: lbryURL.pathname.substring(1).includes('/') ? 'video' : 'channel',
-                    platform: targetPlatformSettings[settings.targetPlatform]
-                  }
-                  break
-                }
-              }
-            }
-          }
-
-          if (!target) updateButton(null)
-          else {
-            // If target is a video target add timestampt to it
-            if (target.type === 'video') {
-              const videoElement = document.querySelector<HTMLVideoElement>(source.platform.htmlQueries.videoPlayer)
-              if (videoElement) target.time = videoElement.currentTime > 3 && videoElement.currentTime < videoElement.duration - 1 ? videoElement.currentTime : null
-            }
-
-            updateButton({ target, source })
-          }
+          openNewTab(lbryURL)
+          if (window.history.length === 1) 
+            window.close()
+          else 
+            window.history.back()
         }
-      } catch (error) {
-        console.error(error)
       }
-    })()
-
-    urlHrefCache = url.href
+    } catch (error) {
+      console.error(error)
+    }
   }
 
 })()

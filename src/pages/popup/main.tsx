@@ -12,9 +12,9 @@ const targetPlatforms = getTargetPlatfromSettingsEntiries()
 const ytUrlResolverOptions = getYtUrlResolversSettingsEntiries()
 
 function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfile>> | null }) {
-  const { redirect, targetPlatform, urlResolver, videoSubButton, channelSubButton, videoPlayerButton, privateKey, publicKey } = useExtensionSettings()
+  const { targetPlatform, urlResolver, redirectChannel, redirectVideo, redirectVideoPlaylist, buttonVideoSub, buttonChannelSub, buttonVideoPlayer, privateKey, publicKey } = useExtensionSettings()
   let [loading, updateLoading] = useState(() => false)
-  let [route, updateRoute] = useState<string | null>(() => null)
+  let [route, updateRoute] = useState<string>(() => '')
 
   const dialogManager = createDialogManager()
   const nickname = params.profile ? params.profile.nickname ?? 'No Nickname' : '...'
@@ -35,29 +35,30 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
   return <div id='popup'>
     <Dialogs manager={dialogManager} />
     {
-      publicKey
-        ? <header>
+
+      <header>
+        {
+          publicKey &&
           <section>
             <label>{nickname}</label>
             <p>{friendlyPublicKey(publicKey)}</p>
             <span><b>Score: {params.profile?.score ?? '...'}</b> - <a target='_blank' href="https://finder.madiator.com/leaderboard" class="filled">🔗Leaderboard</a></span>
             {urlResolver !== 'madiatorFinder' && <span class="error">You need to use Madiator Finder API for scoring to work</span>}
           </section>
-          <section>
-            {
-              route === 'profile'
-                ? <a onClick={() => updateRoute('')} className="filled">⇐ Back</a>
-                : <a className='filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
-            }
-          </section>
-        </header>
-        : <header>
-          {
-            route === 'profile'
-              ? <a onClick={() => updateRoute('')} className="filled">⇐ Back</a>
-              : <a className='filled' onClick={() => updateRoute('profile')} href="#profile">Profile Settings</a>
-          }
-        </header>
+        }
+
+        {
+          route !== ''
+            ?
+            <section>
+              <a onClick={() => updateRoute('')} className="filled">⇐ Back</a>
+            </section>
+            :
+            <section>
+                <a className='filled' onClick={() => updateRoute('profile')}>Profile Settings</a>
+            </section>
+        }
+      </header>
     }
     {
       route === 'profile' ?
@@ -138,80 +139,88 @@ function WatchOnLbryPopup(params: { profile: Awaited<ReturnType<typeof getProfil
             </section>
           </main>
         :
-        <main>
-          <section>
-            <label>Pick a mode</label>
-            <div className='options'>
-              <a onClick={() => setExtensionSetting('redirect', true)} className={`button ${redirect ? 'active' : ''}`}>
-                Redirect
-              </a>
-              <a onClick={() => setExtensionSetting('redirect', false)} className={`button ${redirect ? '' : 'active'}`}>
-                Show a button
-              </a>
-            </div>
-          </section>
-          {
-            !redirect &&
+        route === 'advanced' ?
+          <main>
             <section>
-              <label>Show button at:</label>
-              <b className='filled'>Video</b>
+              <label>Which platform you would like to redirect to?</label>
               <div className='options'>
-                <div className="left">
-                  <span>Subscribe Button:</span>
-                </div>
-                <a onClick={() => setExtensionSetting('videoSubButton', !videoSubButton)} className={`button ${videoSubButton ? 'active' : ''}`}>
-                  {videoSubButton ? 'Active' : 'Deactive'}
-                </a>
-              </div>
-              <div className='options'>
-                <div className="left">
-                  <span>Video Player:</span>
-                </div>
-                <a onClick={() => setExtensionSetting('videoPlayerButton', !videoPlayerButton)} className={`button ${videoPlayerButton ? 'active' : ''}`}>
-                  {videoPlayerButton ? 'Active' : 'Deactive'}
-                </a>
-              </div>
-              <b className='filled'>Channel</b>
-              <div className='options'>
-                <div className="left">
-                  <span>Subscribe Button:</span>
-                </div>
-                <a onClick={() => setExtensionSetting('channelSubButton', !channelSubButton)} className={`button ${channelSubButton ? 'active' : ''}`}>
-                  {channelSubButton ? 'Active' : 'Deactive'}
-                </a>
+                {targetPlatforms.map(([name, value]) =>
+                  <a onClick={() => setExtensionSetting('targetPlatform', name)} className={`button ${targetPlatform === name ? 'active' : ''}`}>
+                    {value.displayName}
+                  </a>
+                )}
               </div>
             </section>
-          }
-          <section>
-            <label>Which platform you would like to redirect?</label>
-            <div className='options'>
-              {targetPlatforms.map(([name, value]) =>
-                <a onClick={() => setExtensionSetting('targetPlatform', name)} className={`button ${targetPlatform === name ? 'active' : ''}`}>
-                  {value.displayName}
-                </a>
-              )}
-            </div>
-          </section>
-          <section>
-            <label>Which resolver API you want to use?</label>
-            <div className='options'>
-              {ytUrlResolverOptions.map(([name, value]) =>
-                <a onClick={() => setExtensionSetting('urlResolver', name)} className={`button ${urlResolver === name ? 'active' : ''}`}>
-                  {value.name}
-                </a>
-              )}
-            </div>
-            <a onClick={() => loads(lbryUrlCache.clearAll().then(() => dialogManager.alert("Cleared Cache!")))} className={`button active`}>
-              Clear Resolver Cache
-            </a>
-          </section>
-          <section>
-            <label>Tools</label>
-            <a target='_blank' href='/pages/YTtoLBRY/index.html' className={`filled`}>
-              Subscription Converter
-            </a>
-          </section>
-        </main>
+            <section>
+              <label>Which resolver API you want to use?</label>
+              <div className='options'>
+                {ytUrlResolverOptions.map(([name, value]) =>
+                  <a onClick={() => setExtensionSetting('urlResolver', name)} className={`button ${urlResolver === name ? 'active' : ''}`}>
+                    {value.name}
+                  </a>
+                )}
+              </div>
+              <a onClick={() => loads(lbryUrlCache.clearAll().then(() => dialogManager.alert("Cleared Cache!")))} className={`button active`}>
+                Clear Resolver Cache
+              </a>
+            </section>
+          </main>
+          :
+          <main>
+            <section>
+              <label>Auto redirect when:</label>
+              <div className='options'>
+                <div class="toggle-option">
+                  <span>Playing a video</span>
+                  <a onClick={() => setExtensionSetting('redirectVideo', !redirectVideo)} className={`button ${redirectVideo ? 'active' : ''}`}>
+                    {redirectVideo ? 'Active' : 'Deactive'}
+                  </a>
+                </div>
+                <div class="toggle-option">
+                  <span>Playing a playlist</span>
+                  <a onClick={() => setExtensionSetting('redirectVideoPlaylist', !redirectVideoPlaylist)} className={`button ${redirectVideoPlaylist ? 'active' : ''}`}>
+                    {redirectVideoPlaylist ? 'Active' : 'Deactive'}
+                  </a>
+                </div>
+                <div class="toggle-option">
+                  <span>Viewing a channel</span>
+                  <a onClick={() => setExtensionSetting('redirectChannel', !redirectChannel)} className={`button ${redirectChannel ? 'active' : ''}`}>
+                    {redirectChannel ? 'Active' : 'Deactive'}
+                  </a>
+                </div>
+              </div>
+            </section>
+            <section>
+              <label>Show redirect button on:</label>
+              <div className='options'>
+                <div className="toggle-option">
+                  <span>Video Page</span>
+                  <a onClick={() => setExtensionSetting('buttonVideoSub', !buttonVideoSub)} className={`button ${buttonVideoSub ? 'active' : ''}`}>
+                    {buttonVideoSub ? 'Active' : 'Deactive'}
+                  </a>
+                </div>
+                <div className="toggle-option">
+                  <span>Channel Page</span>
+                  <a onClick={() => setExtensionSetting('buttonChannelSub', !buttonChannelSub)} className={`button ${buttonChannelSub ? 'active' : ''}`}>
+                    {buttonChannelSub ? 'Active' : 'Deactive'}
+                  </a>
+                </div>
+                <div className="toggle-option">
+                  <span>Video Player</span>
+                  <a onClick={() => setExtensionSetting('buttonVideoPlayer', !buttonVideoPlayer)} className={`button ${buttonVideoPlayer ? 'active' : ''}`}>
+                    {buttonVideoPlayer ? 'Active' : 'Deactive'}
+                  </a>
+                </div>
+              </div>
+            </section>
+            <section>
+              <label>Tools</label>
+              <a target='_blank' href='/pages/YTtoLBRY/index.html' className={`filled`}>
+                Subscription Converter
+              </a>
+              <a className='filled' onClick={() => updateRoute('advanced')}>Advanced Settings</a>
+            </section>
+          </main>
     }
     {loading && <div class="overlay">
       <span>Loading...</span>

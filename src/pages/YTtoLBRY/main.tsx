@@ -4,7 +4,6 @@ import { getFileContent } from '../../modules/file'
 import { getSubsFromCsv, getSubsFromJson, getSubsFromOpml } from '../../modules/yt'
 import { resolveById } from '../../modules/yt/urlResolve'
 import { targetPlatformSettings, useExtensionSettings } from '../../settings'
-import readme from './README.md'
 
 async function getSubscribedChannelIdsFromFile(file: File) {
   const ext = file.name.split('.').pop()?.toLowerCase()
@@ -71,8 +70,15 @@ function YTtoLBRY() {
     <Conversion />
     <aside class="help">
       <iframe allowFullScreen
-        src='https://lbry.tv/$/embed/howtouseconverter/c9827448d6ac7a74ecdb972c5cdf9ddaf648a28e' />
-      <section dangerouslySetInnerHTML={{ __html: readme }} />
+        src='https://odysee.com/$/embed/convert-subscriptions-from-YouTube-to-LBRY/36f3a010295afe1c55e91b63bcb2eabc028ec86c?r=8bgP4hEdbd9jwBJmhEaqP3dD75LzsUob' />
+      <section><h1 id="getting-your-subscription-data">Getting your subscription data</h1>
+        <ol>
+          <li>Go to <a href="https://takeout.google.com/settings/takeout" target='_blank'>https://takeout.google.com/settings/takeout</a></li>
+          <li>Deselect everything except <code>YouTube and YouTube Music</code> and within that only select <code>subscriptions</code></li>
+          <li>Go through the process and create the export</li>
+          <li>Once it's exported, open the archive and find <code>YouTube and YouTube Music/subscriptions/subscriptions.(json/csv/opml)</code> and upload it to the extension</li>
+        </ol>
+      </section>
     </aside>
   </main>
 }

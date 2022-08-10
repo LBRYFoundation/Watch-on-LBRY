@@ -1,3 +1,10 @@
+#popup {
+    width: 40em;
+    max-width: 100%;
+    overflow: hidden;
+    margin: auto;
+}
+
 header {
     display: grid;
     gap: .5em;
@@ -37,13 +44,6 @@ section>* {
     padding: 0 1rem;
 }
 
-#popup {
-    width: 35em;
-    max-width: 100%;
-    overflow: hidden;
-    margin: auto;
-}
-
 .center {
     display: grid;
     place-items: center;
@@ -54,4 +54,9 @@ section>* {
     justify-items: start;
     align-items: center;
     text-align: left;
+}
+
+.toggle-option {
+    display: grid;
+    gap: .5em;
 }

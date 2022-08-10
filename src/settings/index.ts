@@ -2,24 +2,28 @@ import type { JSX } from "preact"
 import { useEffect, useReducer } from "preact/hooks"
 import type { ResolveUrlTypes } from "../modules/yt/urlResolve"
 
-export interface ExtensionSettings {
-  redirect: boolean
+export interface ExtensionSettings extends Record<string, string | number | boolean | null | undefined>{
   targetPlatform: TargetPlatformName
   urlResolver: YTUrlResolverName,
-  videoSubButton: boolean
-  videoPlayerButton: boolean
-  channelSubButton: boolean
+  redirectVideo: boolean,
+  redirectChannel: boolean,
+  redirectVideoPlaylist: boolean,
+  buttonVideoSub: boolean
+  buttonVideoPlayer: boolean
+  buttonChannelSub: boolean
   publicKey: string | null,
   privateKey: string | null
 }
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
-  redirect: true,
   targetPlatform: 'odysee',
   urlResolver: 'odyseeApi',
-  videoSubButton: true,
-  videoPlayerButton: true,
-  channelSubButton: true,
+  redirectVideo: false,
+  redirectChannel: false,
+  redirectVideoPlaylist: false,
+  buttonVideoSub: true,
+  buttonVideoPlayer: true,
+  buttonChannelSub: true,
   privateKey: null,
   publicKey: null
 }
