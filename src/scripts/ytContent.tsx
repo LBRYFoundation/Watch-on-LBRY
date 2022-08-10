@@ -340,11 +340,7 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
         const lbryURL = getLbryUrlByTarget(target)
 
         if (source.type === 'video') {
-          // As soon as video play is ready and start playing, pause it.
-          findVideoElementAwait(source).then((videoElement) => {
-            videoElement.addEventListener('play', () => videoElement.pause(), { once: true })
-            videoElement.pause()
-          })
+          findVideoElementAwait(source).then((videoElement) => videoElement.pause())
         }
 
         if (target.platform === targetPlatformSettings.app) {
