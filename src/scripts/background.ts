@@ -20,7 +20,6 @@ chrome.runtime.onMessage.addListener(({ method, data }, sender, sendResponse) =>
           const params: Parameters<typeof resolveById> = JSON.parse(data)
           // Don't create a new Promise for same ID until on going one is over.
           const promise = onGoingLbryPathnameRequest[data] ?? (onGoingLbryPathnameRequest[data] = resolveById(...params))
-          console.log('lbrypathname request', params, await promise)
           resolve(await promise)
         } catch (error) {
           sendResponse(`error: ${(error as any).toString()}`)

@@ -75,7 +75,6 @@ async function get(id: string): Promise<string | null | undefined> {
         await clearExpired()
         return undefined
     }
-    console.log('cache found', id, response.value)
     return response.value
 }
 

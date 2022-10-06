@@ -1,6 +1,5 @@
 #popup {
     width: 40em;
-    max-width: 100%;
     overflow: hidden;
     margin: auto;
 }
@@ -28,16 +27,10 @@ section {
     gap: .75em;
 }
 
-section>label {
+label {
     font-size: 1.75em;
     font-weight: bold;
     text-align: center;
-}
-
-section>b {
-    display: block;
-    width: 100%;
-    text-align: left;
 }
 
 section>* {

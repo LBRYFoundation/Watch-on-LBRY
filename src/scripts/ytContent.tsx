@@ -231,7 +231,6 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
       console.error("Background error on:", params)
       throw new Error(`Background error. ${response ?? ''}`)
     }
-    console.log(response)
     return response ? JSON.parse(response) : null
   }
 
