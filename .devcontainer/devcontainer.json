@@ -22,7 +22,8 @@
 	"extensions": [
 		"bierner.folder-source-actions",
 		"jbockle.jbockle-format-files",
-		"eamodio.gitlens"
+		"eamodio.gitlens",
+		"GitHub.copilot"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
