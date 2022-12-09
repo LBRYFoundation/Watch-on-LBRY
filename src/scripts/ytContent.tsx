@@ -1,19 +1,23 @@
 import { h, render } from 'preact'
 import { parseYouTubeURLTimeString } from '../modules/yt'
 import type { resolveById, ResolveUrlTypes } from '../modules/yt/urlResolve'
-import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTargetPlatfromSettingsEntiries, SourcePlatform, sourcePlatfromSettings, TargetPlatform, targetPlatformSettings } from '../settings';
+import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTargetPlatfromSettingsEntiries, SourcePlatform, sourcePlatfromSettings, TargetPlatform, targetPlatformSettings } from '../settings'
+import type { BackgroundMethods } from './background'
 
-(async () => {
+(async () =>
+{
   const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t))
 
-  interface Target {
+  interface Target
+  {
     platform: TargetPlatform
     lbryPathname: string
     type: ResolveUrlTypes
     time: number | null
   }
 
-  interface Source {
+  interface Source
+  {
     platform: SourcePlatform
     id: string
     type: ResolveUrlTypes
@@ -23,11 +27,18 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
 
   const targetPlatforms = getTargetPlatfromSettingsEntiries()
   const settings = await getExtensionSettingsAsync()
-  // Listen Settings Change
-  chrome.storage.onChanged.addListener(async (changes, areaName) => {
+  chrome.storage.onChanged.addListener(async (changes, areaName) =>
+  {
     if (areaName !== 'local') return
     Object.assign(settings, Object.fromEntries(Object.entries(changes).map(([key, change]) => [key, change.newValue])))
   })
+
+  async function callBackgroundMethod<T extends keyof BackgroundMethods>(method: T, ...params: BackgroundMethods[T]['PARAMS_TYPE']): Promise<BackgroundMethods[T]['RESULT_TYPE']> 
+  {
+    const response = await new Promise<string>((resolve) => chrome.runtime.sendMessage({ method, data: JSON.stringify(params) }, resolve))
+    if (response.startsWith('error:')) throw new Error(`Background Error: ${response.substring('error:'.length).trim()}`)
+    return JSON.parse(response)
+  }
 
   const buttonMountPoint = document.createElement('div')
   buttonMountPoint.style.display = 'inline-flex'
@@ -35,7 +46,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
   const playerButtonMountPoint = document.createElement('div')
   playerButtonMountPoint.style.display = 'inline-flex'
 
-  function WatchOnLbryButton({ source, target }: { source?: Source, target?: Target }) {
+  function WatchOnLbryButton({ source, target }: { source?: Source, target?: Target })
+  {
     if (!target || !source) return null
     const url = getLbryUrlByTarget(target)
 
@@ -65,7 +77,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
           backgroundImage: target.platform.theme,
           ...target.platform.button.style?.button,
         }}
-        onClick={() => findVideoElementAwait(source).then((videoElement) => {
+        onClick={() => findVideoElementAwait(source).then((videoElement) =>
+        {
           videoElement.pause()
         })}
       >
@@ -75,7 +88,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     </div>
   }
 
-  function WatchOnLbryPlayerButton({ source, target }: { source?: Source, target?: Target }) {
+  function WatchOnLbryPlayerButton({ source, target }: { source?: Source, target?: Target })
+  {
     if (!target || !source) return null
     const url = getLbryUrlByTarget(target)
 
@@ -102,7 +116,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
           textDecoration: 'none',
           ...target.platform.button.style?.button,
         }}
-        onClick={() => findVideoElementAwait(source).then((videoElement) => {
+        onClick={() => findVideoElementAwait(source).then((videoElement) =>
+        {
           videoElement.pause()
         })}
       >
@@ -112,8 +127,10 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     </div>
   }
 
-  function updateButtons(params: { source: Source, target: Target } | null): void {
-    if (!params) {
+  function updateButtons(params: { source: Source, target: Target } | null): void
+  {
+    if (!params)
+    {
       render(<WatchOnLbryButton />, buttonMountPoint)
       render(<WatchOnLbryPlayerButton />, playerButtonMountPoint)
       return
@@ -124,8 +141,10 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
         document.querySelector(params.source.platform.htmlQueries.mountPoints.mountPlayerButtonBefore) :
         null
       if (!mountPlayerButtonBefore) render(<WatchOnLbryPlayerButton />, playerButtonMountPoint)
-      else {
-        if (playerButtonMountPoint.getAttribute('data-id') !== params.source.id) {
+      else
+      {
+        if (playerButtonMountPoint.getAttribute('data-id') !== params.source.id)
+        {
           mountPlayerButtonBefore.parentElement?.insertBefore(playerButtonMountPoint, mountPlayerButtonBefore)
           playerButtonMountPoint.setAttribute('data-id', params.source.id)
         }
@@ -138,8 +157,10 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
         document.querySelector(params.source.platform.htmlQueries.mountPoints.mountButtonBefore[params.source.type]) :
         null
       if (!mountButtonBefore) render(<WatchOnLbryButton />, buttonMountPoint)
-      else {
-        if (buttonMountPoint.getAttribute('data-id') !== params.source.id) {
+      else
+      {
+        if (buttonMountPoint.getAttribute('data-id') !== params.source.id)
+        {
           mountButtonBefore.parentElement?.insertBefore(buttonMountPoint, mountButtonBefore)
           buttonMountPoint.setAttribute('data-id', params.source.id)
         }
@@ -148,17 +169,20 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     }
   }
 
-  async function findVideoElementAwait(source: Source) {
+  async function findVideoElementAwait(source: Source)
+  {
     let videoElement: HTMLVideoElement | null = null
     while (!(videoElement = document.querySelector(source.platform.htmlQueries.videoPlayer))) await sleep(200)
     return videoElement
   }
 
-  async function getSourceByUrl(url: URL): Promise<Source | null> {
+  async function getSourceByUrl(url: URL): Promise<Source | null>
+  {
     const platform = getSourcePlatfromSettingsFromHostname(new URL(location.href).hostname)
     if (!platform) return null
 
-    if (url.pathname === '/watch' && url.searchParams.has('v')) {
+    if (url.pathname === '/watch' && url.searchParams.has('v'))
+    {
       return {
         id: url.searchParams.get('v')!,
         platform,
@@ -167,7 +191,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
         url
       }
     }
-    else if (url.pathname.startsWith('/channel/')) {
+    else if (url.pathname.startsWith('/channel/'))
+    {
       return {
         id: url.pathname.substring("/channel/".length),
         platform,
@@ -176,7 +201,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
         url
       }
     }
-    else if (url.pathname.startsWith('/c/') || url.pathname.startsWith('/user/')) {
+    else if (url.pathname.startsWith('/c/') || url.pathname.startsWith('/user/'))
+    {
       // We have to download the page content again because these parts of the page are not responsive
       // yt front end sucks anyway
       const content = await (await fetch(location.href)).text()
@@ -197,13 +223,13 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     return null
   }
 
-  async function getTargetsBySources(...sources: Source[]) {
-    const params: Parameters<typeof requestResolveById>[0] = sources.map((source) => ({ id: source.id, type: source.type }))
+  async function getTargetsBySources(...sources: Source[])
+  {
     const platform = targetPlatformSettings[settings.targetPlatform]
-
-    const results = await requestResolveById(params) ?? []
+    const results = await callBackgroundMethod('resolveUrlById', sources.map((source) => ({ id: source.id, type: source.type })))
     const targets: Record<string, Target | null> = Object.fromEntries(
-      sources.map((source) => {
+      sources.map((source) =>
+      {
         const result = results[source.id]
         if (!result) return [
           source.id,
@@ -224,47 +250,39 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
 
     return targets
   }
-  // We should get this from background, so the caching works and we don't get errors in the future if yt decides to impliment CORS
-  async function requestResolveById(...params: Parameters<typeof resolveById>): ReturnType<typeof resolveById> {
-    const response = await new Promise<string | null | 'error'>((resolve) => chrome.runtime.sendMessage({ method: 'resolveUrl', data: JSON.stringify(params) }, resolve))
-    if (response?.startsWith('error:')) {
-      console.error("Background error on:", params)
-      throw new Error(`Background error. ${response ?? ''}`)
-    }
-    return response ? JSON.parse(response) : null
-  }
 
-  // Request new tab
-  async function openNewTab(url: URL) {
-    chrome.runtime.sendMessage({ method: 'openTab', data: JSON.stringify({ href: url.href }) })
-  }
-
-  function findTargetFromSourcePage(source: Source): Target | null {
+  function findTargetFromSourcePage(source: Source): Target | null
+  {
     const linksContainer =
       source.type === 'video' ?
         document.querySelector(source.platform.htmlQueries.videoDescription) :
         source.platform.htmlQueries.channelLinks ? document.querySelector(source.platform.htmlQueries.channelLinks) : null
 
-    if (linksContainer) {
+    if (linksContainer)
+    {
       const anchors = Array.from(linksContainer.querySelectorAll<HTMLAnchorElement>('a'))
 
-      for (const anchor of anchors) {
+      for (const anchor of anchors)
+      {
         if (!anchor.href) continue
         const url = new URL(anchor.href)
         let lbryURL: URL | null = null
 
         // Extract real link from youtube's redirect link
-        if (source.platform === sourcePlatfromSettings['youtube.com']) {
+        if (source.platform === sourcePlatfromSettings['youtube.com'])
+        {
           if (!targetPlatforms.some(([key, platform]) => url.searchParams.get('q')?.startsWith(platform.domainPrefix))) continue
           lbryURL = new URL(url.searchParams.get('q')!)
         }
         // Just directly use the link itself on other platforms
-        else {
+        else
+        {
           if (!targetPlatforms.some(([key, platform]) => url.href.startsWith(platform.domainPrefix))) continue
           lbryURL = new URL(url.href)
         }
 
-        if (lbryURL) {
+        if (lbryURL)
+        {
           return {
             lbryPathname: lbryURL.pathname.substring(1),
             time: null,
@@ -277,31 +295,28 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
     return null
   }
 
-  function getLbryUrlByTarget(target: Target) {
+  function getLbryUrlByTarget(target: Target)
+  {
     const url = new URL(`${target.platform.domainPrefix}${target.lbryPathname}`)
     if (target.time) url.searchParams.set('t', target.time.toFixed(0))
 
     return url
   }
 
-
-  // Master Loop
-  for (
-    let url = new URL(location.href),
-    urlHrefCache: string | null = null;
-    ;
-    urlHrefCache = url.href,
-    url = new URL(location.href)
-  ) {
+  for (let url = new URL(location.href), urlHrefCache: string | null = null; ; urlHrefCache = url.href, url = new URL(location.href))
+  {
     await sleep(500)
-    try {
+    try
+    {
       const source = await getSourceByUrl(new URL(location.href))
-      if (!source) {
+      if (!source)
+      {
         updateButtons(null)
         continue
       }
       const target = (await getTargetsBySources(source))[source.id] ?? findTargetFromSourcePage(source)
-      if (!target) {
+      if (!target)
+      {
         updateButtons(null)
         continue
       }
@@ -309,7 +324,8 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
       // Update Buttons
       if (urlHrefCache !== url.href) updateButtons(null)
       // If target is a video target add timestampt to it
-      if (target.type === 'video') {
+      if (target.type === 'video')
+      {
         const videoElement = document.querySelector<HTMLVideoElement>(source.platform.htmlQueries.videoPlayer)
         if (videoElement) target.time = videoElement.currentTime > 3 && videoElement.currentTime < videoElement.duration - 1 ? videoElement.currentTime : null
       }
@@ -332,30 +348,36 @@ import { getExtensionSettingsAsync, getSourcePlatfromSettingsFromHostname, getTa
             source.type === 'channel'
           )
         )
-      ) {
+      )
+      {
         if (url.href === urlHrefCache) continue
 
         const lbryURL = getLbryUrlByTarget(target)
 
-        if (source.type === 'video') {
+        if (source.type === 'video')
+        {
           findVideoElementAwait(source).then((videoElement) => videoElement.pause())
         }
 
-        if (target.platform === targetPlatformSettings.app) {
+        if (target.platform === targetPlatformSettings.app)
+        {
           if (document.hidden) await new Promise((resolve) => document.addEventListener('visibilitychange', resolve, { once: true }))
           // Replace is being used so browser doesnt start an empty window
           // Its not gonna be able to replace anyway, since its a LBRY Uri
           location.replace(lbryURL)
         }
-        else {
-          openNewTab(lbryURL)
-          if (window.history.length === 1) 
+        else
+        {
+          callBackgroundMethod('openTab', { href: lbryURL.href })
+          if (window.history.length === 1)
             window.close()
-          else 
+          else
             window.history.back()
         }
       }
-    } catch (error) {
+    }
+    catch (error) 
+    {
       console.error(error)
     }
   }
