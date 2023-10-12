@@ -111,7 +111,7 @@ Please make sure to update tests as appropriate.
 </tr>
 <tr>
     <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-        <a href=https://github.com/53jk1>
+        <a href=https://github.com/kbakdev>
             <img src=https://avatars.githubusercontent.com/u/56700396?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Kacper Bąk/>
             <br />
             <sub style="font-size:14px"><b>Kacper Bąk</b></sub>
